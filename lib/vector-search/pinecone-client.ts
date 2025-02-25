@@ -17,15 +17,13 @@ export function getPineconeClient(): Pinecone {
   if (pineconeInstance) return pineconeInstance;
   
   const apiKey = process.env.PINECONE_API_KEY;
-  const environment = process.env.PINECONE_ENVIRONMENT;
   
-  if (!apiKey || !environment) {
-    throw new Error('Pinecone API key and environment must be defined in environment variables');
+  if (!apiKey) {
+    throw new Error('Pinecone API key must be defined in environment variables');
   }
   
   pineconeInstance = new Pinecone({
     apiKey,
-    environment,
   });
   
   return pineconeInstance;
