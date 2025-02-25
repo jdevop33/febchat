@@ -6,12 +6,13 @@ import {
   wrapLanguageModel,
 } from 'ai';
 
-export const DEFAULT_CHAT_MODEL: string = 'chat-model-small';
+export const DEFAULT_CHAT_MODEL: string = 'chat-model-bylaws';
 
 export const myProvider = customProvider({
   languageModels: {
     'chat-model-small': openai('gpt-4o-mini'),
     'chat-model-large': openai('gpt-4o'),
+    'chat-model-bylaws': openai('gpt-4o'),
     'chat-model-reasoning': wrapLanguageModel({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
@@ -32,6 +33,11 @@ interface ChatModel {
 }
 
 export const chatModels: Array<ChatModel> = [
+  {
+    id: 'chat-model-bylaws',
+    name: 'Oak Bay Bylaws Assistant',
+    description: 'Specialized for Oak Bay municipal bylaw inquiries',
+  },
   {
     id: 'chat-model-small',
     name: 'Small model',

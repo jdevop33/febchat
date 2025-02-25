@@ -25,6 +25,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
+import { searchBylawsTool } from '@/lib/ai/tools/search-bylaws';
 
 export const maxDuration = 60;
 
@@ -69,6 +70,11 @@ export async function POST(request: Request) {
         experimental_activeTools:
           selectedChatModel === 'chat-model-reasoning'
             ? []
+            : selectedChatModel === 'chat-model-bylaws'
+            ? [
+                'searchBylaws',
+                'createDocument',
+              ]
             : [
                 'getWeather',
                 'createDocument',
@@ -79,6 +85,7 @@ export async function POST(request: Request) {
         experimental_generateMessageId: generateUUID,
         tools: {
           getWeather,
+          searchBylaws: searchBylawsTool,
           createDocument: createDocument({ session, dataStream }),
           updateDocument: updateDocument({ session, dataStream }),
           requestSuggestions: requestSuggestions({

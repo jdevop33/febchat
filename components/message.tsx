@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
+import { BylawCitation } from './bylaw-citation';
 
 const PurePreviewMessage = ({
   chatId,
@@ -166,6 +167,29 @@ const PurePreviewMessage = ({
                             result={result}
                             isReadonly={isReadonly}
                           />
+                        ) : toolName === 'searchBylaws' ? (
+                          <div className="flex flex-col gap-3">
+                            {result.found ? (
+                              <>
+                                <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                                  Relevant Bylaw Information:
+                                </div>
+                                {result.results.map((bylawInfo, index) => (
+                                  <BylawCitation
+                                    key={index}
+                                    bylawNumber={bylawInfo.bylawNumber}
+                                    section={bylawInfo.section}
+                                    title={bylawInfo.title}
+                                    excerpt={bylawInfo.content}
+                                  />
+                                ))}
+                              </>
+                            ) : (
+                              <div className="text-sm italic text-muted-foreground">
+                                {result.message}
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <pre>{JSON.stringify(result, null, 2)}</pre>
                         )}

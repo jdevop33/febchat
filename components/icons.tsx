@@ -892,6 +892,37 @@ export const GlobeIcon = ({ size = 16 }: { size?: number }) => {
   );
 };
 
+export const FileTextIcon = ({ size = 16 }: { size?: number }) => {
+  return (
+    <svg
+      height={size}
+      strokeLinejoin="round"
+      viewBox="0 0 16 16"
+      width={size}
+      style={{ color: 'currentcolor' }}
+    >
+      <path
+        d="M10 5H6V6.5H10V5Z"
+        fill="currentColor"
+      />
+      <path
+        d="M10 8H6V9.5H10V8Z"
+        fill="currentColor"
+      />
+      <path
+        d="M6 11H10V12.5H6V11Z"
+        fill="currentColor"
+      />
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M4 0C2.34315 0 1 1.34315 1 3V13C1 14.6569 2.34315 16 4 16H12C13.6569 16 15 14.6569 15 13V3C15 1.34315 13.6569 0 12 0H4ZM2.5 3C2.5 2.17157 3.17157 1.5 4 1.5H12C12.8284 1.5 13.5 2.17157 13.5 3V13C13.5 13.8284 12.8284 14.5 12 14.5H4C3.17157 14.5 2.5 13.8284 2.5 13V3Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
 export const LockIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <svg
