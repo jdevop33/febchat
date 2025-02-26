@@ -2,7 +2,7 @@
  * Script to index bylaw PDFs into Pinecone
  * 
  * Usage:
- * pnpm tsx scripts/index-bylaws.ts <directory>
+ * pnpm tsx scripts/index-bylaws.ts <directory or file>
  * 
  * Works with both Windows and Unix paths
  */
@@ -15,23 +15,67 @@ import { processBylawPDF } from '../lib/bylaw-processing/indexing';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-// Get directory from command line args
-const directory = process.argv[2];
+// Get path from command line args
+const inputPath = process.argv[2];
 
-if (!directory) {
-  console.error('Error: Please provide a directory containing bylaw PDFs.');
-  console.error('Usage: pnpm tsx scripts/index-bylaws.ts <directory>');
+if (!inputPath) {
+  console.error('Error: Please provide a directory or file path.');
+  console.error('Usage: pnpm tsx scripts/index-bylaws.ts <directory or file>');
   process.exit(1);
 }
 
 // Normalize path for cross-platform compatibility
-const normalizedDirectory = path.normalize(directory);
+const normalizedPath = path.normalize(inputPath);
 
-// Check if directory exists
-if (!fs.existsSync(normalizedDirectory)) {
-  console.error(`Error: Directory '${normalizedDirectory}' does not exist.`);
-  console.error('Make sure you have full access to this directory and that the path is correct.');
+// Check if path exists
+if (!fs.existsSync(normalizedPath)) {
+  console.error(`Error: Path '${normalizedPath}' does not exist.`);
+  console.error('Make sure you have full access to this path and that it is correct.');
   process.exit(1);
+}
+
+/**
+ * Process a single PDF file
+ */
+async function processBylawFile(filePath: string) {
+  try {
+    console.log(`Processing bylaw file: ${filePath}`);
+    
+    // Verify Pinecone credentials are available
+    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+      console.error('\nError: Pinecone API key or environment not found in environment variables.');
+      console.error('Make sure you have set up your .env.local file or Vercel environment variables.');
+      console.error('See SETUP-INSTRUCTIONS.md for details.\n');
+      process.exit(1);
+    }
+    
+    // Verify OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('\nError: OpenAI API key not found in environment variables.');
+      console.error('Make sure you have set up your .env.local file or Vercel environment variables.');
+      console.error('See SETUP-INSTRUCTIONS.md for details.\n');
+      process.exit(1);
+    }
+    
+    // Print the OpenAI API key for debugging (first 10 characters)
+    console.log(`Using OpenAI API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`);
+    
+    // Extract bylaw number from filename if possible
+    const filename = path.basename(filePath, '.pdf');
+    const bylawNumberMatch = filename.match(/bylaw[-_]?(\d+)/i) || 
+                             filename.match(/^(\d+)[,\s_-]/i); // Also match patterns like "4722, ..."
+    
+    // Process the file
+    const chunkIds = await processBylawPDF(filePath, {
+      bylawNumber: bylawNumberMatch ? bylawNumberMatch[1] : undefined,
+    });
+    
+    console.log(`Successfully processed file with ${chunkIds.length} chunks.`);
+    
+  } catch (error) {
+    console.error(`Error processing file:`, error);
+    throw error;
+  }
 }
 
 /**
@@ -57,6 +101,9 @@ async function processBylawDirectory(dir: string) {
       process.exit(1);
     }
     
+    // Print the OpenAI API key for debugging (first 10 characters)
+    console.log(`Using OpenAI API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`);
+    
     // Get list of PDF files
     const files = fs.readdirSync(dir)
       .filter(file => file.toLowerCase().endsWith('.pdf'))
@@ -70,16 +117,7 @@ async function processBylawDirectory(dir: string) {
       console.log(`Processing file ${i+1}/${files.length}: ${path.basename(file)}`);
       
       try {
-        // Extract bylaw number from filename if possible
-        const filename = path.basename(file, '.pdf');
-        const bylawNumberMatch = filename.match(/bylaw[-_]?(\d+)/i);
-        
-        // Process the file
-        const chunkIds = await processBylawPDF(file, {
-          bylawNumber: bylawNumberMatch ? bylawNumberMatch[1] : undefined,
-        });
-        
-        console.log(`Successfully processed file with ${chunkIds.length} chunks.`);
+        await processBylawFile(file);
       } catch (error) {
         console.error(`Error processing file ${file}:`, error);
       }
@@ -88,6 +126,7 @@ async function processBylawDirectory(dir: string) {
     console.log('Directory processing complete.');
   } catch (error) {
     console.error('Error processing directory:', error);
+    throw error;
   }
 }
 
@@ -95,9 +134,18 @@ async function processBylawDirectory(dir: string) {
 (async () => {
   try {
     console.log('Starting bylaw indexing process...');
-    console.log(`Using directory: ${normalizedDirectory}`);
+    console.log(`Using path: ${normalizedPath}`);
     
-    await processBylawDirectory(normalizedDirectory);
+    const stats = fs.statSync(normalizedPath);
+    
+    if (stats.isDirectory()) {
+      await processBylawDirectory(normalizedPath);
+    } else if (stats.isFile() && normalizedPath.toLowerCase().endsWith('.pdf')) {
+      await processBylawFile(normalizedPath);
+    } else {
+      console.error('Error: Path must be a directory or a PDF file.');
+      process.exit(1);
+    }
     
     console.log('\n✅ Bylaw indexing complete!');
     console.log('Your bylaws have been successfully processed and indexed in Pinecone.');

@@ -53,7 +53,7 @@ export async function indexBylawChunks(
   chunks: Array<{ text: string; metadata: Partial<BylawMetadata> }>
 ): Promise<string[]> {
   try {
-    // Get OpenAI embeddings model
+    // Get OpenAI embeddings model using environment variables
     const embeddings = new OpenAIEmbeddings({
       modelName: 'text-embedding-3-small',
       openAIApiKey: process.env.OPENAI_API_KEY,
