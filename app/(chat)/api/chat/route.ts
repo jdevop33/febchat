@@ -30,57 +30,75 @@ import { searchBylawsTool } from '@/lib/ai/tools/search-bylaws';
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    selectedChatModel,
-  }: { id: string; messages: Array<Message>; selectedChatModel: string } =
-    await request.json();
+  try {
+    const {
+      id,
+      messages,
+      selectedChatModel,
+    }: { id: string; messages: Array<Message>; selectedChatModel: string } =
+      await request.json();
 
-  const session = await auth();
+    console.log(`Chat request received - ID: ${id}, Model: ${selectedChatModel}`);
+    console.log(`Message count: ${messages.length}`);
 
-  if (!session || !session.user || !session.user.id) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+    const session = await auth();
 
-  const userMessage = getMostRecentUserMessage(messages);
+    if (!session || !session.user || !session.user.id) {
+      console.error('Unauthorized user attempt to access chat API');
+      return new Response('Unauthorized', { status: 401 });
+    }
 
-  if (!userMessage) {
-    return new Response('No user message found', { status: 400 });
-  }
+    const userMessage = getMostRecentUserMessage(messages);
 
-  const chat = await getChatById({ id });
+    if (!userMessage) {
+      console.error('No user message found in request');
+      return new Response('No user message found', { status: 400 });
+    }
 
-  if (!chat) {
-    const title = await generateTitleFromUserMessage({ message: userMessage });
-    await saveChat({ id, userId: session.user.id, title });
-  }
+    console.log(`User message: "${userMessage.content.substring(0, 50)}..."`);
 
-  await saveMessages({
-    messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
-  });
+    const chat = await getChatById({ id });
+
+    if (!chat) {
+      console.log(`Creating new chat with ID: ${id}`);
+      const title = await generateTitleFromUserMessage({ message: userMessage });
+      await saveChat({ id, userId: session.user.id, title });
+    } else {
+      console.log(`Using existing chat with ID: ${id}`);
+    }
+
+    await saveMessages({
+      messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+    });
 
   return createDataStreamResponse({
     execute: (dataStream) => {
+      console.log(`Starting AI stream for model: ${selectedChatModel}`);
+      
+      // Determine which tools to activate based on the model
+      const activeTool = 
+        selectedChatModel === 'chat-model-reasoning'
+          ? []
+          : selectedChatModel === 'chat-model-bylaws'
+          ? [
+              'searchBylaws',
+              'createDocument',
+            ]
+          : [
+              'getWeather',
+              'createDocument',
+              'updateDocument',
+              'requestSuggestions',
+            ];
+      
+      console.log(`Active tools: ${activeTool.join(', ')}`);
+      
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel),
         system: systemPrompt({ selectedChatModel }),
         messages,
         maxSteps: 5,
-        experimental_activeTools:
-          selectedChatModel === 'chat-model-reasoning'
-            ? []
-            : selectedChatModel === 'chat-model-bylaws'
-            ? [
-                'searchBylaws',
-                'createDocument',
-              ]
-            : [
-                'getWeather',
-                'createDocument',
-                'updateDocument',
-                'requestSuggestions',
-              ],
+        experimental_activeTools: activeTool,
         experimental_transform: smoothStream({ chunking: 'word' }),
         experimental_generateMessageId: generateUUID,
         tools: {
@@ -94,6 +112,8 @@ export async function POST(request: Request) {
           }),
         },
         onFinish: async ({ response, reasoning }) => {
+          console.log('AI response complete, saving to database');
+          
           if (session.user?.id) {
             try {
               const sanitizedResponseMessages = sanitizeResponseMessages({
@@ -112,8 +132,9 @@ export async function POST(request: Request) {
                   };
                 }),
               });
+              console.log('Chat messages saved successfully');
             } catch (error) {
-              console.error('Failed to save chat');
+              console.error('Failed to save chat messages:', error);
             }
           }
         },
@@ -124,15 +145,21 @@ export async function POST(request: Request) {
       });
 
       result.consumeStream();
-
+      
+      console.log('Merging AI response into data stream');
       result.mergeIntoDataStream(dataStream, {
         sendReasoning: true,
       });
     },
-    onError: () => {
-      return 'Oops, an error occured!';
+    onError: (error) => {
+      console.error('Error in chat stream:', error);
+      return 'Oops, an error occurred! Please try again.';
     },
   });
+  } catch (error) {
+    console.error('Unexpected error in chat API:', error);
+    return new Response('An unexpected error occurred', { status: 500 });
+  }
 }
 
 export async function DELETE(request: Request) {

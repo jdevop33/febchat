@@ -26,24 +26,44 @@ export async function searchBylawsTool(
   if (category) filter.category = category;
   if (bylawNumber) filter.bylawNumber = bylawNumber;
   
-  // Search for relevant bylaws
-  const results = await searchBylaws(query, filter);
-  
-  if (results.length === 0) {
+  try {
+    console.log(`Searching bylaws with query: "${query}"${category ? `, category: "${category}"` : ''}${bylawNumber ? `, bylawNumber: "${bylawNumber}"` : ''}`);
+    
+    // Search for relevant bylaws
+    const results = await searchBylaws(query, filter);
+    
+    console.log(`Bylaw search found ${results.length} results`);
+    
+    if (results.length === 0) {
+      console.log("No relevant bylaws found");
+      return {
+        found: false,
+        message: "No relevant bylaws found. Please try a different search or contact Oak Bay Municipal Hall for assistance."
+      };
+    }
+    
+    // Format results for Claude
+    const formattedResults = results.map(result => ({
+      bylawNumber: result.metadata.bylawNumber || "Unknown",
+      title: result.metadata.title || "Untitled Bylaw",
+      section: result.metadata.section || "Unknown Section",
+      content: result.text,
+      url: result.metadata.url || `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber || "Unknown"}?section=${result.metadata.section || "Unknown"}`
+    }));
+    
+    console.log("Bylaw search results formatted successfully");
+    
+    return {
+      found: true,
+      results: formattedResults
+    };
+  } catch (error) {
+    console.error("Error in searchBylawsTool:", error);
+    
+    // Return a meaningful error response
     return {
       found: false,
-      message: "No relevant bylaws found. Please try a different search or contact Oak Bay Municipal Hall for assistance."
+      message: "Error searching for bylaws. Please try again or contact Oak Bay Municipal Hall for assistance."
     };
   }
-  
-  return {
-    found: true,
-    results: results.map(result => ({
-      bylawNumber: result.metadata.bylawNumber,
-      title: result.metadata.title,
-      section: result.metadata.section,
-      content: result.text,
-      url: result.metadata.url || `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`
-    }))
-  };
 }

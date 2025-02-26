@@ -106,8 +106,55 @@ export async function searchBylaws(
   query: string,
   filter?: Partial<ChunkMetadata>
 ): Promise<Array<BylawSearchResult>> {
-  // Use the mock store for now - this will ensure functionality works
-  // even without a real Pinecone instance
+  // Try to use Pinecone for real production environment
+  try {
+    // Import here to avoid circular dependencies
+    const { getPineconeIndex } = await import('../vector-search/pinecone-client');
+    const { OpenAIEmbeddings } = await import('@langchain/openai');
+    
+    // Check if we have Pinecone credentials
+    if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
+      // Get Pinecone index
+      const index = getPineconeIndex();
+      
+      // Get OpenAI embeddings model
+      const embeddings = new OpenAIEmbeddings({
+        modelName: 'text-embedding-3-small',
+        openAIApiKey: process.env.OPENAI_API_KEY,
+      });
+      
+      // Generate embedding for query
+      const queryEmbedding = await embeddings.embedQuery(query);
+      
+      // Build filter if provided
+      const pineconeFilter = filter ? 
+        Object.entries(filter).reduce((acc, [key, value]) => {
+          acc[key] = { $eq: value };
+          return acc;
+        }, {} as Record<string, any>) : 
+        undefined;
+      
+      // Search Pinecone
+      const results = await index.query({
+        vector: queryEmbedding,
+        topK: 5,
+        includeMetadata: true,
+        filter: pineconeFilter ? { $and: [pineconeFilter] } : undefined
+      });
+      
+      // Format results
+      return (results.matches || []).map(match => ({
+        text: match.metadata?.text as string,
+        metadata: match.metadata as ChunkMetadata,
+        score: match.score || 0
+      }));
+    }
+  } catch (error) {
+    console.error("Error using Pinecone for bylaw search:", error);
+    console.log("Falling back to mock vector store...");
+  }
+  
+  // Fall back to mock store if Pinecone is not available or fails
   try {
     const vectorStore = getVectorStore();
     
@@ -116,14 +163,21 @@ export async function searchBylaws(
       await vectorStore.addDocuments(mockBylawData);
     }
     
-    // In production, this would be a more sophisticated RAG implementation
+    // Search using mock vector store
     return await vectorStore.similaritySearch(query, 5, filter);
   } catch (error) {
-    console.error("Error searching bylaws:", error);
+    console.error("Error using mock vector store:", error);
     
-    // Fallback to direct mock data if vector search fails
+    // Final fallback: just filter mock data directly
     return mockBylawData
       .filter(item => item.text.toLowerCase().includes(query.toLowerCase()))
+      .filter(item => {
+        if (!filter) return true;
+        return Object.entries(filter).every(([key, value]) => 
+          item.metadata[key as keyof ChunkMetadata] === value
+        );
+      })
+      .slice(0, 5)
       .map(chunk => ({
         text: chunk.text,
         metadata: chunk.metadata,
