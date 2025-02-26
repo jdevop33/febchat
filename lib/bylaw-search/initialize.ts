@@ -8,6 +8,8 @@
 
 import { MockVectorStore, mockBylawData } from './index';
 import { BylawChunk } from './types';
+import { getPineconeIndex } from '../vector-search/pinecone-client';
+import { OpenAIEmbeddings } from '@langchain/openai';
 
 /**
  * Initialize the bylaw knowledge base with sample data
@@ -15,18 +17,82 @@ import { BylawChunk } from './types';
 export async function initializeBylawKnowledgeBase() {
   console.log('Initializing bylaw knowledge base...');
   
-  // Create a new vector store (in production, this would connect to a persistent store)
-  const vectorStore = new MockVectorStore();
-  
-  // Convert mock data into proper chunks
-  const chunks: BylawChunk[] = mockBylawData;
-  
-  // Add chunks to the vector store
-  await vectorStore.addDocuments(chunks);
-  
-  console.log(`Bylaw knowledge base initialized with ${chunks.length} chunks`);
-  
-  return vectorStore;
+  try {
+    // Try to use Pinecone if configured
+    if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
+      console.log('Attempting to use Pinecone for bylaw knowledge base...');
+      
+      try {
+        // Get Pinecone index
+        const index = getPineconeIndex();
+        
+        // Get OpenAI embeddings model
+        const embeddings = new OpenAIEmbeddings({
+          modelName: 'text-embedding-3-small',
+          openAIApiKey: process.env.OPENAI_API_KEY,
+        });
+        
+        // Check if we already have data in the index
+        const stats = await index.describeIndexStats();
+        
+        if (stats.totalVectorCount === 0) {
+          console.log('Pinecone index is empty, loading sample data...');
+          
+          // Convert mock data into proper chunks
+          const chunks: BylawChunk[] = mockBylawData;
+          
+          // Generate embeddings for chunks
+          console.log(`Generating embeddings for ${chunks.length} chunks...`);
+          const texts = chunks.map(chunk => chunk.text);
+          const embeddingsResults = await embeddings.embedDocuments(texts);
+          
+          // Prepare vectors for Pinecone
+          const vectors = chunks.map((chunk, i) => ({
+            id: `bylaw-sample-${i}`,
+            values: embeddingsResults[i],
+            metadata: {
+              ...chunk.metadata,
+              text: chunk.text,
+            },
+          }));
+          
+          // Upsert vectors to Pinecone
+          console.log(`Upserting ${vectors.length} vectors to Pinecone...`);
+          await index.upsert(vectors);
+          
+          console.log('Sample bylaw data loaded into Pinecone');
+        } else {
+          console.log(`Pinecone index already contains ${stats.totalVectorCount} vectors`);
+        }
+        
+        console.log('Successfully initialized Pinecone bylaw knowledge base');
+        return { type: 'pinecone', index };
+        
+      } catch (error) {
+        console.error('Error initializing Pinecone:', error);
+        console.log('Falling back to mock vector store...');
+      }
+    }
+    
+    // Fall back to mock vector store
+    console.log('Using mock vector store for bylaw knowledge base');
+    
+    // Create a new vector store
+    const vectorStore = new MockVectorStore();
+    
+    // Convert mock data into proper chunks
+    const chunks: BylawChunk[] = mockBylawData;
+    
+    // Add chunks to the vector store
+    await vectorStore.addDocuments(chunks);
+    
+    console.log(`Mock bylaw knowledge base initialized with ${chunks.length} chunks`);
+    
+    return { type: 'mock', vectorStore };
+  } catch (error) {
+    console.error('Error initializing bylaw knowledge base:', error);
+    throw error;
+  }
 }
 
 /**
