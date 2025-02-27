@@ -1,10 +1,8 @@
-import {
-  type Message,
-  StreamingTextResponse,
-} from 'ai';
+import type { Message } from 'ai';
+import { StreamingTextResponse } from 'ai-stream';
 
 import { auth } from '@/app/(auth)/auth';
-import { AI } from '@/lib/ai/models';
+import { anthropic } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -18,7 +16,6 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
-import { searchBylawsTool } from '@/lib/ai/tools/search-bylaws';
 
 export const maxDuration = 60;
 
@@ -74,38 +71,50 @@ export async function POST(request: Request) {
       // Always activate bylaw search tool
       console.log(`Using search bylaws tool`);
 
-      const aiResponse = await AI.chat({
+      // Convert messages to Anthropic format
+      const systemMessage = systemPrompt({ selectedChatModel });
+      
+      // Create a message stream with the Anthropic API
+      const stream = await anthropic.messages.create({
         model: 'claude-3-7-sonnet-20240229',
-        system: systemPrompt({ selectedChatModel }),
-        messages,
-        tools: {
-          searchBylaws: searchBylawsTool,
-        },
+        max_tokens: 4000,
+        system: systemMessage,
+        messages: messages.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+        })),
         temperature: 0.5,
+        stream: true
       });
 
-      console.log('AI response complete, saving to database');
-
-      if (session.user?.id) {
-        try {
-          // Save the response message
-          await saveMessages({
-            messages: [{
-              id: generateUUID(),
-              chatId: id,
-              role: 'assistant',
-              content: aiResponse.content,
-              createdAt: new Date(),
-            }],
-          });
-          console.log('Chat message saved successfully');
-        } catch (error) {
-          console.error('Failed to save chat messages:', error);
-        }
-      }
+      // We'll save the message after we get the stream, 
+      // but we'll create the message ID now
+      const messageId = generateUUID();
 
       // Return the streaming response
-      return new StreamingTextResponse(aiResponse.getTextStream());
+      return new StreamingTextResponse(stream, {
+        onCompletion: async (completion) => {
+          // After streaming completes, save the full response to the database
+          console.log('AI response complete, saving to database');
+          
+          if (session?.user?.id) {
+            try {
+              await saveMessages({
+                messages: [{
+                  id: messageId,
+                  chatId: id,
+                  role: 'assistant',
+                  content: completion,
+                  createdAt: new Date(),
+                }],
+              });
+              console.log('Chat message saved successfully');
+            } catch (error) {
+              console.error('Failed to save chat messages:', error);
+            }
+          }
+        }
+      });
     } catch (error) {
       console.error('Error in chat stream:', error);
       return new Response('Oops, an error occurred! Please try again.', { status: 500 });

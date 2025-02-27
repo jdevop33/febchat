@@ -1,12 +1,10 @@
-import { anthropic } from '@ai-sdk/anthropic';
-import { createAI } from 'ai';
+import Anthropic from '@anthropic-ai/sdk';
 
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 
-export const AI = createAI({
-  provider: anthropic,
-  model: 'claude-3-7-sonnet-20240229',
-  mode: 'chat',
+// Initialize the Anthropic client
+export const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',  // Fallback to empty string if not set
 });
 
 interface ChatModel {
