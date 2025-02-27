@@ -66,7 +66,7 @@ export function Chat({
     <div className="flex h-dvh min-w-0 flex-col bg-background">
       <ChatHeader chatId={id} />
 
-      <div className="flex flex-1 flex-col overflow-hidden h-full">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <Messages
           chatId={id}
           isLoading={isLoading}

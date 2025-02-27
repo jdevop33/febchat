@@ -16,24 +16,24 @@ interface SuggestedActionsProps {
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'What are the rules',
+      label: 'for tree removal in Oak Bay?',
+      action: 'What are the regulations for tree removal in Oak Bay?',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'Tell me about',
+      label: 'noise restrictions in Oak Bay',
+      action: 'What are the noise restrictions in Oak Bay?',
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'Can I keep chickens',
+      label: 'in my backyard in Oak Bay?',
+      action: 'Can I keep chickens in my backyard in Oak Bay?',
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'What permits do I need',
+      label: 'for home renovations?',
+      action: 'What permits do I need for home renovations in Oak Bay?',
     },
   ];
 
@@ -58,7 +58,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
                 content: suggestedAction.action,
               });
             }}
-            className="h-auto w-full flex-1 items-start justify-start gap-1 rounded-xl border px-4 py-3.5 text-left text-sm sm:flex-col"
+            className="h-auto w-full flex-1 items-start justify-start gap-1 rounded-xl border bg-background px-4 py-3.5 text-left text-sm sm:flex-col"
           >
             <span className="font-medium">{suggestedAction.title}</span>
             <span className="text-muted-foreground">
