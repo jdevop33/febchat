@@ -1,5 +1,5 @@
 import type { Message } from 'ai';
-import { StreamingTextResponse } from 'ai-stream';
+import { createDataStreamResponse } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
 import { anthropic } from '@/lib/ai/models';
@@ -92,26 +92,47 @@ export async function POST(request: Request) {
       const messageId = generateUUID();
 
       // Return the streaming response
-      return new StreamingTextResponse(stream, {
-        onCompletion: async (completion) => {
-          // After streaming completes, save the full response to the database
-          console.log('AI response complete, saving to database');
+      return createDataStreamResponse({
+        execute: async (writer) => {
+          const textEncoder = new TextEncoder();
+          const reader = stream.getReader();
           
-          if (session?.user?.id) {
-            try {
-              await saveMessages({
-                messages: [{
-                  id: messageId,
-                  chatId: id,
-                  role: 'assistant',
-                  content: completion,
-                  createdAt: new Date(),
-                }],
-              });
-              console.log('Chat message saved successfully');
-            } catch (error) {
-              console.error('Failed to save chat messages:', error);
+          let completion = '';
+          
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              // Accumulate the completion
+              const text = new TextDecoder().decode(value);
+              completion += text;
+              
+              // Forward the chunk to the client
+              writer.writeData({ text });
             }
+            
+            // After streaming completes, save the full response to the database
+            console.log('AI response complete, saving to database');
+            
+            if (session?.user?.id) {
+              try {
+                await saveMessages({
+                  messages: [{
+                    id: messageId,
+                    chatId: id,
+                    role: 'assistant',
+                    content: completion,
+                    createdAt: new Date(),
+                  }],
+                });
+                console.log('Chat message saved successfully');
+              } catch (error) {
+                console.error('Failed to save chat messages:', error);
+              }
+            }
+          } catch (e) {
+            console.error('Error processing stream:', e);
           }
         }
       });

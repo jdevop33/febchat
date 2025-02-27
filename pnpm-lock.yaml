@@ -83,9 +83,6 @@ importers:
       ai:
         specifier: 4.1.46
         version: 4.1.46(react@19.0.0-rc-45804af1-20241021)(zod@3.23.8)
-      ai-stream:
-        specifier: ^0.0.4
-        version: 0.0.4(react@19.0.0-rc-45804af1-20241021)
       bcrypt-ts:
         specifier: ^5.0.2
         version: 5.0.2
@@ -1738,12 +1735,6 @@ packages:
     resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
     engines: {node: '>= 8.0.0'}
 
-  ai-stream@0.0.4:
-    resolution: {integrity: sha512-+nWz4U0hvrq/TcOp2ArwXmCrFFjEPsB1MFM78HnwEjHNIkhZDEs8m+qqADEUC9MttvWAu5cnrZ4zc/qMGZCeOA==}
-    engines: {node: '>=14.6'}
-    peerDependencies:
-      react: ^18.0.0
-
   ai@4.1.46:
     resolution: {integrity: sha512-VTvAktT69IN1qcNAv7OlcOuR0q4HqUlhkVacrWmMlEoprYykF9EL5RY8IECD5d036Wqg0walwbSKZlA2noHm1A==}
     engines: {node: '>=18'}
@@ -2443,10 +2434,6 @@ packages:
 
   eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
-
-  eventsource-parser@1.0.0:
-    resolution: {integrity: sha512-9jgfSCa3dmEme2ES3mPByGXfgZ87VbP97tng1G2nWwWx6bV2nYxm2AWCrbQjXToSe+yYlqaZNtxffR9IeQr95g==}
-    engines: {node: '>=14.18'}
 
   eventsource-parser@3.0.0:
     resolution: {integrity: sha512-T1C0XCUimhxVQzW4zFipdx0SficT651NnkR0ZSH3yQwh+mFMdLfgjABVi4YtMTtaL4s168593DaoaRLMqryavA==}
@@ -3998,11 +3985,6 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  swr@2.1.5:
-    resolution: {integrity: sha512-/OhfZMcEpuz77KavXST5q6XE9nrOBOVcBLWjMT+oAE/kQHyE3PASrevXCtQDZ8aamntOfFkbVJp7Il9tNBQWrw==}
-    peerDependencies:
-      react: ^16.11.0 || ^17.0.0 || ^18.0.0
-
   swr@2.2.5:
     resolution: {integrity: sha512-QtxqyclFeAsxEUeZIYmsaQ0UjimSq1RZ9Un7I68/0ClKK/U3LoyQunwkQfJZr2fc22DfIXLNDc2wFyTEikCUpg==}
     peerDependencies:
@@ -5512,13 +5494,6 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ai-stream@0.0.4(react@19.0.0-rc-45804af1-20241021):
-    dependencies:
-      eventsource-parser: 1.0.0
-      nanoid: 3.3.8
-      react: 19.0.0-rc-45804af1-20241021
-      swr: 2.1.5(react@19.0.0-rc-45804af1-20241021)
-
   ai@4.1.46(react@19.0.0-rc-45804af1-20241021)(zod@3.23.8):
     dependencies:
       '@ai-sdk/provider': 1.0.9
@@ -6349,8 +6324,6 @@ snapshots:
   event-target-shim@5.0.1: {}
 
   eventemitter3@4.0.7: {}
-
-  eventsource-parser@1.0.0: {}
 
   eventsource-parser@3.0.0: {}
 
@@ -8115,11 +8088,6 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
-
-  swr@2.1.5(react@19.0.0-rc-45804af1-20241021):
-    dependencies:
-      react: 19.0.0-rc-45804af1-20241021
-      use-sync-external-store: 1.2.2(react@19.0.0-rc-45804af1-20241021)
 
   swr@2.2.5(react@19.0.0-rc-45804af1-20241021):
     dependencies:
