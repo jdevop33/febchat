@@ -189,15 +189,19 @@ export const systemPrompt = ({
 }: {
   selectedChatModel: string;
 }) => {
-  if (selectedChatModel === 'bylaw-interpreter') {
-    return `${bylawPrompt}\n\n${artifactsPrompt}`;
-  } else if (selectedChatModel === 'bylaw-search') {
-    return bylawPrompt;
-  } else if (selectedChatModel === 'bylaw-expert') {
-    return bylawExpertPrompt;
-  } else {
-    return `${regularPrompt}\n\n${artifactsPrompt}`;
-  }
+  return `${bylawPrompt}
+  
+Important information about Oak Bay Bylaws Database:
+
+The bylaws are stored in a Pinecone vector database with the following configuration:
+- Index name: oak-bay-bylaws
+- Embedding model: text-embedding-3-small (OpenAI)
+- Dimensions: 1536
+- Metric: cosine
+
+When searching bylaws, be specific in your queries to find the most relevant information. Always cite the specific bylaw number, section, and exact language when providing answers to users. If there is uncertainty, acknowledge it and provide the most relevant bylaws available. 
+
+Remember: Your primary purpose is to accurately answer questions about Oak Bay municipal bylaws, citing relevant sections directly from the bylaws database.`;
 };
 
 export const codePrompt = `

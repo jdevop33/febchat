@@ -1,26 +1,11 @@
-import { openai } from '@ai-sdk/openai';
-import { fireworks } from '@ai-sdk/fireworks';
-import {
-  customProvider,
-  extractReasoningMiddleware,
-  wrapLanguageModel,
-} from 'ai';
+import { customProvider } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 
-export const DEFAULT_CHAT_MODEL: string = 'bylaw-search';
+export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 
 export const myProvider = customProvider({
   languageModels: {
-    'bylaw-search': openai('gpt-4o'),
-    'bylaw-expert': openai('gpt-4o'),
-    'bylaw-interpreter': wrapLanguageModel({
-      model: fireworks('accounts/fireworks/models/deepseek-r1'),
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    }),
-    'document-model': openai('gpt-4-turbo'),
-    'general-assistant': openai('gpt-4o-mini'),
-  },
-  imageModels: {
-    'document-image': openai.image('dall-e-3'),
+    'oak-bay-bylaws': anthropic('claude-3-7-sonnet-20240229'),
   },
 });
 
@@ -32,23 +17,8 @@ interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'bylaw-search',
-    name: 'Bylaw Search',
+    id: 'oak-bay-bylaws',
+    name: 'Oak Bay Bylaws Assistant',
     description: 'Specialized for Oak Bay municipal bylaw inquiries',
-  },
-  {
-    id: 'bylaw-expert',
-    name: 'Bylaw Expert',
-    description: 'Advanced interpretation of complex municipal regulations',
-  },
-  {
-    id: 'bylaw-interpreter',
-    name: 'Bylaw Interpreter',
-    description: 'Detailed reasoning for bylaw interpretation questions',
-  },
-  {
-    id: 'general-assistant',
-    name: 'General Assistant',
-    description: 'Fast, general-purpose municipal information',
   },
 ];

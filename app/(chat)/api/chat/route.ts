@@ -79,30 +79,8 @@ export async function POST(request: Request) {
       execute: (dataStream) => {
         console.log(`Starting AI stream for model: ${selectedChatModel}`);
 
-        // Determine which tools to activate based on the model
-        let activeTool: Array<
-          | 'searchBylaws'
-          | 'createDocument'
-          | 'getWeather'
-          | 'updateDocument'
-          | 'requestSuggestions'
-        >;
-
-        if (selectedChatModel === 'bylaw-interpreter') {
-          activeTool = ['searchBylaws', 'createDocument'];
-        } else if (
-          selectedChatModel === 'bylaw-search' ||
-          selectedChatModel === 'bylaw-expert'
-        ) {
-          activeTool = ['searchBylaws', 'createDocument'];
-        } else {
-          activeTool = [
-            'getWeather',
-            'createDocument',
-            'updateDocument',
-            'requestSuggestions',
-          ];
-        }
+        // Always activate bylaw search tool
+        const activeTool: ['searchBylaws'] = ['searchBylaws'];
 
         console.log(`Active tools: ${activeTool.join(', ')}`);
 
@@ -115,14 +93,7 @@ export async function POST(request: Request) {
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           tools: {
-            getWeather,
             searchBylaws: searchBylawsTool,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
           },
           onFinish: async ({ response, reasoning }) => {
             console.log('AI response complete, saving to database');
