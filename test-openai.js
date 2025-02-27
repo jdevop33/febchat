@@ -13,16 +13,16 @@ async function main() {
   try {
     // Initialize OpenAI client
     const openai = new OpenAI({
-      apiKey: apiKey
+      apiKey: apiKey,
     });
-    
+
     // Try a simple completion
     console.log('Testing API key with a simple completion...');
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: 'Hello' }],
     });
-    
+
     console.log('Success! Response:', completion.choices[0].message.content);
     return true;
   } catch (error) {

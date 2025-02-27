@@ -7,10 +7,18 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'FebChat - Smart Conversational Platform',
-  description: 'Advanced AI-powered chat platform with document analysis, bylaw search, and artifact management.',
-  authors: [{ name: 'FebChat Team' }],
-  keywords: ['AI Chat', 'Document Analysis', 'Bylaw Search', 'AI Assistant'],
+  title: 'Oak Bay Bylaws Assistant',
+  description:
+    'AI-powered assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.',
+  authors: [{ name: 'Oak Bay Municipality' }],
+  keywords: [
+    'Bylaw Search',
+    'Municipal Bylaws',
+    'Oak Bay',
+    'Bylaw Assistant',
+    'Municipal Regulations',
+    'Document Search',
+  ],
   icons: {
     icon: '/favicon.ico',
   },
@@ -68,38 +76,26 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased min-h-screen bg-background text-foreground">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster 
-            position="top-center" 
+          <Toaster
+            position="top-center"
             toastOptions={{
               style: {
                 background: 'hsl(var(--card))',
                 color: 'hsl(var(--card-foreground))',
                 border: '1px solid hsl(var(--border))',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
               },
               className: 'text-sm font-medium',
-              success: {
-                style: {
-                  border: '1px solid hsl(var(--success) / 0.3)',
-                }
-              },
-              error: {
-                style: {
-                  border: '1px solid hsl(var(--destructive) / 0.3)',
-                }
-              },
             }}
           />
-          <div className="grid min-h-screen">
-            {children}
-          </div>
+          <div className="grid min-h-screen">{children}</div>
         </ThemeProvider>
       </body>
     </html>

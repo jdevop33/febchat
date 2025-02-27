@@ -9,12 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90 hover:shadow-md active:bg-primary/95 active:shadow',
-        destructive: 'bg-destructive text-destructive-foreground shadow hover:bg-destructive/90 hover:shadow-md active:bg-destructive/95 active:shadow',
-        success: 'bg-success text-success-foreground shadow hover:bg-success/90 hover:shadow-md active:bg-success/95 active:shadow',
-        warning: 'bg-warning text-warning-foreground shadow hover:bg-warning/90 hover:shadow-md active:bg-warning/95 active:shadow',
-        outline: 'border border-input bg-background text-foreground hover:bg-muted hover:border-primary/30 hover:text-foreground',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        default:
+          'bg-primary text-primary-foreground shadow hover:bg-primary/90 hover:shadow-md active:bg-primary/95 active:shadow',
+        destructive:
+          'bg-destructive text-destructive-foreground shadow hover:bg-destructive/90 hover:shadow-md active:bg-destructive/95 active:shadow',
+        success:
+          'bg-success text-success-foreground shadow hover:bg-success/90 hover:shadow-md active:bg-success/95 active:shadow',
+        warning:
+          'bg-warning text-warning-foreground shadow hover:bg-warning/90 hover:shadow-md active:bg-warning/95 active:shadow',
+        outline:
+          'border border-input bg-background text-foreground hover:bg-muted hover:border-primary/30 hover:text-foreground',
+        secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'text-foreground hover:bg-primary/10 hover:text-primary',
         link: 'text-primary underline-offset-4 hover:underline',
         subtle: 'bg-primary/10 text-primary hover:bg-primary/20',
@@ -61,7 +67,20 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, width, asChild = false, loading = false, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      width,
+      asChild = false,
+      loading = false,
+      children,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : 'button';
     return (
       <Comp
@@ -73,7 +92,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <>
             <svg
-              className="animate-spin -ml-1 mr-2 h-4 w-4"
+              className="-ml-1 mr-2 h-4 w-4 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"

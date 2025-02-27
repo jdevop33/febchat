@@ -11,9 +11,11 @@ export default async function Page() {
 
   const cookieStore = await cookies();
   const modelIdFromCookie = cookieStore.get('chat-model');
-  
+
   // Set default model ID to bylaws model
-  const modelId = modelIdFromCookie ? modelIdFromCookie.value : DEFAULT_CHAT_MODEL;
+  const modelId = modelIdFromCookie
+    ? modelIdFromCookie.value
+    : DEFAULT_CHAT_MODEL;
 
   return (
     <>

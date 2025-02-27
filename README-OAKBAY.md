@@ -13,18 +13,21 @@ A specialized AI assistant for answering questions about Oak Bay municipal bylaw
 ## Implementation Details
 
 ### Frontend Components
+
 - Custom welcome page with bylaw-specific instructions
 - Bylaw citation component for displaying references
 - Specialized UI header for Oak Bay Municipal branding
 - Direct link to official Oak Bay bylaw repository
 
 ### Backend Integration
+
 - Custom AI prompt engineering for bylaw-specific responses
 - Bylaw search tool integration for vector search
 - Document generation for bylaw summaries
 - Specialized error handling for unclear bylaw questions
 
 ### Model Configuration
+
 - Default model set to the bylaw-specific Claude model
 - Custom prompt templates for different bylaw categories
 - Citation formatting for accurate bylaw references
@@ -41,6 +44,7 @@ A specialized AI assistant for answering questions about Oak Bay municipal bylaw
 ## Examples
 
 Try asking:
+
 - "What are the regulations for tree removal in Oak Bay?"
 - "What permits do I need for home renovations?"
 - "Can I keep chickens in my backyard in Oak Bay?"

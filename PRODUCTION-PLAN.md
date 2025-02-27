@@ -3,6 +3,7 @@
 ## 1. Infrastructure Setup
 
 ### Vector Database: Pinecone
+
 - **Account Setup**: Create a Pinecone account (https://www.pinecone.io/)
 - **Index Configuration**:
   - Index name: `oak-bay-bylaws`
@@ -11,11 +12,13 @@
   - Pod type: p1 or s1 (based on budget/performance needs)
 
 ### Cloud Storage
+
 - Set up GCP Cloud Storage bucket for PDF storage
 - Configure access control and lifecycle policies
 - Organize bylaws by category and update date
 
 ### Environment Variables
+
 ```
 # Vector Database
 PINECONE_API_KEY=your-api-key
@@ -37,6 +40,7 @@ GCP_CREDENTIALS=json-credentials-string
 ## 2. Document Processing Pipeline
 
 ### Dependency Installation
+
 ```bash
 pnpm add @pinecone-database/pinecone langchain openai pdf-parse pdf-lib @google-cloud/storage
 ```
@@ -44,22 +48,26 @@ pnpm add @pinecone-database/pinecone langchain openai pdf-parse pdf-lib @google-
 ### PDF Processing System
 
 1. **Document Preprocessing**
+
    - Create `/lib/bylaw-processing/preprocess.ts` for PDF preparation
    - Implement OCR correction and text standardization
    - Handle multi-column layouts and tables
 
 2. **Chunking Strategy**
+
    - Create `/lib/bylaw-processing/chunking.ts`
    - Implement semantic chunking based on section boundaries
    - Handle hierarchical document structure
    - Maintain context and relationships
 
 3. **Embedding Generation**
+
    - Create `/lib/bylaw-processing/embeddings.ts`
    - Set up batch processing for efficient embedding generation
    - Implement caching for previously processed documents
 
 4. **Metadata Extraction**
+
    - Extract bylaw numbers, effective dates, and sections
    - Create standardized metadata schema
    - Generate citation information
@@ -74,6 +82,7 @@ pnpm add @pinecone-database/pinecone langchain openai pdf-parse pdf-lib @google-
 ### Pinecone Integration
 
 1. **Client Setup**
+
 ```typescript
 // /lib/vector-search/pinecone-client.ts
 import { Pinecone } from '@pinecone-database/pinecone';
@@ -81,11 +90,11 @@ import { Pinecone } from '@pinecone-database/pinecone';
 export function getPineconeClient() {
   const apiKey = process.env.PINECONE_API_KEY;
   const environment = process.env.PINECONE_ENVIRONMENT;
-  
+
   if (!apiKey || !environment) {
     throw new Error('Pinecone API key and environment must be defined');
   }
-  
+
   return new Pinecone({
     apiKey,
     environment,
@@ -94,6 +103,7 @@ export function getPineconeClient() {
 ```
 
 2. **Search Service**
+
 ```typescript
 // /lib/vector-search/search-service.ts
 import { getPineconeClient } from './pinecone-client';
@@ -102,25 +112,25 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 export async function searchBylaws(query: string, options = {}) {
   const pinecone = getPineconeClient();
   const index = pinecone.index(process.env.PINECONE_INDEX || 'oak-bay-bylaws');
-  
+
   const embeddings = new OpenAIEmbeddings({
-    modelName: 'text-embedding-3-small'
+    modelName: 'text-embedding-3-small',
   });
-  
+
   const queryEmbedding = await embeddings.embedQuery(query);
-  
+
   const results = await index.query({
     vector: queryEmbedding,
     topK: 5,
     includeMetadata: true,
-    ...options
+    ...options,
   });
-  
-  return results.matches.map(match => ({
+
+  return results.matches.map((match) => ({
     id: match.id,
     text: match.metadata?.text,
     metadata: match.metadata,
-    score: match.score
+    score: match.score,
   }));
 }
 ```
@@ -143,13 +153,15 @@ import { z } from 'zod';
 
 const searchSchema = z.object({
   query: z.string().min(3),
-  filters: z.object({
-    category: z.string().optional(),
-    bylawNumber: z.string().optional(),
-    dateFrom: z.string().optional(),
-    dateTo: z.string().optional(),
-  }).optional(),
-  limit: z.number().min(1).max(20).optional().default(5)
+  filters: z
+    .object({
+      category: z.string().optional(),
+      bylawNumber: z.string().optional(),
+      dateFrom: z.string().optional(),
+      dateTo: z.string().optional(),
+    })
+    .optional(),
+  limit: z.number().min(1).max(20).optional().default(5),
 });
 
 export async function POST(request: Request) {
@@ -161,35 +173,43 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { query, filters, limit } = searchSchema.parse(body);
-    
+
     const searchOptions = {
       topK: limit,
-      filter: filters ? {
-        $and: Object.entries(filters)
-          .filter(([_, value]) => value)
-          .map(([key, value]) => ({ [key]: { $eq: value } }))
-      } : undefined
+      filter: filters
+        ? {
+            $and: Object.entries(filters)
+              .filter(([_, value]) => value)
+              .map(([key, value]) => ({ [key]: { $eq: value } })),
+          }
+        : undefined,
     };
-    
+
     const results = await searchBylaws(query, searchOptions);
-    
+
     return NextResponse.json({
       success: true,
-      results: results.map(result => ({
+      results: results.map((result) => ({
         bylawNumber: result.metadata.bylawNumber,
         title: result.metadata.title,
         section: result.metadata.section,
         content: result.text,
         url: `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
-        score: result.score
-      }))
+        score: result.score,
+      })),
     });
   } catch (error) {
     console.error('Search error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof z.ZodError ? 'Invalid search parameters' : 'Search failed' 
-    }, { status: 400 });
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          error instanceof z.ZodError
+            ? 'Invalid search parameters'
+            : 'Search failed',
+      },
+      { status: 400 },
+    );
   }
 }
 ```
@@ -204,35 +224,43 @@ import { z } from 'zod';
 export const searchBylawsSchema = z.object({
   query: z.string().describe('The search query for bylaws information'),
   category: z.string().optional().describe('Optional category to filter by'),
-  bylawNumber: z.string().optional().describe('Optional bylaw number to filter by')
+  bylawNumber: z
+    .string()
+    .optional()
+    .describe('Optional bylaw number to filter by'),
 });
 
-export async function searchBylawsTool(query: string, category?: string, bylawNumber?: string) {
+export async function searchBylawsTool(
+  query: string,
+  category?: string,
+  bylawNumber?: string,
+) {
   const filters = {};
   if (category) filters.category = category;
   if (bylawNumber) filters.bylawNumber = bylawNumber;
 
   const results = await searchBylaws(query, {
     topK: 5,
-    filter: Object.keys(filters).length > 0 ? filters : undefined
+    filter: Object.keys(filters).length > 0 ? filters : undefined,
   });
-  
+
   if (results.length === 0) {
     return {
       found: false,
-      message: "No relevant bylaws found. Please try a different search or contact Oak Bay Municipal Hall for assistance."
+      message:
+        'No relevant bylaws found. Please try a different search or contact Oak Bay Municipal Hall for assistance.',
     };
   }
-  
+
   return {
     found: true,
-    results: results.map(result => ({
+    results: results.map((result) => ({
       bylawNumber: result.metadata.bylawNumber,
       title: result.metadata.title,
       section: result.metadata.section,
       content: result.text,
-      url: `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`
-    }))
+      url: `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
+    })),
   };
 }
 ```
@@ -248,7 +276,13 @@ export async function searchBylawsTool(query: string, category?: string, bylawNu
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from './ui/card';
-import { FileText, ArrowUpRight, Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  FileText,
+  ArrowUpRight,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { toast } from 'sonner';
@@ -272,39 +306,44 @@ export function BylawCitation({
 }: BylawCitationProps) {
   const [expanded, setExpanded] = useState(false);
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
-  const citationUrl = url || `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
-  
+  const citationUrl =
+    url ||
+    `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
+
   const copyToClipboard = () => {
     const citation = `${formattedTitle}, Section ${section}: ${excerpt}`;
     navigator.clipboard.writeText(citation);
     toast.success('Citation copied to clipboard');
   };
-  
+
   return (
-    <Card className={cn("my-3 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20", className)}>
-      <CardContent className="pt-4 pb-3">
+    <Card
+      className={cn(
+        'my-3 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
+        className,
+      )}
+    >
+      <CardContent className="pb-3 pt-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
             <FileText size={16} className="shrink-0" />
-            <div className="font-medium">
-              {formattedTitle}
-            </div>
+            <div className="font-medium">{formattedTitle}</div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Section {section}
-          </div>
+          <div className="text-sm text-muted-foreground">Section {section}</div>
         </div>
-        
+
         {excerpt && (
-          <div className={cn(
-            "mt-2 border-l-2 border-blue-300 dark:border-blue-700 pl-3 text-sm",
-            expanded ? "line-clamp-none" : "line-clamp-3" 
-          )}>
+          <div
+            className={cn(
+              'mt-2 border-l-2 border-blue-300 pl-3 text-sm dark:border-blue-700',
+              expanded ? 'line-clamp-none' : 'line-clamp-3',
+            )}
+          >
             <p className="italic">{excerpt}</p>
           </div>
         )}
-        
-        <div className="mt-3 flex justify-between items-center">
+
+        <div className="mt-3 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
@@ -323,13 +362,13 @@ export function BylawCitation({
               </>
             )}
           </Button>
-          
+
           <div className="flex gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 px-2 text-xs"
                   onClick={copyToClipboard}
                 >
@@ -339,12 +378,12 @@ export function BylawCitation({
               </TooltipTrigger>
               <TooltipContent>Copy citation to clipboard</TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 px-2 text-xs"
                   onClick={() => window.open(citationUrl, '_blank')}
                 >
@@ -352,7 +391,9 @@ export function BylawCitation({
                   View Full Bylaw
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Open the full bylaw text in a new tab</TooltipContent>
+              <TooltipContent>
+                Open the full bylaw text in a new tab
+              </TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -370,7 +411,13 @@ export function BylawCitation({
 
 import React from 'react';
 import { Button } from './ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { FilterIcon, XIcon } from 'lucide-react';
@@ -393,12 +440,14 @@ const CATEGORIES = [
   { value: 'traffic', label: 'Traffic & Parking' },
 ];
 
-export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) {
+export function BylawSearchFilters({
+  onApplyFilters,
+}: BylawSearchFiltersProps) {
   const [category, setCategory] = React.useState('');
   const [bylawNumber, setBylawNumber] = React.useState('');
   const [dateFrom, setDateFrom] = React.useState('');
   const [dateTo, setDateTo] = React.useState('');
-  
+
   const handleApplyFilters = () => {
     onApplyFilters({
       category: category || undefined,
@@ -407,7 +456,7 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
       dateTo: dateTo || undefined,
     });
   };
-  
+
   const handleReset = () => {
     setCategory('');
     setBylawNumber('');
@@ -415,22 +464,22 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
     setDateTo('');
     onApplyFilters({});
   };
-  
+
   return (
-    <div className="space-y-4 p-4 border rounded-lg mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-medium flex items-center gap-2">
+    <div className="mb-4 space-y-4 rounded-lg border p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 font-medium">
           <FilterIcon size={16} />
           Search Filters
         </h3>
-        
+
         <Button variant="ghost" size="sm" onClick={handleReset}>
           <XIcon size={14} className="mr-1" />
           Reset
         </Button>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="category">Bylaw Category</Label>
           <Select value={category} onValueChange={setCategory}>
@@ -439,7 +488,7 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Categories</SelectItem>
-              {CATEGORIES.map(category => (
+              {CATEGORIES.map((category) => (
                 <SelectItem key={category.value} value={category.value}>
                   {category.label}
                 </SelectItem>
@@ -447,38 +496,38 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="bylawNumber">Bylaw Number</Label>
           <Input
             id="bylawNumber"
             placeholder="e.g. 4620"
             value={bylawNumber}
-            onChange={e => setBylawNumber(e.target.value)}
+            onChange={(e) => setBylawNumber(e.target.value)}
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="dateFrom">From Date</Label>
           <Input
             id="dateFrom"
             type="date"
             value={dateFrom}
-            onChange={e => setDateFrom(e.target.value)}
+            onChange={(e) => setDateFrom(e.target.value)}
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="dateTo">To Date</Label>
           <Input
             id="dateTo"
             type="date"
             value={dateTo}
-            onChange={e => setDateTo(e.target.value)}
+            onChange={(e) => setDateTo(e.target.value)}
           />
         </div>
       </div>
-      
+
       <Button onClick={handleApplyFilters} className="w-full">
         Apply Filters
       </Button>
@@ -492,11 +541,13 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
 ### Caching Implementation
 
 1. **Implement Redis caching for search results**
+
    - Set up Redis client
    - Cache frequent search results with expiration
    - Use query fingerprinting for cache keys
 
 2. **Edge Caching**
+
    - Configure Next.js ISR where appropriate
    - Set up proper cache headers
    - Implement stale-while-revalidate
@@ -511,11 +562,13 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
 ### Application Monitoring
 
 1. **Sentry Integration**
+
    - Set up error tracking and performance monitoring
    - Configure custom context for bylaw-specific errors
    - Implement release tracking with source maps
 
 2. **Search Analytics Dashboard**
+
    - Track popular searches and bylaw references
    - Monitor search effectiveness and refinements
    - Analyze user interaction patterns
@@ -530,6 +583,7 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
 ### Bylaw Update Pipeline
 
 1. **Scheduled Updates**
+
    - Set up GitHub Actions workflow for regular updates
    - Create incremental update process
    - Validate bylaw data integrity
@@ -544,11 +598,13 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
 ### Production Environment
 
 1. **Vercel Deployment**
+
    - Configure Vercel for production deployment
    - Set up preview environments for testing
    - Implement environment-specific configurations
 
 2. **Database Configuration**
+
    - Set up proper Postgres pooling
    - Configure connection limits
    - Implement database migrations
@@ -560,14 +616,14 @@ export function BylawSearchFilters({ onApplyFilters }: BylawSearchFiltersProps) 
 
 ## 10. Implementation Timeline
 
-| Phase | Duration | Tasks |
-|-------|----------|-------|
-| 1 | Week 1 | Set up infrastructure, configure Pinecone |
-| 2 | Week 2 | Implement PDF processing pipeline |
-| 3 | Week 3 | Build vector search API and Claude integration |
-| 4 | Week 4 | Enhance UI components and implement caching |
-| 5 | Week 5 | Set up monitoring and analytics |
-| 6 | Week 6 | Testing, optimization, and deployment |
+| Phase | Duration | Tasks                                          |
+| ----- | -------- | ---------------------------------------------- |
+| 1     | Week 1   | Set up infrastructure, configure Pinecone      |
+| 2     | Week 2   | Implement PDF processing pipeline              |
+| 3     | Week 3   | Build vector search API and Claude integration |
+| 4     | Week 4   | Enhance UI components and implement caching    |
+| 5     | Week 5   | Set up monitoring and analytics                |
+| 6     | Week 6   | Testing, optimization, and deployment          |
 
 ## 11. Success Metrics
 

@@ -18,7 +18,7 @@ const runMigrate = async () => {
   console.log('⏳ Running migrations...');
 
   const start = Date.now();
-  
+
   try {
     await migrate(db, { migrationsFolder: './lib/db/migrations' });
     const end = Date.now();

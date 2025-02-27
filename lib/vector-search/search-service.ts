@@ -1,12 +1,16 @@
 /**
  * Bylaw Vector Search Service
- * 
+ *
  * This module provides functionality for searching bylaws using vector similarity.
  */
 
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { getPineconeIndex } from './pinecone-client';
-import type { BylawSearchOptions, BylawSearchResult, BylawSearchFilters } from './types';
+import type {
+  BylawSearchOptions,
+  BylawSearchResult,
+  BylawSearchFilters,
+} from './types';
 
 /**
  * Initialize the OpenAI embeddings model
@@ -23,21 +27,23 @@ function getEmbeddingsModel() {
  */
 export async function searchBylaws(
   query: string,
-  options: BylawSearchOptions = {}
+  options: BylawSearchOptions = {},
 ): Promise<BylawSearchResult[]> {
   try {
     // Get embeddings model
     const embeddings = getEmbeddingsModel();
-    
+
     // Generate embedding for query
     const queryEmbedding = await embeddings.embedQuery(query);
-    
+
     // Get Pinecone index
     const index = getPineconeIndex();
-    
+
     // Build filter if provided
-    const filter = options.filters ? buildPineconeFilter(options.filters) : undefined;
-    
+    const filter = options.filters
+      ? buildPineconeFilter(options.filters)
+      : undefined;
+
     // Search Pinecone
     const searchResults = await index.query({
       vector: queryEmbedding,
@@ -45,15 +51,17 @@ export async function searchBylaws(
       includeMetadata: true,
       filter,
     });
-    
+
     // Apply minimum score filter if provided
     let results = searchResults.matches || [];
     if (options.minScore !== undefined) {
-      results = results.filter(match => (match.score || 0) >= options.minScore!);
+      results = results.filter(
+        (match) => (match.score || 0) >= options.minScore!,
+      );
     }
-    
+
     // Format results
-    return results.map(match => ({
+    return results.map((match) => ({
       id: match.id,
       text: match.metadata?.text as string,
       metadata: match.metadata as any,
@@ -69,15 +77,15 @@ export async function searchBylaws(
  * Filter bylaws by metadata fields
  */
 export async function filterBylaws(
-  filters: BylawSearchFilters
+  filters: BylawSearchFilters,
 ): Promise<BylawSearchResult[]> {
   try {
     // Get Pinecone index
     const index = getPineconeIndex();
-    
+
     // Build filter
     const filter = buildPineconeFilter(filters);
-    
+
     // Search Pinecone with filter only
     const searchResults = await index.query({
       vector: [], // Empty vector for metadata-only filtering
@@ -85,9 +93,9 @@ export async function filterBylaws(
       includeMetadata: true,
       filter,
     });
-    
+
     // Format results
-    return (searchResults.matches || []).map(match => ({
+    return (searchResults.matches || []).map((match) => ({
       id: match.id,
       text: match.metadata?.text as string,
       metadata: match.metadata as any,
@@ -104,63 +112,63 @@ export async function filterBylaws(
  */
 function buildPineconeFilter(filters: Record<string, any>) {
   const filterConditions: any[] = [];
-  
+
   // Process each filter field
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') {
       return;
     }
-    
+
     switch (key) {
       case 'category':
         filterConditions.push({ [key]: { $eq: value } });
         break;
-        
+
       case 'bylawNumber':
         filterConditions.push({ bylawNumber: { $eq: value } });
         break;
-        
+
       case 'dateFrom':
         filterConditions.push({ dateEnacted: { $gte: value } });
         break;
-        
+
       case 'dateTo':
         filterConditions.push({ dateEnacted: { $lte: value } });
         break;
-        
+
       // Add more filter types as needed
-      
+
       default:
         if (typeof value === 'string') {
           filterConditions.push({ [key]: { $eq: value } });
         }
     }
   });
-  
+
   // If we have multiple conditions, combine with $and
-  return filterConditions.length > 0
-    ? { $and: filterConditions }
-    : undefined;
+  return filterConditions.length > 0 ? { $and: filterConditions } : undefined;
 }
 
 /**
  * Get a bylaw document by ID
  */
-export async function getBylawById(id: string): Promise<BylawSearchResult | null> {
+export async function getBylawById(
+  id: string,
+): Promise<BylawSearchResult | null> {
   try {
     // Get Pinecone index
     const index = getPineconeIndex();
-    
+
     // Fetch vector by ID
     const result = await index.fetch([id]);
-    
+
     // If no result, return null
     if (!result.records || !result.records[id]) {
       return null;
     }
-    
+
     const record = result.records[id];
-    
+
     // Format result
     return {
       id,

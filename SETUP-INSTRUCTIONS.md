@@ -39,6 +39,7 @@ vercel env pull .env.local
 ## 3. Index Your Bylaws
 
 ### Prepare Your Bylaws
+
 1. Organize your PDF files in `C:\Users\jesse\OneDrive\Documents\ob_bylaws`
 2. Make sure file names contain the bylaw number if possible (e.g., `bylaw-4620-tree-protection.pdf`)
 
@@ -55,6 +56,7 @@ pnpm tsx scripts/index-bylaws.ts "/path/to/bylaws"
 ```
 
 The script will:
+
 - Process each PDF file
 - Extract text and metadata
 - Generate embeddings
@@ -82,13 +84,16 @@ Or set up continuous deployment from your GitHub repository.
 ## Troubleshooting
 
 ### Invalid API Key
+
 - Verify your API keys in Vercel and .env.local
 - Ensure OPENAI_API_KEY has proper permissions
 
 ### Index Not Found
+
 - Check that your Pinecone index is correctly created and initialized
 - Verify PINECONE_INDEX matches the name of your index
 
 ### PDF Processing Issues
+
 - Make sure PDF files are not corrupted
 - Try with a smaller subset of PDFs to identify problematic files

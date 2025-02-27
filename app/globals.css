@@ -3,227 +3,227 @@
 @tailwind utilities;
 
 :root {
-    --foreground-rgb: 0, 0, 0;
-    --background-start-rgb: 214, 219, 220;
-    --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        --foreground-rgb: 255, 255, 255;
-        --background-start-rgb: 0, 0, 0;
-        --background-end-rgb: 0, 0, 0;
-    }
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
 }
 
 @layer utilities {
-    .text-balance {
-        text-wrap: balance;
-    }
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 
 @layer base {
-    :root {
-        /* Main brand color - indigo */
-        --brand: 226 70% 55%;
-        
-        /* Neutral colors - slate for better readability */
-        --background: 0 0% 100%;
-        --foreground: 222 47% 11%;
-        
-        /* Surface components */
-        --card: 0 0% 100%;
-        --card-foreground: 222 47% 11%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 222 47% 11%;
-        
-        /* Primary action color */
-        --primary: 226 70% 55%;
-        --primary-foreground: 0 0% 100%;
-        
-        /* Secondary action color */
-        --secondary: 220 14% 96%;
-        --secondary-foreground: 222 47% 11%;
-        
-        /* Supporting colors */
-        --muted: 220 14% 96%;
-        --muted-foreground: 220 9% 46%;
-        --accent: 213 94% 68%;
-        --accent-foreground: 0 0% 100%;
-        
-        /* Feedback colors */
-        --success: 142 76% 36%;
-        --success-foreground: 0 0% 100%;
-        --warning: 38 92% 50%;
-        --warning-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 100%;
-        
-        /* UI elements */
-        --border: 220 13% 91%;
-        --input: 220 13% 91%;
-        --ring: 226 70% 55%;
-        
-        /* Chart colors - more vibrant and distinct */
-        --chart-1: 226 70% 55%;
-        --chart-2: 162 94% 30%;
-        --chart-3: 291 64% 42%;
-        --chart-4: 326 100% 54%;
-        --chart-5: 32 94% 54%;
-        
-        /* Border radius */
-        --radius: 0.5rem;
-        
-        /* Sidebar styling */
-        --sidebar-background: 220 33% 98%;
-        --sidebar-foreground: 222 47% 11%;
-        --sidebar-primary: 226 70% 55%;
-        --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 214 100% 77%;
-        --sidebar-accent-foreground: 226 70% 55%;
-        --sidebar-border: 220 13% 91%;
-        --sidebar-ring: 226 70% 55%;
-    }
-    
-    .dark {
-        /* Main brand color stays consistent */
-        --brand: 226 70% 55%; 
-        
-        /* Dark mode background using deep blues instead of grays */
-        --background: 222 47% 11%;
-        --foreground: 210 40% 98%;
-        
-        /* Surface components */
-        --card: 222 47% 11%;
-        --card-foreground: 210 40% 98%;
-        --popover: 222 47% 11%;
-        --popover-foreground: 210 40% 98%;
-        
-        /* Primary action color - brighter in dark mode */
-        --primary: 213 94% 68%;
-        --primary-foreground: 222 47% 11%;
-        
-        /* Secondary action color */
-        --secondary: 217 33% 17%;
-        --secondary-foreground: 210 40% 98%;
-        
-        /* Supporting colors */
-        --muted: 217 33% 17%;
-        --muted-foreground: 215 20% 65%;
-        --accent: 226 70% 55%;
-        --accent-foreground: 210 40% 98%;
-        
-        /* Feedback colors - adjusted for dark mode */
-        --success: 142 69% 42%;
-        --success-foreground: 210 40% 98%;
-        --warning: 36 100% 65%;
-        --warning-foreground: 222 47% 11%;
-        --destructive: 0 74% 57%;
-        --destructive-foreground: 210 40% 98%;
-        
-        /* UI elements */
-        --border: 217 33% 17%;
-        --input: 217 33% 17%;
-        --ring: 213 94% 68%;
-        
-        /* Chart colors - adjusted for dark mode */
-        --chart-1: 213 94% 68%;
-        --chart-2: 162 94% 39%;
-        --chart-3: 291 70% 58%;
-        --chart-4: 326 100% 74%;
-        --chart-5: 32 94% 70%;
-        
-        /* Sidebar styling */
-        --sidebar-background: 225 32% 15%;
-        --sidebar-foreground: 210 40% 98%;
-        --sidebar-primary: 213 94% 68%;
-        --sidebar-primary-foreground: 222 47% 11%;
-        --sidebar-accent: 217 33% 17%;
-        --sidebar-accent-foreground: 210 40% 98%;
-        --sidebar-border: 216 34% 20%;
-        --sidebar-ring: 213 94% 68%;
-    }
+  :root {
+    /* Main brand color - indigo */
+    --brand: 226 70% 55%;
+
+    /* Neutral colors - slate for better readability */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    /* Surface components */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Primary action color */
+    --primary: 226 70% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary action color */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    /* Supporting colors */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Feedback colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* UI elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 226 70% 55%;
+
+    /* Chart colors - more vibrant and distinct */
+    --chart-1: 226 70% 55%;
+    --chart-2: 162 94% 30%;
+    --chart-3: 291 64% 42%;
+    --chart-4: 326 100% 54%;
+    --chart-5: 32 94% 54%;
+
+    /* Border radius */
+    --radius: 0.5rem;
+
+    /* Sidebar styling */
+    --sidebar-background: 220 33% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 226 70% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 100% 77%;
+    --sidebar-accent-foreground: 226 70% 55%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 226 70% 55%;
+  }
+
+  .dark {
+    /* Main brand color stays consistent */
+    --brand: 226 70% 55%;
+
+    /* Dark mode background using deep blues instead of grays */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    /* Surface components */
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Primary action color - brighter in dark mode */
+    --primary: 213 94% 68%;
+    --primary-foreground: 222 47% 11%;
+
+    /* Secondary action color */
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Supporting colors */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 226 70% 55%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Feedback colors - adjusted for dark mode */
+    --success: 142 69% 42%;
+    --success-foreground: 210 40% 98%;
+    --warning: 36 100% 65%;
+    --warning-foreground: 222 47% 11%;
+    --destructive: 0 74% 57%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* UI elements */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 213 94% 68%;
+
+    /* Chart colors - adjusted for dark mode */
+    --chart-1: 213 94% 68%;
+    --chart-2: 162 94% 39%;
+    --chart-3: 291 70% 58%;
+    --chart-4: 326 100% 74%;
+    --chart-5: 32 94% 70%;
+
+    /* Sidebar styling */
+    --sidebar-background: 225 32% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 213 94% 68%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 216 34% 20%;
+    --sidebar-ring: 213 94% 68%;
+  }
 }
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 
-    body {
-        @apply bg-background text-foreground;
-    }
+  body {
+    @apply bg-background text-foreground;
+  }
 
-    @font-face {
-        font-family: "geist";
-        font-style: normal;
-        font-weight: 100 900;
-        src: url(/fonts/geist.woff2) format("woff2");
-    }
+  @font-face {
+    font-family: 'geist';
+    font-style: normal;
+    font-weight: 100 900;
+    src: url(/fonts/geist.woff2) format('woff2');
+  }
 
-    @font-face {
-        font-family: "geist-mono";
-        font-style: normal;
-        font-weight: 100 900;
-        src: url(/fonts/geist-mono.woff2) format("woff2");
-    }
+  @font-face {
+    font-family: 'geist-mono';
+    font-style: normal;
+    font-weight: 100 900;
+    src: url(/fonts/geist-mono.woff2) format('woff2');
+  }
 }
 
 .skeleton {
-    * {
-        pointer-events: none !important;
-    }
+  * {
+    pointer-events: none !important;
+  }
 
-    *[class^="text-"] {
-        color: transparent;
-        @apply rounded-md bg-foreground/20 select-none animate-pulse;
-    }
+  *[class^='text-'] {
+    color: transparent;
+    @apply animate-pulse select-none rounded-md bg-foreground/20;
+  }
 
-    .skeleton-bg {
-        @apply bg-foreground/10;
-    }
+  .skeleton-bg {
+    @apply bg-foreground/10;
+  }
 
-    .skeleton-div {
-        @apply bg-foreground/20 animate-pulse;
-    }
+  .skeleton-div {
+    @apply animate-pulse bg-foreground/20;
+  }
 }
 
 .ProseMirror {
-    outline: none;
+  outline: none;
 }
 
 .cm-editor,
 .cm-gutters {
-    @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
+  @apply bg-background outline-none selection:bg-zinc-900 dark:bg-zinc-800 !important;
 }
 
 .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
-    @apply bg-zinc-200 dark:bg-zinc-900 !important;
+  @apply bg-zinc-200 dark:bg-zinc-900 !important;
 }
 
 .cm-activeLine,
 .cm-activeLineGutter {
-    @apply bg-transparent !important;
+  @apply bg-transparent !important;
 }
 
 .cm-activeLine {
-    @apply rounded-r-sm !important;
+  @apply rounded-r-sm !important;
 }
 
 .cm-lineNumbers {
-    @apply min-w-7;
+  @apply min-w-7;
 }
 
 .cm-foldGutter {
-    @apply min-w-3;
+  @apply min-w-3;
 }
 
 .cm-lineNumbers .cm-activeLineGutter {
-    @apply rounded-l-sm !important;
+  @apply rounded-l-sm !important;
 }
 
 .suggestion-highlight {
-    @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
+  @apply bg-blue-200 hover:bg-blue-300 dark:bg-blue-500/40 dark:text-blue-50 dark:hover:bg-blue-400/50;
 }

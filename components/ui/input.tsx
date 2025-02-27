@@ -40,26 +40,34 @@ const inputVariants = cva(
       state: 'default',
       withIcon: 'default',
     },
-  }
+  },
 );
 
-export interface InputProps 
-  extends React.InputHTMLAttributes<HTMLInputElement>, 
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof inputVariants> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
-const InputWrapper = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('relative', className)} {...props} />
-  )
-);
+const InputWrapper = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn('relative', className)} {...props} />
+));
 InputWrapper.displayName = 'InputWrapper';
 
-const InputIcon = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div 
-    className={cn('absolute top-0 bottom-0 flex items-center justify-center text-muted-foreground', className)} 
+const InputIcon = ({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      'absolute bottom-0 top-0 flex items-center justify-center text-muted-foreground',
+      className,
+    )}
     {...props}
   >
     {children}
@@ -68,33 +76,45 @@ const InputIcon = ({ className, children, ...props }: React.HTMLAttributes<HTMLD
 InputIcon.displayName = 'InputIcon';
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, size, variant, state, withIcon, leftIcon, rightIcon, ...props }, ref) => {
+  (
+    {
+      className,
+      type,
+      size,
+      variant,
+      state,
+      withIcon,
+      leftIcon,
+      rightIcon,
+      ...props
+    },
+    ref,
+  ) => {
     const hasLeftIcon = !!leftIcon;
     const hasRightIcon = !!rightIcon;
-    const iconSetting = hasLeftIcon && hasRightIcon 
-      ? 'both' 
-      : hasLeftIcon 
-        ? 'left' 
-        : hasRightIcon 
-          ? 'right' 
-          : 'default';
+    const iconSetting =
+      hasLeftIcon && hasRightIcon
+        ? 'both'
+        : hasLeftIcon
+          ? 'left'
+          : hasRightIcon
+            ? 'right'
+            : 'default';
 
     if (hasLeftIcon || hasRightIcon) {
       return (
         <InputWrapper className={className}>
-          {hasLeftIcon && (
-            <InputIcon className="left-3">{leftIcon}</InputIcon>
-          )}
+          {hasLeftIcon && <InputIcon className="left-3">{leftIcon}</InputIcon>}
           <input
             type={type}
             className={cn(
-              inputVariants({ 
-                size, 
-                variant, 
-                state, 
-                withIcon: iconSetting, 
-                className: "relative"
-              })
+              inputVariants({
+                size,
+                variant,
+                state,
+                withIcon: iconSetting,
+                className: 'relative',
+              }),
             )}
             ref={ref}
             {...props}
@@ -109,9 +129,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <input
         type={type}
-        className={cn(
-          inputVariants({ size, variant, state, className })
-        )}
+        className={cn(inputVariants({ size, variant, state, className }))}
         ref={ref}
         {...props}
       />

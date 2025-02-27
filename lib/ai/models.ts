@@ -6,23 +6,21 @@ import {
   wrapLanguageModel,
 } from 'ai';
 
-export const DEFAULT_CHAT_MODEL: string = 'chat-model-bylaws';
+export const DEFAULT_CHAT_MODEL: string = 'bylaw-search';
 
 export const myProvider = customProvider({
   languageModels: {
-    'chat-model-small': openai('gpt-4o-mini'),
-    'chat-model-large': openai('gpt-4o'),
-    'chat-model-bylaws': openai('gpt-4o'),
-    'chat-model-reasoning': wrapLanguageModel({
+    'bylaw-search': openai('gpt-4o'),
+    'bylaw-expert': openai('gpt-4o'),
+    'bylaw-interpreter': wrapLanguageModel({
       model: fireworks('accounts/fireworks/models/deepseek-r1'),
       middleware: extractReasoningMiddleware({ tagName: 'think' }),
     }),
-    'title-model': openai('gpt-4-turbo'),
-    'artifact-model': openai('gpt-4o-mini'),
+    'document-model': openai('gpt-4-turbo'),
+    'general-assistant': openai('gpt-4o-mini'),
   },
   imageModels: {
-    'small-model': openai.image('dall-e-2'),
-    'large-model': openai.image('dall-e-3'),
+    'document-image': openai.image('dall-e-3'),
   },
 });
 
@@ -34,23 +32,23 @@ interface ChatModel {
 
 export const chatModels: Array<ChatModel> = [
   {
-    id: 'chat-model-bylaws',
-    name: 'Oak Bay Bylaws Assistant',
+    id: 'bylaw-search',
+    name: 'Bylaw Search',
     description: 'Specialized for Oak Bay municipal bylaw inquiries',
   },
   {
-    id: 'chat-model-small',
-    name: 'Small model',
-    description: 'Small model for fast, lightweight tasks',
+    id: 'bylaw-expert',
+    name: 'Bylaw Expert',
+    description: 'Advanced interpretation of complex municipal regulations',
   },
   {
-    id: 'chat-model-large',
-    name: 'Large model',
-    description: 'Large model for complex, multi-step tasks',
+    id: 'bylaw-interpreter',
+    name: 'Bylaw Interpreter',
+    description: 'Detailed reasoning for bylaw interpretation questions',
   },
   {
-    id: 'chat-model-reasoning',
-    name: 'Reasoning model',
-    description: 'Uses advanced reasoning',
+    id: 'general-assistant',
+    name: 'General Assistant',
+    description: 'Fast, general-purpose municipal information',
   },
 ];

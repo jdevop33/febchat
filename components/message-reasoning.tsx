@@ -34,14 +34,14 @@ export function MessageReasoning({
   return (
     <div className="flex flex-col">
       {isLoading ? (
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row items-center gap-2">
           <div className="font-medium">Reasoning</div>
           <div className="animate-spin">
             <LoaderIcon />
           </div>
         </div>
       ) : (
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row items-center gap-2">
           <div className="font-medium">Reasoned for a few seconds</div>
           <div
             className="cursor-pointer"
@@ -64,7 +64,7 @@ export function MessageReasoning({
             variants={variants}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
-            className="pl-4 text-zinc-600 dark:text-zinc-400 border-l flex flex-col gap-4"
+            className="flex flex-col gap-4 border-l pl-4 text-zinc-600 dark:text-zinc-400"
           >
             <Markdown>{reasoning}</Markdown>
           </motion.div>

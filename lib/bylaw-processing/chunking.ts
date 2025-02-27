@@ -1,6 +1,6 @@
 /**
  * Chunking strategies for bylaw texts
- * 
+ *
  * This module provides functions for chunking bylaw texts into
  * appropriate segments for embedding and retrieval.
  */
@@ -24,30 +24,31 @@ export function chunkBySection(
   options: {
     minLength?: number;
     maxLength?: number;
-  } = {}
+  } = {},
 ): DocumentChunk[] {
   const chunks: DocumentChunk[] = [];
   const minLength = options.minLength || 50;
   const maxLength = options.maxLength || 1000;
 
   // Pattern to match section numbers like "1.", "1.1", "1.1.1"
-  const sectionPattern = /(?:^|\n)(\d+(?:\.\d+)*)\s+(.*?)(?=(?:\n\d+(?:\.\d+)*\s+)|$)/gs;
-  
+  const sectionPattern =
+    /(?:^|\n)(\d+(?:\.\d+)*)\s+(.*?)(?=(?:\n\d+(?:\.\d+)*\s+)|$)/gs;
+
   let match;
   while ((match = sectionPattern.exec(text)) !== null) {
     const sectionNumber = match[1];
     const sectionText = match[2].trim();
-    
+
     if (sectionText.length < minLength) {
       // Section is too small, may need to combine with next section
       continue;
     }
-    
+
     if (sectionText.length > maxLength) {
       // Section is too large, may need to split further
       const sentences = sectionText.match(/[^.!?]+[.!?]+/g) || [];
       let currentChunk = '';
-      
+
       for (const sentence of sentences) {
         if (currentChunk.length + sentence.length > maxLength) {
           // Add current chunk
@@ -55,25 +56,25 @@ export function chunkBySection(
             text: currentChunk.trim(),
             metadata: {
               ...metadata,
-              section: sectionNumber
-            }
+              section: sectionNumber,
+            },
           });
-          
+
           // Start new chunk
           currentChunk = sentence;
         } else {
           currentChunk += sentence;
         }
       }
-      
+
       // Add remaining text
       if (currentChunk.length > 0) {
         chunks.push({
           text: currentChunk.trim(),
           metadata: {
             ...metadata,
-            section: sectionNumber
-          }
+            section: sectionNumber,
+          },
         });
       }
     } else {
@@ -82,12 +83,12 @@ export function chunkBySection(
         text: sectionText,
         metadata: {
           ...metadata,
-          section: sectionNumber
-        }
+          section: sectionNumber,
+        },
       });
     }
   }
-  
+
   return chunks;
 }
 
@@ -100,25 +101,27 @@ export function chunkBySize(
   options: {
     chunkSize?: number;
     chunkOverlap?: number;
-  } = {}
+  } = {},
 ): DocumentChunk[] {
   const chunks: DocumentChunk[] = [];
   const chunkSize = options.chunkSize || 500;
   const chunkOverlap = options.chunkOverlap || 100;
-  
+
   if (text.length <= chunkSize) {
     // Text is small enough to be a single chunk
-    return [{
-      text,
-      metadata
-    }];
+    return [
+      {
+        text,
+        metadata,
+      },
+    ];
   }
-  
+
   // Split text into sentences
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
   let currentChunk = '';
   let currentPosition = 0;
-  
+
   for (const sentence of sentences) {
     if (currentChunk.length + sentence.length > chunkSize) {
       // Add current chunk
@@ -126,31 +129,33 @@ export function chunkBySize(
         text: currentChunk.trim(),
         metadata: {
           ...metadata,
-          section: metadata.section || `chunk-${currentPosition}`
-        }
+          section: metadata.section || `chunk-${currentPosition}`,
+        },
       });
-      
+
       // Start new chunk with overlap
       const words = currentChunk.split(' ');
-      const overlapWords = words.slice(words.length - Math.floor(chunkOverlap / 5));
+      const overlapWords = words.slice(
+        words.length - Math.floor(chunkOverlap / 5),
+      );
       currentChunk = overlapWords.join(' ') + sentence;
       currentPosition += 1;
     } else {
       currentChunk += sentence;
     }
   }
-  
+
   // Add remaining text
   if (currentChunk.length > 0) {
     chunks.push({
       text: currentChunk.trim(),
       metadata: {
         ...metadata,
-        section: metadata.section || `chunk-${currentPosition}`
-      }
+        section: metadata.section || `chunk-${currentPosition}`,
+      },
     });
   }
-  
+
   return chunks;
 }
 
@@ -159,16 +164,16 @@ export function chunkBySize(
  */
 export function chunkBylawText(
   text: string,
-  metadata: Partial<BylawMetadata>
+  metadata: Partial<BylawMetadata>,
 ): DocumentChunk[] {
   // First try to chunk by sections
   const sectionChunks = chunkBySection(text, metadata);
-  
+
   // If we got enough chunks by section, use those
   if (sectionChunks.length > 0) {
     return sectionChunks;
   }
-  
+
   // Otherwise fall back to size-based chunking
   return chunkBySize(text, metadata);
 }

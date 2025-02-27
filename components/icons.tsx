@@ -901,18 +901,9 @@ export const FileTextIcon = ({ size = 16 }: { size?: number }) => {
       width={size}
       style={{ color: 'currentcolor' }}
     >
-      <path
-        d="M10 5H6V6.5H10V5Z"
-        fill="currentColor"
-      />
-      <path
-        d="M10 8H6V9.5H10V8Z"
-        fill="currentColor"
-      />
-      <path
-        d="M6 11H10V12.5H6V11Z"
-        fill="currentColor"
-      />
+      <path d="M10 5H6V6.5H10V5Z" fill="currentColor" />
+      <path d="M10 8H6V9.5H10V8Z" fill="currentColor" />
+      <path d="M6 11H10V12.5H6V11Z" fill="currentColor" />
       <path
         fillRule="evenodd"
         clipRule="evenodd"

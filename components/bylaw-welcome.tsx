@@ -4,94 +4,163 @@ import { FileTextIcon } from '@/components/icons';
 
 export function BylawWelcome() {
   return (
-    <div className="flex flex-col gap-8 max-w-2xl mx-auto px-4 py-8">
+    <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-8">
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl md:text-3xl font-bold">Oak Bay Municipality Bylaw Assistant</h1>
+        <h1 className="text-2xl font-bold md:text-3xl">
+          Oak Bay Municipality Bylaw Assistant
+        </h1>
         <p className="text-muted-foreground">
-          Ask questions about Oak Bay bylaws and get accurate, helpful information
+          Your AI-powered assistant for municipal bylaw information,
+          interpretation, and guidance
         </p>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border p-4 rounded-lg hover:bg-accent/50 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <FileTextIcon size={20} className="text-blue-500" />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-lg border p-4 transition-colors hover:bg-accent/50">
+          <div className="mb-2 flex items-center gap-2">
+            <FileTextIcon size={20} />
             <h3 className="font-medium">Bylaw Information</h3>
           </div>
           <p className="text-sm text-muted-foreground">
             Get accurate information with proper citations to specific bylaws
           </p>
         </div>
-        
-        <div className="border p-4 rounded-lg hover:bg-accent/50 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
-              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-              <polyline points="14 2 14 8 20 8" />
-              <path d="M16 13H8" />
-              <path d="M16 17H8" />
-              <path d="M10 9H8" />
+
+        <div className="rounded-lg border p-4 transition-colors hover:bg-accent/50">
+          <div className="mb-2 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-blue-500"
+            >
+              <path d="M15 21h-9a3 3 0 0 1-3-3v-1h10v2a2 2 0 0 0 4 0v-10.8a2 2 0 0 1 .586-1.414l2.828-2.828a2 2 0 0 1 1.414-.586h0a2 2 0 0 1 2 2v6.8" />
+              <path d="M6 10h4" />
+              <path d="M6 14h2" />
+              <path d="M13.124 13.12a3 3 0 0 0 2.129-2.1274 2.9834 2.9834 0 0 0-.1-1.19 2.947 2.947 0 0 0-.55-1 3 3 0 1 0-2.123 5.09 2.9965 2.9965 0 0 0 1.9-4 3 3 0 0 0-4.218-1.1554" />
+              <path d="M12 21V11" />
+            </svg>
+            <h3 className="font-medium">Bylaw Interpretation</h3>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Understand complex regulations with clear explanations and context
+          </p>
+        </div>
+
+        <div className="rounded-lg border p-4 transition-colors hover:bg-accent/50">
+          <div className="mb-2 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-blue-500"
+            >
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M7 7h10" />
+              <path d="M7 12h10" />
+              <path d="M7 17h10" />
             </svg>
             <h3 className="font-medium">Document Creation</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Generate summaries, reports, and explanations of bylaws
+            Generate summaries and reports about specific bylaw topics
           </p>
         </div>
-        
-        <div className="border p-4 rounded-lg hover:bg-accent/50 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+
+        <div className="rounded-lg border p-4 transition-colors hover:bg-accent/50">
+          <div className="mb-2 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-blue-500"
+            >
+              <path d="M12 9v4" />
+              <path d="M11 12h2" />
+              <path d="M16 4h4v4" />
+              <path d="M14 10l6-6" />
+              <path d="M8 20H4v-4" />
+              <path d="M4 16l6-6" />
               <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
-            <h3 className="font-medium">Clear Guidance</h3>
+            <h3 className="font-medium">Compliance Guidance</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Explains when you need to contact municipal staff for more assistance
-          </p>
-        </div>
-        
-        <div className="border p-4 rounded-lg hover:bg-accent/50 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-            <h3 className="font-medium">Official Source</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Information directly sourced from official Oak Bay bylaws
+            Learn how to comply with Oak Bay bylaws and regulations
           </p>
         </div>
       </div>
-      
-      <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-900">
-        <div className="flex items-center gap-2 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
-            <path d="M4 5h16v16H4V5z"/>
-            <path d="M16 2v3"/>
-            <path d="M8 2v3"/>
-            <path d="M4 10h16"/>
+
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
+        <div className="mb-2 flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-blue-500"
+          >
+            <path d="M4 5h16v16H4V5z" />
+            <path d="M16 2v3" />
+            <path d="M8 2v3" />
+            <path d="M4 10h16" />
           </svg>
           <h3 className="font-medium">Try asking about:</h3>
         </div>
-        <ul className="text-sm space-y-1.5 ml-7 list-disc text-muted-foreground">
-          <li>&ldquo;What are the regulations for tree removal in Oak Bay?&rdquo;</li>
+        <ul className="ml-7 list-disc space-y-1.5 text-sm text-muted-foreground">
+          <li>
+            &ldquo;What are the regulations for tree removal in Oak Bay?&rdquo;
+          </li>
           <li>&ldquo;What permits do I need for home renovations?&rdquo;</li>
           <li>&ldquo;Can I keep chickens in my backyard in Oak Bay?&rdquo;</li>
           <li>&ldquo;What are the noise restrictions in Oak Bay?&rdquo;</li>
-          <li>&ldquo;What are the parking regulations for RVs in residential areas?&rdquo;</li>
+          <li>
+            &ldquo;What are the parking regulations for RVs in residential
+            areas?&rdquo;
+          </li>
         </ul>
       </div>
-      
+
       <div className="flex justify-center">
         <button
           type="button"
           onClick={() => document.getElementById('chat-input')?.focus()}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2 px-4 rounded-md shadow hover:shadow-md transition-all"
+          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground shadow transition-all hover:bg-primary/90 hover:shadow-md"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           Start Chatting

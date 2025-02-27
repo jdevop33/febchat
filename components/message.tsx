@@ -8,10 +8,7 @@ import { memo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 
 import { DocumentToolCall, DocumentToolResult } from './document';
-import {
-  PencilEditIcon,
-  SparklesIcon,
-} from './icons';
+import { PencilEditIcon, SparklesIcon } from './icons';
 import { Markdown } from './markdown';
 import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
@@ -51,14 +48,14 @@ const PurePreviewMessage = ({
   return (
     <AnimatePresence>
       <motion.div
-        className="w-full mx-auto max-w-3xl px-4 group/message"
+        className="group/message mx-auto w-full max-w-3xl px-4"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
       >
         <div
           className={cn(
-            'flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+            'flex w-full gap-4 group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
             {
               'w-full': mode === 'edit',
               'group-data-[role=user]/message:w-fit': mode !== 'edit',
@@ -66,14 +63,14 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
             </div>
           )}
 
-          <div className="flex flex-col gap-4 w-full">
+          <div className="flex w-full flex-col gap-4">
             {message.experimental_attachments && (
               <div className="flex flex-row justify-end gap-2">
                 {message.experimental_attachments.map((attachment) => (
@@ -93,13 +90,13 @@ const PurePreviewMessage = ({
             )}
 
             {(message.content || message.reasoning) && mode === 'view' && (
-              <div className="flex flex-row gap-2 items-start">
+              <div className="flex flex-row items-start gap-2">
                 {message.role === 'user' && !isReadonly && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="px-2 h-fit rounded-full text-muted-foreground opacity-0 group-hover/message:opacity-100"
+                        className="h-fit rounded-full px-2 text-muted-foreground opacity-0 group-hover/message:opacity-100"
                         onClick={() => {
                           setMode('edit');
                         }}
@@ -113,7 +110,7 @@ const PurePreviewMessage = ({
 
                 <div
                   className={cn('flex flex-col gap-4', {
-                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl':
+                    'rounded-xl bg-primary px-3 py-2 text-primary-foreground':
                       message.role === 'user',
                   })}
                 >
@@ -123,7 +120,7 @@ const PurePreviewMessage = ({
             )}
 
             {message.content && mode === 'edit' && (
-              <div className="flex flex-row gap-2 items-start">
+              <div className="flex flex-row items-start gap-2">
                 <div className="size-8" />
 
                 <MessageEditor
@@ -172,15 +169,26 @@ const PurePreviewMessage = ({
                                 <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                                   Relevant Bylaw Information:
                                 </div>
-                                {result.results.map((bylawInfo, index) => (
-                                  <BylawCitation
-                                    key={index}
-                                    bylawNumber={bylawInfo.bylawNumber}
-                                    section={bylawInfo.section}
-                                    title={bylawInfo.title}
-                                    excerpt={bylawInfo.content}
-                                  />
-                                ))}
+                                {result.results &&
+                                  result.results.map(
+                                    (
+                                      bylawInfo: {
+                                        bylawNumber: string;
+                                        title?: string;
+                                        section: string;
+                                        content: string;
+                                      },
+                                      index: number,
+                                    ) => (
+                                      <BylawCitation
+                                        key={index}
+                                        bylawNumber={bylawInfo.bylawNumber}
+                                        section={bylawInfo.section}
+                                        title={bylawInfo.title}
+                                        excerpt={bylawInfo.content}
+                                      />
+                                    ),
+                                  )}
                               </>
                             ) : (
                               <div className="text-sm italic text-muted-foreground">
@@ -265,24 +273,24 @@ export const ThinkingMessage = () => {
 
   return (
     <motion.div
-      className="w-full mx-auto max-w-3xl px-4 group/message "
+      className="group/message mx-auto w-full max-w-3xl px-4"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
       data-role={role}
     >
       <div
         className={cx(
-          'flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl',
+          'flex w-full gap-4 rounded-xl group-data-[role=user]/message:ml-auto group-data-[role=user]/message:w-fit group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:px-3 group-data-[role=user]/message:py-2',
           {
             'group-data-[role=user]/message:bg-muted': true,
           },
         )}
       >
-        <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-full ring-1 ring-border">
           <SparklesIcon size={14} />
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
+        <div className="flex w-full flex-col gap-2">
           <div className="flex flex-col gap-4 text-muted-foreground">
             Thinking...
           </div>

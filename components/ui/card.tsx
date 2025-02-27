@@ -29,10 +29,10 @@ const cardVariants = cva(
       padding: 'default',
       hover: 'default',
     },
-  }
+  },
 );
 
-export interface CardProps 
+export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {}
 
@@ -43,7 +43,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       className={cn(cardVariants({ variant, padding, hover, className }))}
       {...props}
     />
-  )
+  ),
 );
 Card.displayName = 'Card';
 
@@ -80,7 +80,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-sm text-muted-foreground mt-1.5', className)}
+    className={cn('mt-1.5 text-sm text-muted-foreground', className)}
     {...props}
   />
 ));

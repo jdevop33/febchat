@@ -38,7 +38,9 @@ export async function POST(request: Request) {
     }: { id: string; messages: Array<Message>; selectedChatModel: string } =
       await request.json();
 
-    console.log(`Chat request received - ID: ${id}, Model: ${selectedChatModel}`);
+    console.log(
+      `Chat request received - ID: ${id}, Model: ${selectedChatModel}`,
+    );
     console.log(`Message count: ${messages.length}`);
 
     const session = await auth();
@@ -61,7 +63,9 @@ export async function POST(request: Request) {
 
     if (!chat) {
       console.log(`Creating new chat with ID: ${id}`);
-      const title = await generateTitleFromUserMessage({ message: userMessage });
+      const title = await generateTitleFromUserMessage({
+        message: userMessage,
+      });
       await saveChat({ id, userId: session.user.id, title });
     } else {
       console.log(`Using existing chat with ID: ${id}`);
@@ -71,91 +75,100 @@ export async function POST(request: Request) {
       messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
     });
 
-  return createDataStreamResponse({
-    execute: (dataStream) => {
-      console.log(`Starting AI stream for model: ${selectedChatModel}`);
-      
-      // Determine which tools to activate based on the model
-      const activeTool = 
-        selectedChatModel === 'chat-model-reasoning'
-          ? []
-          : selectedChatModel === 'chat-model-bylaws'
-          ? [
-              'searchBylaws',
-              'createDocument',
-            ]
-          : [
-              'getWeather',
-              'createDocument',
-              'updateDocument',
-              'requestSuggestions',
-            ];
-      
-      console.log(`Active tools: ${activeTool.join(', ')}`);
-      
-      const result = streamText({
-        model: myProvider.languageModel(selectedChatModel),
-        system: systemPrompt({ selectedChatModel }),
-        messages,
-        maxSteps: 5,
-        experimental_activeTools: activeTool,
-        experimental_transform: smoothStream({ chunking: 'word' }),
-        experimental_generateMessageId: generateUUID,
-        tools: {
-          getWeather,
-          searchBylaws: searchBylawsTool,
-          createDocument: createDocument({ session, dataStream }),
-          updateDocument: updateDocument({ session, dataStream }),
-          requestSuggestions: requestSuggestions({
-            session,
-            dataStream,
-          }),
-        },
-        onFinish: async ({ response, reasoning }) => {
-          console.log('AI response complete, saving to database');
-          
-          if (session.user?.id) {
-            try {
-              const sanitizedResponseMessages = sanitizeResponseMessages({
-                messages: response.messages,
-                reasoning,
-              });
+    return createDataStreamResponse({
+      execute: (dataStream) => {
+        console.log(`Starting AI stream for model: ${selectedChatModel}`);
 
-              await saveMessages({
-                messages: sanitizedResponseMessages.map((message) => {
-                  return {
-                    id: message.id,
-                    chatId: id,
-                    role: message.role,
-                    content: message.content,
-                    createdAt: new Date(),
-                  };
-                }),
-              });
-              console.log('Chat messages saved successfully');
-            } catch (error) {
-              console.error('Failed to save chat messages:', error);
+        // Determine which tools to activate based on the model
+        let activeTool: Array<
+          | 'searchBylaws'
+          | 'createDocument'
+          | 'getWeather'
+          | 'updateDocument'
+          | 'requestSuggestions'
+        >;
+
+        if (selectedChatModel === 'bylaw-interpreter') {
+          activeTool = ['searchBylaws', 'createDocument'];
+        } else if (
+          selectedChatModel === 'bylaw-search' ||
+          selectedChatModel === 'bylaw-expert'
+        ) {
+          activeTool = ['searchBylaws', 'createDocument'];
+        } else {
+          activeTool = [
+            'getWeather',
+            'createDocument',
+            'updateDocument',
+            'requestSuggestions',
+          ];
+        }
+
+        console.log(`Active tools: ${activeTool.join(', ')}`);
+
+        const result = streamText({
+          model: myProvider.languageModel(selectedChatModel),
+          system: systemPrompt({ selectedChatModel }),
+          messages,
+          maxSteps: 5,
+          experimental_activeTools: activeTool,
+          experimental_transform: smoothStream({ chunking: 'word' }),
+          experimental_generateMessageId: generateUUID,
+          tools: {
+            getWeather,
+            searchBylaws: searchBylawsTool,
+            createDocument: createDocument({ session, dataStream }),
+            updateDocument: updateDocument({ session, dataStream }),
+            requestSuggestions: requestSuggestions({
+              session,
+              dataStream,
+            }),
+          },
+          onFinish: async ({ response, reasoning }) => {
+            console.log('AI response complete, saving to database');
+
+            if (session.user?.id) {
+              try {
+                const sanitizedResponseMessages = sanitizeResponseMessages({
+                  messages: response.messages,
+                  reasoning,
+                });
+
+                await saveMessages({
+                  messages: sanitizedResponseMessages.map((message) => {
+                    return {
+                      id: message.id,
+                      chatId: id,
+                      role: message.role,
+                      content: message.content,
+                      createdAt: new Date(),
+                    };
+                  }),
+                });
+                console.log('Chat messages saved successfully');
+              } catch (error) {
+                console.error('Failed to save chat messages:', error);
+              }
             }
-          }
-        },
-        experimental_telemetry: {
-          isEnabled: true,
-          functionId: 'stream-text',
-        },
-      });
+          },
+          experimental_telemetry: {
+            isEnabled: true,
+            functionId: 'stream-text',
+          },
+        });
 
-      result.consumeStream();
-      
-      console.log('Merging AI response into data stream');
-      result.mergeIntoDataStream(dataStream, {
-        sendReasoning: true,
-      });
-    },
-    onError: (error) => {
-      console.error('Error in chat stream:', error);
-      return 'Oops, an error occurred! Please try again.';
-    },
-  });
+        result.consumeStream();
+
+        console.log('Merging AI response into data stream');
+        result.mergeIntoDataStream(dataStream, {
+          sendReasoning: true,
+        });
+      },
+      onError: (error) => {
+        console.error('Error in chat stream:', error);
+        return 'Oops, an error occurred! Please try again.';
+      },
+    });
   } catch (error) {
     console.error('Unexpected error in chat API:', error);
     return new Response('An unexpected error occurred', { status: 500 });

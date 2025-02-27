@@ -14,42 +14,51 @@ if (!apiKey) {
 async function main() {
   // Initialize Anthropic client
   const client = new Anthropic({ apiKey });
-  
+
   // Print available methods
   console.log('Client methods:');
   console.log(Object.keys(client));
   console.log('\nClient prototype methods:');
   console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(client)));
-  
+
   try {
     // Test a simple embedding
     console.log('\nTrying to create embedding...');
-    
+
     // Explore beta methods
     console.log('Beta methods:');
     console.log(Object.keys(client.beta));
-    
+
     if (client.beta?.embeddings) {
       console.log('Using client.beta.embeddings');
       const response = await client.beta.embeddings.create({
         model: 'claude-3-haiku-20240307',
         input: 'Hello world',
       });
-      console.log('Success! First 5 embedding values:', response.embedding.slice(0, 5));
+      console.log(
+        'Success! First 5 embedding values:',
+        response.embedding.slice(0, 5),
+      );
     } else if (typeof client.embeddings === 'function') {
       console.log('Using client.embeddings()');
       const response = await client.embeddings({
         model: 'claude-3-haiku-20240307',
         input: 'Hello world',
       });
-      console.log('Success! First 5 embedding values:', response.embedding.slice(0, 5));
+      console.log(
+        'Success! First 5 embedding values:',
+        response.embedding.slice(0, 5),
+      );
     } else if (client.embeddings) {
       console.log('Using client.embeddings.create()');
       const response = await client.embeddings.create({
         model: 'claude-3-haiku-20240307',
         input: 'Hello world',
       });
-      console.log('Success! First 5 embedding values:', response.embedding.slice(0, 5));
+      console.log(
+        'Success! First 5 embedding values:',
+        response.embedding.slice(0, 5),
+      );
     } else {
       console.log('Looking for other embedding methods...');
       for (const key of Object.keys(client)) {

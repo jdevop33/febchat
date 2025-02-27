@@ -1,61 +1,67 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Next.js AI Chatbot</h1>
-</a>
+# Oak Bay Municipal Bylaws Assistant
 
-<p align="center">
-  An Open-Source AI Chatbot Template Built With Next.js and the AI SDK by Vercel.
-</p>
-
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+A specialized AI assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.
 
 ## Features
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports OpenAI (default), Anthropic, Cohere, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Vercel Postgres powered by Neon](https://vercel.com/storage/postgres) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [NextAuth.js](https://github.com/nextauthjs/next-auth)
-  - Simple and secure authentication
+- **Specialized Bylaws AI Model**: Custom-trained model focused on providing accurate bylaw information with proper citations
+- **Vector Search**: Connects to a vector database of bylaw content for accurate information retrieval
+- **Citation Display**: Shows relevant bylaw citations with section numbers and direct quotes
+- **Document Generation**: Creates summary documents of bylaw information
+- **Municipal Hall Integration**: Properly directs users to Oak Bay Municipal Hall when human assistance is needed
 
-## Model Providers
+## Implementation Details
 
-This template ships with OpenAI `gpt-4o` as the default. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+### Frontend Components
 
-## Deploy Your Own
+- **Custom Welcome Page**: Bylaw-specific instructions and examples
+- **Bylaw Citation Component**: Display references with expandable details
+- **Export Functionality**: Save bylaw information as reports
+- **Oak Bay Municipal Branding**: Consistent municipal branding throughout the interface
 
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
+### Backend Integration
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot&env=AUTH_SECRET,OPENAI_API_KEY&envDescription=Learn%20more%20about%20how%20to%20get%20the%20API%20Keys%20for%20the%20application&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fai-chatbot%2Fblob%2Fmain%2F.env.example&demo-title=AI%20Chatbot&demo-description=An%20Open-Source%20AI%20Chatbot%20Template%20Built%20With%20Next.js%20and%20the%20AI%20SDK%20by%20Vercel.&demo-url=https%3A%2F%2Fchat.vercel.ai&stores=[{%22type%22:%22postgres%22},{%22type%22:%22blob%22}])
+- **Bylaw Search Tool**: Custom AI prompt engineering for bylaw-specific responses
+- **Vector Search Integration**: Efficient search across all municipal bylaws
+- **Document Generation**: Create professionally formatted bylaw reports
+- **Context-Aware Responses**: AI maintains context through conversations about bylaws
 
-## Running locally
+### Model Configuration
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+- **Bylaw Search**: Specialized for finding relevant bylaws and sections
+- **Bylaw Expert**: Advanced interpretation for complex regulatory questions
+- **Bylaw Interpreter**: Detailed reasoning for bylaw application scenarios
+- **Citation Formatting**: Consistent bylaw reference formatting
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various OpenAI and authentication provider accounts.
+## Getting Started
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+1. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Ask questions about Oak Bay bylaws!
 
-```bash
-pnpm install
-pnpm dev
-```
+## Examples
 
-Your app template should now be running on [localhost:3000](http://localhost:3000/).
+Try asking:
+
+- "What are the regulations for tree removal in Oak Bay?"
+- "What permits do I need for home renovations?"
+- "Can I keep chickens in my backyard in Oak Bay?"
+- "What are the noise restrictions in Oak Bay?"
+- "What are the parking regulations for RVs in residential areas?"
+
+## Technology Stack
+
+- **Frontend**: Next.js with App Router and React Server Components
+- **UI**: TailwindCSS with shadcn/ui components
+- **Authentication**: NextAuth.js for secure authentication
+- **Database**: Vercel Postgres for chat history and user data
+- **Storage**: Vercel Blob for document storage
+- **AI**: Integration with OpenAI and Anthropic models
+- **Vector Search**: Pinecone for efficient bylaw retrieval
+
+## Deployment
+
+The application is designed to be deployed on Vercel's platform, with environment variables for API keys and database connections.
