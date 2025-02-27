@@ -8,8 +8,6 @@ import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
-
-import { Artifact } from './artifact';
 import { MultimodalInput } from './multimodal-input';
 import { Messages } from './messages';
 import type { VisibilityType } from './visibility-selector';
@@ -65,10 +63,10 @@ export function Chat({
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
-    <>
-      <div className="flex h-dvh min-w-0 flex-col bg-background">
-        <ChatHeader chatId={id} />
+    <div className="flex h-dvh min-w-0 flex-col bg-background">
+      <ChatHeader chatId={id} />
 
+      <div className="flex flex-1 flex-col overflow-hidden h-full">
         <Messages
           chatId={id}
           isLoading={isLoading}
@@ -77,27 +75,29 @@ export function Chat({
           setMessages={setMessages}
           reload={reload}
           isReadonly={isReadonly}
-          isArtifactVisible={false}
+          isArtifactVisible={isArtifactVisible}
         />
 
-        <form className="mx-auto flex w-full gap-2 bg-background px-4 pb-4 md:max-w-3xl md:pb-6">
-          {!isReadonly && (
-            <MultimodalInput
-              chatId={id}
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              stop={stop}
-              attachments={attachments}
-              setAttachments={setAttachments}
-              messages={messages}
-              setMessages={setMessages}
-              append={append}
-            />
-          )}
-        </form>
+        <div className="border-t bg-background">
+          <form className="mx-auto flex w-full max-w-3xl gap-2 p-4">
+            {!isReadonly && (
+              <MultimodalInput
+                chatId={id}
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                setMessages={setMessages}
+                append={append}
+              />
+            )}
+          </form>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

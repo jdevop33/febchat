@@ -6,7 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
+  metadataBase: new URL('https://oakbay.ca'),
   title: 'Oak Bay Bylaws Assistant',
   description:
     'AI-powered assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.',

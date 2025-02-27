@@ -56,19 +56,18 @@ export const AttachmentIcon = () => {
   );
 };
 
-export const VercelIcon = ({ size = 17 }) => {
+export const OakBayIcon = ({ size = 17 }) => {
   return (
     <svg
       height={size}
-      strokeLinejoin="round"
-      viewBox="0 0 16 16"
       width={size}
+      viewBox="0 0 16 16"
       style={{ color: 'currentcolor' }}
     >
       <path
         fillRule="evenodd"
         clipRule="evenodd"
-        d="M8 1L16 15H0L8 1Z"
+        d="M8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1Z"
         fill="currentColor"
       />
     </svg>

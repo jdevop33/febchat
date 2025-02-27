@@ -169,8 +169,7 @@ const PurePreviewMessage = ({
                                 <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                                   Relevant Bylaw Information:
                                 </div>
-                                {result.results &&
-                                  result.results.map(
+                                {result.results?.map(
                                     (
                                       bylawInfo: {
                                         bylawNumber: string;
