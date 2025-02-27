@@ -1,12 +1,12 @@
-import { customProvider } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { createAI } from 'ai';
 
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 
-export const myProvider = customProvider({
-  languageModels: {
-    'oak-bay-bylaws': anthropic('claude-3-7-sonnet-20240229'),
-  },
+export const AI = createAI({
+  provider: anthropic,
+  model: 'claude-3-7-sonnet-20240229',
+  mode: 'chat',
 });
 
 interface ChatModel {

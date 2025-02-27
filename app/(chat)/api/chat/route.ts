@@ -1,12 +1,10 @@
 import {
   type Message,
-  createDataStreamResponse,
-  smoothStream,
-  streamText,
+  StreamingTextResponse,
 } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
-import { myProvider } from '@/lib/ai/models';
+import { AI } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -17,7 +15,6 @@ import {
 import {
   generateUUID,
   getMostRecentUserMessage,
-  sanitizeResponseMessages,
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
@@ -71,71 +68,48 @@ export async function POST(request: Request) {
       messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
     });
 
-    return createDataStreamResponse({
-      execute: (dataStream) => {
-        console.log(`Starting AI stream for model: ${selectedChatModel}`);
+    try {
+      console.log(`Starting AI stream for model: ${selectedChatModel}`);
 
-        // Always activate bylaw search tool
-        const activeTool: ['searchBylaws'] = ['searchBylaws'];
+      // Always activate bylaw search tool
+      console.log(`Using search bylaws tool`);
 
-        console.log(`Active tools: ${activeTool.join(', ')}`);
+      const aiResponse = await AI.chat({
+        model: 'claude-3-7-sonnet-20240229',
+        system: systemPrompt({ selectedChatModel }),
+        messages,
+        tools: {
+          searchBylaws: searchBylawsTool,
+        },
+        temperature: 0.5,
+      });
 
-        const result = streamText({
-          model: myProvider.languageModel(selectedChatModel),
-          system: systemPrompt({ selectedChatModel }),
-          messages,
-          maxSteps: 5,
-          experimental_activeTools: activeTool,
-          experimental_transform: smoothStream({ chunking: 'word' }),
-          experimental_generateMessageId: generateUUID,
-          tools: {
-            searchBylaws: searchBylawsTool,
-          },
-          onFinish: async ({ response, reasoning }) => {
-            console.log('AI response complete, saving to database');
+      console.log('AI response complete, saving to database');
 
-            if (session.user?.id) {
-              try {
-                const sanitizedResponseMessages = sanitizeResponseMessages({
-                  messages: response.messages,
-                  reasoning,
-                });
+      if (session.user?.id) {
+        try {
+          // Save the response message
+          await saveMessages({
+            messages: [{
+              id: generateUUID(),
+              chatId: id,
+              role: 'assistant',
+              content: aiResponse.content,
+              createdAt: new Date(),
+            }],
+          });
+          console.log('Chat message saved successfully');
+        } catch (error) {
+          console.error('Failed to save chat messages:', error);
+        }
+      }
 
-                await saveMessages({
-                  messages: sanitizedResponseMessages.map((message) => {
-                    return {
-                      id: message.id,
-                      chatId: id,
-                      role: message.role,
-                      content: message.content,
-                      createdAt: new Date(),
-                    };
-                  }),
-                });
-                console.log('Chat messages saved successfully');
-              } catch (error) {
-                console.error('Failed to save chat messages:', error);
-              }
-            }
-          },
-          experimental_telemetry: {
-            isEnabled: true,
-            functionId: 'stream-text',
-          },
-        });
-
-        result.consumeStream();
-
-        console.log('Merging AI response into data stream');
-        result.mergeIntoDataStream(dataStream, {
-          sendReasoning: true,
-        });
-      },
-      onError: (error) => {
-        console.error('Error in chat stream:', error);
-        return 'Oops, an error occurred! Please try again.';
-      },
-    });
+      // Return the streaming response
+      return new StreamingTextResponse(aiResponse.getTextStream());
+    } catch (error) {
+      console.error('Error in chat stream:', error);
+      return new Response('Oops, an error occurred! Please try again.', { status: 500 });
+    }
   } catch (error) {
     console.error('Unexpected error in chat API:', error);
     return new Response('An unexpected error occurred', { status: 500 });
