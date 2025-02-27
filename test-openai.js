@@ -7,7 +7,7 @@ dotenv.config({ path: '.env.local' });
 
 // Get the API key from environment variables
 const apiKey = process.env.OPENAI_API_KEY;
-console.log('API key first 10 chars:', apiKey.substring(0, 10) + '...');
+console.log('API key first 10 chars:', `${apiKey.substring(0, 10)}...`);
 
 async function main() {
   try {

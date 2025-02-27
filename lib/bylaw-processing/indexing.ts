@@ -6,7 +6,7 @@
 
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { getPineconeIndex } from '../vector-search/pinecone-client';
-import { BylawMetadata } from '../vector-search/types';
+import type { BylawMetadata } from '../vector-search/types';
 import { extractFromPDF, cleanText, extractBylawMetadata } from './pdf-extractor';
 import { chunkBylawText } from './chunking';
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from './ui/card';
-import { BookOpen, FileText, ArrowUpRight, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { searchBylaws } from '@/lib/bylaw-search';
-import { BylawToolResult } from '@/lib/bylaw-search/types';
+import type { BylawToolResult } from '@/lib/bylaw-search/types';
 
 /**
  * Zod schema for the search bylaws tool

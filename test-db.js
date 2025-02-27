@@ -3,10 +3,9 @@ const postgres = require('postgres');
 async function testConnection() {
   const connectionString = process.env.POSTGRES_URL;
   
-  if (\!connectionString) {
+  if (\!connectionString) 
     console.error('POSTGRES_URL environment variable is not set');
     process.exit(1);
-  }
   
   console.log('Connecting to database...');
   

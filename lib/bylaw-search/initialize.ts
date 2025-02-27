@@ -7,7 +7,7 @@
  */
 
 import { MockVectorStore, mockBylawData } from './index';
-import { BylawChunk } from './types';
+import type { BylawChunk } from './types';
 import { getPineconeIndex } from '../vector-search/pinecone-client';
 import { OpenAIEmbeddings } from '@langchain/openai';
 

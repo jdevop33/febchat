@@ -4,10 +4,10 @@
  * This module extracts text and metadata from PDF bylaw documents.
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import pdf from 'pdf-parse';
-import { BylawMetadata } from '../vector-search/types';
+import type { BylawMetadata } from '../vector-search/types';
 
 /**
  * Extract text and metadata from a PDF file

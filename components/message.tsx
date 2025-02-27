@@ -9,8 +9,6 @@ import type { Vote } from '@/lib/db/schema';
 
 import { DocumentToolCall, DocumentToolResult } from './document';
 import {
-  ChevronDownIcon,
-  LoaderIcon,
   PencilEditIcon,
   SparklesIcon,
 } from './icons';

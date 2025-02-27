@@ -9,8 +9,8 @@ const config: Config = {
   ],
   theme: {
     fontFamily: {
-      sans: ['geist'],
-      mono: ['geist-mono'],
+      sans: ['geist', 'sans-serif'],
+      mono: ['geist-mono', 'monospace'],
     },
     extend: {
       borderRadius: {
@@ -18,7 +18,24 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      spacing: {
+        '4.5': '1.125rem',
+        '18': '4.5rem',
+      },
+      fontSize: {
+        '2xs': '0.625rem',
+      },
+      boxShadow: {
+        'sm': '0 1px 2px rgba(0, 0, 0, 0.05)',
+        'DEFAULT': '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+        'focus': '0 0 0 3px hsla(var(--ring) / 0.4)',
+      },
       colors: {
+        brand: 'hsl(var(--brand))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -32,6 +49,17 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          50: 'hsl(var(--primary) / 0.05)',
+          100: 'hsl(var(--primary) / 0.1)',
+          200: 'hsl(var(--primary) / 0.2)',
+          300: 'hsl(var(--primary) / 0.3)',
+          400: 'hsl(var(--primary) / 0.4)',
+          500: 'hsl(var(--primary) / 0.5)',
+          600: 'hsl(var(--primary) / 0.6)',
+          700: 'hsl(var(--primary) / 0.7)',
+          800: 'hsl(var(--primary) / 0.8)',
+          900: 'hsl(var(--primary) / 0.9)',
+          950: 'hsl(var(--primary) / 0.95)',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -44,6 +72,14 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -68,6 +104,35 @@ const config: Config = {
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease-in-out',
+        'fade-out': 'fade-out 0.3s ease-in-out',
+        'slide-in': 'slide-in 0.3s ease-out',
+        'slide-out': 'slide-out 0.3s ease-in',
+        'scale-in': 'scale-in 0.2s ease-out',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        'slide-in': {
+          '0%': { transform: 'translateY(10px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'slide-out': {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '100%': { transform: 'translateY(10px)', opacity: '0' },
+        },
+        'scale-in': {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
     },

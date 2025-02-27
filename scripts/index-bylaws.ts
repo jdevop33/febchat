@@ -7,8 +7,8 @@
  * Works with both Windows and Unix paths
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { processBylawPDF } from '../lib/bylaw-processing/indexing';
 
 // Load environment variables in development

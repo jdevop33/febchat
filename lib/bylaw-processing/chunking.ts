@@ -5,7 +5,7 @@
  * appropriate segments for embedding and retrieval.
  */
 
-import { BylawMetadata } from '../vector-search/types';
+import type { BylawMetadata } from '../vector-search/types';
 
 /**
  * A document chunk with text and metadata
@@ -36,7 +36,7 @@ export function chunkBySection(
   let match;
   while ((match = sectionPattern.exec(text)) !== null) {
     const sectionNumber = match[1];
-    let sectionText = match[2].trim();
+    const sectionText = match[2].trim();
     
     if (sectionText.length < minLength) {
       // Section is too small, may need to combine with next section

@@ -6,7 +6,7 @@
  * to provide accurate responses about bylaw information.
  */
 
-import { ChunkMetadata, BylawChunk, BylawSearchResult } from './types';
+import type { ChunkMetadata, BylawChunk, BylawSearchResult } from './types';
 
 // Placeholder for actual embedding model in production
 // In production, replace with actual Pinecone, Weaviate or other vector DB client
@@ -27,7 +27,7 @@ class MockVectorStore {
    */
   async similaritySearch(
     query: string,
-    k: number = 5,
+    k = 5,
     filter?: Partial<ChunkMetadata>
   ): Promise<Array<BylawSearchResult>> {
     // In a real implementation, this would query the vector database

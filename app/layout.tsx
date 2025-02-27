@@ -7,16 +7,28 @@ import './globals.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  title: 'FebChat - Smart Conversational Platform',
+  description: 'Advanced AI-powered chat platform with document analysis, bylaw search, and artifact management.',
+  authors: [{ name: 'FebChat Team' }],
+  keywords: ['AI Chat', 'Document Analysis', 'Bylaw Search', 'AI Assistant'],
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   maximumScale: 1, // Disable auto-zoom on mobile Safari
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'hsl(0 0% 100%)' },
+    { media: '(prefers-color-scheme: dark)', color: 'hsl(222 47% 11%)' },
+  ],
 };
 
+// Updated theme colors based on our new palette
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
-const DARK_THEME_COLOR = 'hsl(240deg 10% 3.92%)';
+const DARK_THEME_COLOR = 'hsl(222 47% 11%)';
 const THEME_COLOR_SCRIPT = `\
 (function() {
   var html = document.documentElement;
@@ -56,15 +68,38 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased min-h-screen bg-background text-foreground">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" />
-          {children}
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              style: {
+                background: 'hsl(var(--card))',
+                color: 'hsl(var(--card-foreground))',
+                border: '1px solid hsl(var(--border))',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
+              },
+              className: 'text-sm font-medium',
+              success: {
+                style: {
+                  border: '1px solid hsl(var(--success) / 0.3)',
+                }
+              },
+              error: {
+                style: {
+                  border: '1px solid hsl(var(--destructive) / 0.3)',
+                }
+              },
+            }}
+          />
+          <div className="grid min-h-screen">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

@@ -29,7 +29,7 @@ async function main() {
     console.log('Beta methods:');
     console.log(Object.keys(client.beta));
     
-    if (client.beta && client.beta.embeddings) {
+    if (client.beta?.embeddings) {
       console.log('Using client.beta.embeddings');
       const response = await client.beta.embeddings.create({
         model: 'claude-3-haiku-20240307',

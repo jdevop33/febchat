@@ -6,7 +6,7 @@
 
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { getPineconeIndex } from './pinecone-client';
-import { BylawSearchOptions, BylawSearchResult, BylawSearchFilters } from './types';
+import type { BylawSearchOptions, BylawSearchResult, BylawSearchFilters } from './types';
 
 /**
  * Initialize the OpenAI embeddings model
