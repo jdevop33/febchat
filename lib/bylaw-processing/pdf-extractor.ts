@@ -31,7 +31,7 @@ export async function extractFromPDF(
       numPages: data.numpages,
       info: data.info,
       metadata: data.metadata,
-      version: data.pdfVersion,
+      version: data.version,
     };
 
     // Try to extract bylaw number and date from filename
@@ -56,8 +56,9 @@ export async function extractFromPDF(
       metadata: combinedMetadata,
     };
   } catch (error) {
-    console.error(`Error extracting from PDF ${filePath}:`, error);
-    throw new Error(`Failed to extract from PDF: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Error extracting from PDF ${filePath}:`, errorMessage);
+    throw new Error(`Failed to extract from PDF: ${errorMessage}`);
   }
 }
 

@@ -45,10 +45,10 @@ class MockVectorStore {
     // Apply any filters
     const filtered = filter
       ? keywordMatches.filter((chunk) =>
-          Object.entries(filter).every(
-            ([key, value]) =>
-              chunk.metadata[key as keyof ChunkMetadata] === value,
-          ),
+          Object.entries(filter).every(([key, value]) => {
+            const typedKey = key as keyof typeof chunk.metadata;
+            return chunk.metadata[typedKey] === value;
+          }),
         )
       : keywordMatches;
 
@@ -179,9 +179,10 @@ export async function searchBylaws(
       .filter((item) => item.text.toLowerCase().includes(query.toLowerCase()))
       .filter((item) => {
         if (!filter) return true;
-        return Object.entries(filter).every(
-          ([key, value]) => item.metadata[key as keyof ChunkMetadata] === value,
-        );
+        return Object.entries(filter).every(([key, value]) => {
+          const typedKey = key as keyof typeof item.metadata;
+          return item.metadata[typedKey] === value;
+        });
       })
       .slice(0, 5)
       .map((chunk) => ({

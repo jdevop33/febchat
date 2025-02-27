@@ -48,8 +48,9 @@ export async function processBylawPDF(
     // Step 6: Generate embeddings and index chunks
     return await indexBylawChunks(chunks);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error processing bylaw PDF ${filePath}:`, error);
-    throw new Error(`Failed to process bylaw PDF: ${error.message}`);
+    throw new Error(`Failed to process bylaw PDF: ${errorMessage}`);
   }
 }
 
@@ -105,8 +106,9 @@ export async function indexBylawChunks(
 
     return chunkIds;
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Error indexing bylaw chunks:', error);
-    throw new Error(`Failed to index bylaw chunks: ${error.message}`);
+    throw new Error(`Failed to index bylaw chunks: ${errorMessage}`);
   }
 }
 
@@ -127,7 +129,8 @@ export async function deleteBylawVectors(bylawNumber: string): Promise<void> {
 
     console.log(`Deleted vectors for bylaw ${bylawNumber}`);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error deleting vectors for bylaw ${bylawNumber}:`, error);
-    throw new Error(`Failed to delete vectors: ${error.message}`);
+    throw new Error(`Failed to delete vectors: ${errorMessage}`);
   }
 }
