@@ -9,7 +9,6 @@
 3. Go to Settings > Environment Variables
 4. Add the following variables:
    - `PINECONE_API_KEY` - Your Pinecone API key
-   - `PINECONE_ENVIRONMENT` - Your Pinecone environment (e.g., us-west-1-gcp)
    - `PINECONE_INDEX` - `oak-bay-bylaws`
    - `OPENAI_API_KEY` - Your OpenAI API key
    - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
@@ -35,6 +34,13 @@ vercel env pull .env.local
    - Name: `oak-bay-bylaws`
    - Dimensions: `1536`
    - Metric: `cosine`
+   - Type: `Dense`
+   - Capacity mode: `Serverless`
+   - Cloud: `gcp`
+   - Region: `us-central1`
+
+Note: The index is already set up at:
+https://oak-bay-bylaws-560wgi3.svc.gcp-us-central1-4a9f.pinecone.io
 
 ## 3. Index Your Bylaws
 
