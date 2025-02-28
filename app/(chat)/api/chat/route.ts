@@ -94,22 +94,18 @@ export async function POST(request: Request) {
       // Return the streaming response
       return createDataStreamResponse({
         execute: async (writer) => {
-          const textEncoder = new TextEncoder();
-          const reader = stream.getReader();
-          
           let completion = '';
           
           try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              
-              // Accumulate the completion
-              const text = new TextDecoder().decode(value);
-              completion += text;
-              
-              // Forward the chunk to the client
-              writer.writeData({ text });
+            // Use for-await-of to iterate through the stream chunks
+            for await (const chunk of stream) {
+              if (chunk.type === 'content_block_delta' && chunk.delta.text) {
+                const text = chunk.delta.text;
+                completion += text;
+                
+                // Forward the chunk to the client
+                writer.writeData({ text });
+              }
             }
             
             // After streaming completes, save the full response to the database
