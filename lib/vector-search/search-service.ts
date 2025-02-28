@@ -56,7 +56,7 @@ export async function searchBylaws(
     let results = searchResults.matches || [];
     if (options.minScore !== undefined) {
       results = results.filter(
-        (match) => (match.score || 0) >= options.minScore!,
+        (match) => (match.score || 0) >= (options.minScore ?? 0),
       );
     }
 

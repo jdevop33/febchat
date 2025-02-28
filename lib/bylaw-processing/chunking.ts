@@ -34,10 +34,13 @@ export function chunkBySection(
   const sectionPattern =
     /(?:^|\n)(\d+(?:\.\d+)*)\s+(.*?)(?=(?:\n\d+(?:\.\d+)*\s+)|$)/gs;
 
-  let match;
-  while ((match = sectionPattern.exec(text)) !== null) {
+  let match: RegExpExecArray | null = sectionPattern.exec(text);
+  while (match !== null) {
     const sectionNumber = match[1];
     const sectionText = match[2].trim();
+    
+    // Get the next match at the end of the loop
+    match = sectionPattern.exec(text);
 
     if (sectionText.length < minLength) {
       // Section is too small, may need to combine with next section

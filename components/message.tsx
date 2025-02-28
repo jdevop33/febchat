@@ -176,11 +176,10 @@ const PurePreviewMessage = ({
                                         title?: string;
                                         section: string;
                                         content: string;
-                                      },
-                                      index: number,
+                                      }
                                     ) => (
                                       <BylawCitation
-                                        key={index}
+                                        key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
                                         bylawNumber={bylawInfo.bylawNumber}
                                         section={bylawInfo.section}
                                         title={bylawInfo.title}
