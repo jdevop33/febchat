@@ -18,28 +18,64 @@ export const myProvider = customProvider({
       supportsStructuredOutputs: true,
       defaultObjectGenerationMode: 'json',
       async doGenerate(options) {
-        const stream = await anthropic.messages.create({
+        // Parse the prompt content correctly for Anthropic's API
+        let system = "";
+        let userContent = "";
+        
+        if (options.prompt && options.prompt.length > 0) {
+          if (options.prompt[0].role === 'system') {
+            system = typeof options.prompt[0].content === 'string' 
+              ? options.prompt[0].content 
+              : '';
+          }
+          
+          if (options.prompt.length > 1 && options.prompt[1].role === 'user') {
+            userContent = typeof options.prompt[1].content === 'string'
+              ? options.prompt[1].content
+              : '';
+          }
+        }
+        
+        const response = await anthropic.messages.create({
           model: 'claude-3-7-sonnet-20240229',
           max_tokens: 1000,
-          system: options.prompt[0].content,
+          system: system,
           messages: [
             {
               role: 'user',
-              content: options.prompt[1].content
+              content: userContent
             }
           ],
           temperature: 0.5,
           stream: false
         });
         
+        // Extract text content safely
+        let textContent = '';
+        if (response.content && response.content.length > 0) {
+          const textBlock = response.content.find(block => block.type === 'text');
+          if (textBlock && 'text' in textBlock) {
+            textContent = textBlock.text;
+          }
+        }
+        
         return {
-          text: stream.content[0].text,
+          text: textContent,
           finishReason: 'stop',
           usage: {
             promptTokens: 0,
-            completionTokens: 0
+            completionTokens: 0,
+            totalTokens: 0
           },
-          warnings: []
+          warnings: [],
+          rawCall: {
+            rawPrompt: options.prompt,
+            rawSettings: {
+              model: 'claude-3-7-sonnet-20240229',
+              max_tokens: 1000,
+              temperature: 0.5
+            }
+          }
         };
       },
       async doStream(options) {

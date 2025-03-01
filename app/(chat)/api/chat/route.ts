@@ -75,13 +75,22 @@ export async function POST(request: Request) {
       const systemMessage = systemPrompt({ selectedChatModel });
       
       // Create a message stream with the Anthropic API
+      // Get the model name from the selectedChatModel parameter or fall back to the default
+      const modelName = selectedChatModel === 'oak-bay-bylaws' ? 'claude-3-7-sonnet-20240229' : selectedChatModel;
+      
+      console.log(`Using model: ${modelName}`);
+      
       const stream = await anthropic.messages.create({
-        model: 'claude-3-7-sonnet-20240229',
+        model: modelName,
         max_tokens: 4000,
         system: systemMessage,
         messages: messages.map(msg => ({
           role: msg.role === 'user' ? 'user' : 'assistant',
-          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+          content: typeof msg.content === 'string' 
+            ? msg.content 
+            : Array.isArray(msg.content)
+              ? msg.content // Handle array content format
+              : JSON.stringify(msg.content) // Fallback for other types
         })),
         temperature: 0.5,
         stream: true
@@ -99,12 +108,27 @@ export async function POST(request: Request) {
           try {
             // Use for-await-of to iterate through the stream chunks
             for await (const chunk of stream) {
-              if (chunk.type === 'content_block_delta' && 'text' in chunk.delta) {
-                const text = chunk.delta.text;
-                completion += text;
-                
-                // Forward the chunk to the client
-                writer.writeData({ text });
+              // Handle different types of chunks from Anthropic's API
+              if (chunk.type === 'content_block_delta') {
+                if ('text' in chunk.delta) {
+                  const text = chunk.delta.text;
+                  completion += text;
+                  
+                  // Forward the chunk to the client
+                  writer.writeData({ text });
+                } else if ('type' in chunk.delta) {
+                  // Some versions of the API return a different structure
+                  console.debug('Content block delta with type:', chunk.delta.type);
+                  if ('text' in chunk.delta) {
+                    // Cast to string to handle unknown type
+                    const text = String(chunk.delta.text);
+                    completion += text;
+                    writer.writeData({ text });
+                  }
+                }
+              } else if (chunk.type === 'message_delta') {
+                // Message level updates, may contain metadata we can log
+                console.debug('Message delta received:', chunk.delta.stop_reason || 'streaming');
               }
             }
             
@@ -113,6 +137,12 @@ export async function POST(request: Request) {
             
             if (session?.user?.id) {
               try {
+                // Guard against empty completions
+                if (completion.trim().length === 0) {
+                  console.warn('Empty completion received, adding placeholder');
+                  completion = "I'm sorry, I wasn't able to generate a response. Please try again.";
+                }
+                
                 await saveMessages({
                   messages: [{
                     id: messageId,
@@ -125,20 +155,60 @@ export async function POST(request: Request) {
                 console.log('Chat message saved successfully');
               } catch (error) {
                 console.error('Failed to save chat messages:', error);
+                // Write an error message to the client
+                writer.writeData({ 
+                  text: "\n\nThere was an error saving this message. The message may be incomplete or missing from your history."
+                });
               }
             }
           } catch (e) {
             console.error('Error processing stream:', e);
+            // Try to provide a helpful error message to the client
+            writer.writeData({ 
+              text: "\n\nI apologize, but there was an error processing the response. Please try again." 
+            });
           }
         }
       });
     } catch (error) {
+      // Log detailed error information for debugging
       console.error('Error in chat stream:', error);
-      return new Response('Oops, an error occurred! Please try again.', { status: 500 });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('Error details:', errorMessage);
+      
+      // Return a user-friendly error message with appropriate status code
+      return new Response(
+        JSON.stringify({ 
+          error: 'Oops, an error occurred! Please try again.',
+          details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        }),
+        { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
     }
   } catch (error) {
+    // Log detailed error information for debugging
     console.error('Unexpected error in chat API:', error);
-    return new Response('An unexpected error occurred', { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error details:', errorMessage);
+
+    // Return a user-friendly error message with appropriate status code
+    return new Response(
+      JSON.stringify({ 
+        error: 'An unexpected error occurred',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      }),
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   }
 }
 
