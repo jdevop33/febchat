@@ -18,23 +18,50 @@ import {
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 
-// Optionally, if not using email/pass login, you can
-// use the Drizzle adapter for Auth.js / NextAuth
-// https://authjs.dev/reference/adapter/drizzle
+// Initialize database connection with error handling
+if (!process.env.POSTGRES_URL) {
+  console.error('POSTGRES_URL environment variable is not set. Database functionality will fail.');
+}
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+// Create database client with connection pooling
+const client = postgres(process.env.POSTGRES_URL || '', {
+  max: 10, // connection pool size
+  idle_timeout: 20, // how long a connection can stay idle in pool
+  connect_timeout: 10, // connection timeout
+});
 
+const db = drizzle(client, {
+  // Add schema for better type safety
+  schema: { user, chat, message, vote, document, suggestion }
+});
+
+/**
+ * Database operation error with contextual information
+ */
+class DbOperationError extends Error {
+  constructor(operation: string, originalError: unknown) {
+    const message = `Database operation '${operation}' failed: ${originalError instanceof Error ? originalError.message : String(originalError)}`;
+    super(message);
+    this.name = 'DbOperationError';
+    this.cause = originalError;
+  }
+}
+
+/**
+ * Get a user by email
+ */
 export async function getUser(email: string): Promise<Array<User>> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
-    console.error('Failed to get user from database');
-    throw error;
+    console.error(`Failed to get user '${email}' from database:`, error);
+    throw new DbOperationError('getUser', error);
   }
 }
 
+/**
+ * Create a new user with hashed password
+ */
 export async function createUser(email: string, password: string) {
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);
@@ -42,19 +69,24 @@ export async function createUser(email: string, password: string) {
   try {
     return await db.insert(user).values({ email, password: hash });
   } catch (error) {
-    console.error('Failed to create user in database');
-    throw error;
+    console.error(`Failed to create user '${email}' in database:`, error);
+    throw new DbOperationError('createUser', error);
   }
 }
 
+/**
+ * Save a new chat to the database
+ */
 export async function saveChat({
   id,
   userId,
   title,
+  visibility = 'private',
 }: {
   id: string;
   userId: string;
   title: string;
+  visibility?: 'public' | 'private';
 }) {
   try {
     return await db.insert(chat).values({
@@ -62,10 +94,11 @@ export async function saveChat({
       createdAt: new Date(),
       userId,
       title,
+      visibility,
     });
   } catch (error) {
-    console.error('Failed to save chat in database');
-    throw error;
+    console.error(`Failed to save chat ID '${id}' to database:`, error);
+    throw new DbOperationError('saveChat', error);
   }
 }
 
@@ -104,12 +137,19 @@ export async function getChatById({ id }: { id: string }) {
   }
 }
 
+/**
+ * Save messages to the database
+ */
 export async function saveMessages({ messages }: { messages: Array<Message> }) {
+  if (!messages.length) {
+    return; // Nothing to save
+  }
+  
   try {
     return await db.insert(message).values(messages);
   } catch (error) {
-    console.error('Failed to save messages in database', error);
-    throw error;
+    console.error(`Failed to save ${messages.length} messages to database:`, error);
+    throw new DbOperationError('saveMessages', error);
   }
 }
 

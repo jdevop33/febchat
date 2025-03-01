@@ -1,96 +1,93 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { customProvider } from 'ai';
 
+// Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
+export const DEFAULT_MODEL_ID = 'claude-3-sonnet-20240220';
 
-// Initialize the Anthropic client with robust error handling
+// Initialize the Anthropic client
 export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',  // Fallback to empty string if not set
+  apiKey: process.env.ANTHROPIC_API_KEY || '', // Empty string will cause explicit errors
 });
 
-// Log Anthropic client status for debugging
-console.log(`Anthropic client initialized (API key present: ${Boolean(process.env.ANTHROPIC_API_KEY)})`);
+// Validate environment during initialization
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('WARNING: ANTHROPIC_API_KEY environment variable is not set. Chat functionality will fail.');
+  console.error('ANTHROPIC_API_KEY environment variable is not set. Chat functionality will fail.');
 }
 
+// Custom provider for title generation
 export const myProvider = customProvider({
   languageModels: {
     'title-model': {
       specificationVersion: 'v1',
       provider: 'anthropic',
-      modelId: 'claude-3-sonnet-20240220',
+      modelId: DEFAULT_MODEL_ID,
       supportsImageUrls: true,
       supportsStructuredOutputs: true,
       defaultObjectGenerationMode: 'json',
       async doGenerate(options) {
-        // Parse the prompt content correctly for Anthropic's API
-        let system = "";
-        let userContent = "";
+        // Extract prompt content
+        const system = extractSystemPrompt(options.prompt);
+        const userContent = extractUserContent(options.prompt);
         
-        if (options.prompt && options.prompt.length > 0) {
-          if (options.prompt[0].role === 'system') {
-            system = typeof options.prompt[0].content === 'string' 
-              ? options.prompt[0].content 
-              : '';
-          }
+        try {
+          const response = await anthropic.messages.create({
+            model: DEFAULT_MODEL_ID,
+            max_tokens: 1000,
+            system,
+            messages: [{ role: 'user', content: userContent }],
+            temperature: 0.5,
+            stream: false
+          });
           
-          if (options.prompt.length > 1 && options.prompt[1].role === 'user') {
-            userContent = typeof options.prompt[1].content === 'string'
-              ? options.prompt[1].content
-              : '';
-          }
-        }
-        
-        const response = await anthropic.messages.create({
-          model: 'claude-3-sonnet-20240220',
-          max_tokens: 1000,
-          system: system,
-          messages: [
-            {
-              role: 'user',
-              content: userContent
+          return {
+            text: extractTextContent(response),
+            finishReason: 'stop',
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            warnings: [],
+            rawCall: {
+              rawPrompt: options.prompt,
+              rawSettings: {
+                model: DEFAULT_MODEL_ID,
+                max_tokens: 1000,
+                temperature: 0.5
+              }
             }
-          ],
-          temperature: 0.5,
-          stream: false
-        });
-        
-        // Extract text content safely
-        let textContent = '';
-        if (response.content && response.content.length > 0) {
-          const textBlock = response.content.find(block => block.type === 'text');
-          if (textBlock && 'text' in textBlock) {
-            textContent = textBlock.text;
-          }
+          };
+        } catch (error) {
+          console.error('Error in title generation:', error);
+          throw error;
         }
-        
-        return {
-          text: textContent,
-          finishReason: 'stop',
-          usage: {
-            promptTokens: 0,
-            completionTokens: 0,
-            totalTokens: 0
-          },
-          warnings: [],
-          rawCall: {
-            rawPrompt: options.prompt,
-            rawSettings: {
-              model: 'claude-3-sonnet-20240220',
-              max_tokens: 1000,
-              temperature: 0.5
-            }
-          }
-        };
       },
-      async doStream(options) {
-        throw new Error('Streaming not implemented for this model');
+      async doStream() {
+        throw new Error('Streaming not implemented for title-model');
       }
     }
   }
 });
 
+// Helper functions
+function extractSystemPrompt(prompt: any): string {
+  if (!prompt?.length) return '';
+  return prompt[0]?.role === 'system' && typeof prompt[0].content === 'string' 
+    ? prompt[0].content 
+    : '';
+}
+
+function extractUserContent(prompt: any): string {
+  if (!prompt?.length || prompt.length < 2) return '';
+  return prompt[1]?.role === 'user' && typeof prompt[1].content === 'string'
+    ? prompt[1].content
+    : '';
+}
+
+function extractTextContent(response: any): string {
+  if (!response?.content?.length) return '';
+  const textBlock = response.content.find((block: any) => block.type === 'text');
+  return textBlock && 'text' in textBlock ? textBlock.text : '';
+}
+
+// Chat model definitions
 interface ChatModel {
   id: string;
   name: string;

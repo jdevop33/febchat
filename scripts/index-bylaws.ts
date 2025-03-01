@@ -44,9 +44,9 @@ async function processBylawFile(filePath: string) {
     console.log(`Processing bylaw file: ${filePath}`);
 
     // Verify Pinecone credentials are available
-    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_INDEX) {
       console.error(
-        '\nError: Pinecone API key or environment not found in environment variables.',
+        '\nError: Pinecone API key or index name not found in environment variables.',
       );
       console.error(
         'Make sure you have set up your .env.local file or Vercel environment variables.',
@@ -97,7 +97,7 @@ async function processBylawDirectory(dir: string) {
     console.log(`Processing bylaw directory: ${dir}`);
 
     // Verify Pinecone credentials are available
-    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_ENVIRONMENT) {
+    if (!process.env.PINECONE_API_KEY || !process.env.PINECONE_INDEX) {
       console.error(
         '\nError: Pinecone API key or environment not found in environment variables.',
       );
