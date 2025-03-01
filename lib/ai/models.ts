@@ -3,17 +3,23 @@ import { customProvider } from 'ai';
 
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 
-// Initialize the Anthropic client
+// Initialize the Anthropic client with robust error handling
 export const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',  // Fallback to empty string if not set
 });
+
+// Log Anthropic client status for debugging
+console.log(`Anthropic client initialized (API key present: ${Boolean(process.env.ANTHROPIC_API_KEY)})`);
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('WARNING: ANTHROPIC_API_KEY environment variable is not set. Chat functionality will fail.');
+}
 
 export const myProvider = customProvider({
   languageModels: {
     'title-model': {
       specificationVersion: 'v1',
       provider: 'anthropic',
-      modelId: 'claude-3-7-sonnet-20240229',
+      modelId: 'claude-3-sonnet-20240229',
       supportsImageUrls: true,
       supportsStructuredOutputs: true,
       defaultObjectGenerationMode: 'json',
@@ -37,7 +43,7 @@ export const myProvider = customProvider({
         }
         
         const response = await anthropic.messages.create({
-          model: 'claude-3-7-sonnet-20240229',
+          model: 'claude-3-sonnet-20240229',
           max_tokens: 1000,
           system: system,
           messages: [
@@ -71,7 +77,7 @@ export const myProvider = customProvider({
           rawCall: {
             rawPrompt: options.prompt,
             rawSettings: {
-              model: 'claude-3-7-sonnet-20240229',
+              model: 'claude-3-sonnet-20240229',
               max_tokens: 1000,
               temperature: 0.5
             }

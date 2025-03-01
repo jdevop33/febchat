@@ -50,7 +50,24 @@ export function Chat({
       mutate('/api/history');
     },
     onError: (error) => {
-      toast.error('An error occured, please try again!');
+      console.error('Chat request error:', error);
+      // Show a more detailed error message from the server if available
+      let errorMessage = 'An error occurred, please try again!';
+      try {
+        // Try to parse the error to get the server message
+        if (typeof error === 'string') {
+          const errorData = JSON.parse(error);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        }
+      } catch (e) {
+        // If parsing fails, use the default message
+      }
+      toast.error(errorMessage, {
+        duration: 5000,
+        description: 'The system is experiencing technical difficulties.'
+      });
     },
   });
 
