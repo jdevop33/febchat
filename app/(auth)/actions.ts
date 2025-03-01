@@ -3,8 +3,10 @@
 import { z } from 'zod';
 
 import { createUser, getUser } from '@/lib/db/queries';
-
 import { signIn } from './auth';
+
+// For debugging auth actions
+console.log('Auth actions module loaded');
 
 const authFormSchema = z.object({
   email: z.string().email(),

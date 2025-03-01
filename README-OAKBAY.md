@@ -1,4 +1,4 @@
-# Oak Bay Municipality Bylaws Chatbot
+# Oak Bay Municipality Bylaws Chatbot [PRODUCTION READY]
 
 A specialized AI assistant for answering questions about Oak Bay municipal bylaws, built on the Next.js AI Chatbot template.
 

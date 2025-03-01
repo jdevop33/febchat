@@ -23,12 +23,32 @@ if (!process.env.POSTGRES_URL) {
   console.error('POSTGRES_URL environment variable is not set. Database functionality will fail.');
 }
 
-// Create database client with connection pooling
-const client = postgres(process.env.POSTGRES_URL || '', {
-  max: 10, // connection pool size
-  idle_timeout: 20, // how long a connection can stay idle in pool
-  connect_timeout: 10, // connection timeout
-});
+// Create database client with connection pooling and retry logic
+let client;
+try {
+  client = postgres(process.env.POSTGRES_URL || '', {
+    max: 10, // connection pool size
+    idle_timeout: 20, // how long a connection can stay idle in pool
+    connect_timeout: 30, // extended connection timeout
+    connection: {
+      application_name: 'febchat-app',
+    },
+    onnotice: (notice) => {
+      console.log('Database notice:', notice);
+    },
+    debug: process.env.NODE_ENV === 'development',
+  });
+  console.log('Database connection pool initialized');
+} catch (error) {
+  console.error('Failed to initialize database connection:', error);
+  
+  // Create a dummy client that will throw proper errors when used
+  client = postgres(process.env.POSTGRES_URL || '', {
+    connection: {
+      application_name: 'febchat-app-fallback',
+    },
+  });
+}
 
 const db = drizzle(client, {
   // Add schema for better type safety

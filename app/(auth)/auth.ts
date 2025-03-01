@@ -6,6 +6,9 @@ import { getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 
+// For debugging auth issues
+console.log('Auth config loaded, initializing NextAuth...');
+
 interface ExtendedSession extends Session {
   user: User;
 }

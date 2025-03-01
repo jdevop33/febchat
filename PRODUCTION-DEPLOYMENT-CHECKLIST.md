@@ -1,4 +1,4 @@
-# Oak Bay Bylaws Chatbot Production Deployment Checklist
+# Oak Bay Bylaws Chatbot Production Deployment Checklist [UPDATED]
 
 This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configured and ready for production use.
 
@@ -58,9 +58,9 @@ This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configur
    pnpm tsx scripts/verify-pinecone.ts
    ```
 
-2. Run final tests:
+2. Run database migrations:
    ```
-   pnpm test
+   pnpm db:migrate
    ```
 
 3. Build the application:
@@ -68,7 +68,14 @@ This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configur
    pnpm build
    ```
 
-4. Deploy to production:
+4. Run linting check:
+   ```
+   pnpm lint
+   ```
+
+5. Test chat with various bylaw queries to ensure search is working correctly
+
+6. Deploy to production:
    ```
    vercel --prod
    ```

@@ -3,7 +3,7 @@ import { customProvider } from 'ai';
 
 // Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
-export const DEFAULT_MODEL_ID = 'claude-3-sonnet-20240220';
+export const DEFAULT_MODEL_ID = 'claude-3-7-sonnet-20250219';
 
 // Initialize the Anthropic client
 export const anthropic = new Anthropic({

@@ -41,7 +41,12 @@ export function getPineconeIndex() {
   const pinecone = getPineconeClient();
   const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws';
   
-  // In v5+, direct connection to an index using the host URL
-  // Note: We're using the serverUrl from .env.local as PINECONE_HOST
-  return pinecone.index(indexName);
+  try {
+    // In v5+, direct connection to an index using the host URL
+    console.log(`Connecting to Pinecone index: ${indexName}`);
+    return pinecone.index(indexName);
+  } catch (error) {
+    console.error(`Error connecting to Pinecone index ${indexName}:`, error);
+    throw new Error(`Failed to connect to Pinecone index: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

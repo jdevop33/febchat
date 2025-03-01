@@ -100,18 +100,39 @@ export async function POST(request: Request) {
       const { searchBylawsTool } = await import('@/lib/ai/tools/search-bylaws');
       
       // TOOLS INTEGRATION IS COMPLEX - FOR NOW, LET'S USE THE DIRECT CALL APPROACH
-      // We'll invoke the search bylaw tool ourselves based on the query
+      // We'll invoke the bylaw search function directly
       let bylawResults = null;
       
       try {
-        // Search for bylaws related to the user's query
+        // Search for bylaws related to the user's query 
         const userQuery = userMessage.content.toString();
         console.log(`Searching bylaws for: ${userQuery}`);
         
-        bylawResults = await searchBylawsTool.execute({ 
-          query: userQuery,
-          category: userQuery.toLowerCase().includes('tree') ? 'trees' : undefined
-        });
+        // Instead of using tool directly, use the function it wraps
+        const searchResults = await searchBylaws(userQuery, 
+          userQuery.toLowerCase().includes('tree') ? { category: 'trees' } : undefined
+        );
+        
+        // Format results like the tool would
+        if (searchResults && searchResults.length > 0) {
+          const formattedResults = searchResults.map(result => ({
+            bylawNumber: result.metadata.bylawNumber || 'Unknown',
+            title: result.metadata.title || 'Untitled Bylaw',
+            section: result.metadata.section || 'Unknown Section',
+            content: result.text,
+            url: result.metadata.url || `https://oakbay.civicweb.net/document`
+          }));
+          
+          bylawResults = {
+            found: true,
+            results: formattedResults
+          };
+        } else {
+          bylawResults = {
+            found: false,
+            message: 'No relevant bylaws found.'
+          };
+        }
         
         console.log(`Bylaw search returned ${bylawResults.found ? bylawResults.results.length : 0} results`);
       } catch (e) {
@@ -134,23 +155,54 @@ Content: ${result.content}
         enhancedSystemMessage += `\n\nRELEVANT BYLAW INFORMATION:\n${formattedBylawInfo}\n\nWhen answering user questions, use ONLY the bylaw information provided above. Cite the exact bylaw number and section in your response.`;
       }
       
-      const modelName = 'claude-3-sonnet-20240220';
+      // Use the current Claude 3.7 Sonnet model
+      const modelName = 'claude-3-7-sonnet-20250219';
       const formattedMessages = formatMessagesForAnthropic(messages);
       
-      // Create Anthropic message stream (simplified - no tools)
-      const response = await anthropic.messages.create({
-        model: modelName,
-        max_tokens: 2000,
-        system: enhancedSystemMessage,
-        messages: formattedMessages,
-        temperature: 0.5,
-        stream: true
-      });
+      console.log(`Using model: ${modelName}`);
+      console.log(`System prompt length: ${enhancedSystemMessage.length}`);
+      console.log(`Messages count: ${formattedMessages.length}`);
       
-      // Extract the stream and ID
-      const stream = response;
-      const streamId = typeof response === 'object' && '_request_id' in response ? 
-        response._request_id : '';
+      let response;
+      try {
+        // Create Anthropic message stream (simplified - no tools)
+        response = await anthropic.messages.create({
+          model: modelName,
+          max_tokens: 2000,
+          system: enhancedSystemMessage,
+          messages: formattedMessages,
+          temperature: 0.5,
+          stream: true
+        });
+        
+        console.log("Successfully created Anthropic stream");
+      } catch (apiError) {
+        console.error("Anthropic API error:", apiError);
+        
+        // Fall back to Claude 3.5 Sonnet if Claude 3.7 fails
+        console.log("Falling back to Claude 3.5 Sonnet model");
+        response = await anthropic.messages.create({
+          model: 'claude-3-5-sonnet-20240620',
+          max_tokens: 2000,
+          system: enhancedSystemMessage,
+          messages: formattedMessages,
+          temperature: 0.7,
+          stream: true
+        });
+      }
+      
+      // Extract the stream from the response
+      let stream;
+      let streamId = '';
+      
+      // The response is either from the try block or the catch block
+      if (response) {
+        stream = response;
+        streamId = typeof response === 'object' && '_request_id' in response ? 
+          response._request_id : '';
+      } else {
+        throw new Error('Failed to create Anthropic response stream');
+      }
       
       // Prepare message ID for saving later
       const messageId = generateUUID();
