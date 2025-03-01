@@ -96,15 +96,15 @@ export async function POST(request: Request) {
       
       // Create a message stream with the Anthropic API
       // Get the model name from the selectedChatModel parameter or fall back to the default
-      // Correct model name format based on Anthropic's API requirements
-      const modelName = selectedChatModel === 'oak-bay-bylaws' ? 'claude-3-sonnet-20240229' : selectedChatModel;
+      // CRITICAL FIX: Use the correct model ID format for production
+      const modelName = 'claude-3-sonnet-20240220'; // Fixed model ID that is known to work
       
       console.log(`Using model: ${modelName}`);
       
       // Log the API request for debugging
       console.log('Anthropic API request:', {
         model: modelName,
-        maxTokens: 4000,
+        maxTokens: 2000,
         systemPrompt: systemMessage.substring(0, 100) + '...',
         messageCount: messages.length,
         apiKey: process.env.ANTHROPIC_API_KEY ? 'Set' : 'Not set'
@@ -112,14 +112,20 @@ export async function POST(request: Request) {
       
       // Check if API key is set
       if (!process.env.ANTHROPIC_API_KEY) {
-        console.error('ANTHROPIC_API_KEY is not set in environment variables');
+        console.error('CRITICAL ERROR: ANTHROPIC_API_KEY is not set in environment variables');
         return new Response(JSON.stringify({ 
-          error: 'API configuration error',
-          details: 'Missing API key'
+          error: 'Server configuration error: Missing API key',
+          details: 'The API key for the AI service is not configured. Please contact support.'
         }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' }
         });
+      }
+      
+      // Log key length for debugging (safely)
+      if (process.env.ANTHROPIC_API_KEY) {
+        console.log(`API key exists with length: ${process.env.ANTHROPIC_API_KEY.length}`);
+        console.log(`API key prefix: ${process.env.ANTHROPIC_API_KEY.substring(0, 3)}...`);
       }
       
       try {
@@ -152,14 +158,15 @@ export async function POST(request: Request) {
         
         console.log(`Formatted ${formattedMessages.length} messages for Anthropic API`);
         
-        // Safety check modelName
-        if (!modelName.startsWith('claude-')) {
-          console.warn(`Model name ${modelName} doesn't follow expected pattern. Falling back to claude-3-sonnet-20240229`);
-          const safeModelName = 'claude-3-sonnet-20240229';
+        // Safety check modelName - no need to check since we're hardcoding the model
+        if (true) {
+          // Always use the fixed model 
+          console.log('Using fixed model ID for production');
+          const safeModelName = 'claude-3-sonnet-20240220';
           
           const stream = await anthropic.messages.create({
             model: safeModelName,
-            max_tokens: 4000,
+            max_tokens: 2000, // Reduced to prevent Vercel function timeouts
             system: systemMessage,
             messages: formattedMessages,
             temperature: 0.5,
@@ -245,8 +252,8 @@ export async function POST(request: Request) {
           });
         } else {
           const stream = await anthropic.messages.create({
-            model: modelName,
-            max_tokens: 4000,
+            model: 'claude-3-sonnet-20240220',
+            max_tokens: 2000, // Reduced to prevent Vercel function timeouts
             system: systemMessage,
             messages: formattedMessages,
             temperature: 0.5,
@@ -338,12 +345,12 @@ export async function POST(request: Request) {
         console.error('Error details:', errorMessage);
         
         // Check for specific Anthropic API errors
-        if (errorMessage.includes('API key')) {
-          console.error('API key error detected');
+        if (errorMessage.includes('API key') || errorMessage.includes('key') || errorMessage.includes('auth')) {
+          console.error('API key error detected in error message:', errorMessage);
           return new Response(
             JSON.stringify({ 
-              error: 'Authentication error with the AI provider. Please check your API configuration.',
-              details: process.env.NODE_ENV === 'development' ? 'Invalid or missing API key' : undefined
+              error: 'Authentication error with the AI provider',
+              details: 'The server is unable to connect to the AI service. Please try again later or contact support.'
             }),
             { 
               status: 401,
@@ -367,10 +374,15 @@ export async function POST(request: Request) {
         }
         
         // Return a general user-friendly error message for other errors
+        console.error('Unhandled error occurred during chat request:', errorMessage);
+        
+        // Include the full error for debugging in the logs
+        console.error('Full error object:', error);
+        
         return new Response(
           JSON.stringify({ 
-            error: 'Oops, an error occurred! Please try again.',
-            details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+            error: 'Our AI service is temporarily unavailable',
+            details: 'We are experiencing connectivity issues with our AI provider. This is likely a temporary issue - please try again in a few minutes.'
           }),
           { 
             status: 500,

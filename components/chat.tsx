@@ -53,20 +53,40 @@ export function Chat({
       console.error('Chat request error:', error);
       // Show a more detailed error message from the server if available
       let errorMessage = 'An error occurred, please try again!';
+      let errorDescription = 'The system is experiencing technical difficulties.';
+      
       try {
         // Try to parse the error to get the server message
         if (typeof error === 'string') {
-          const errorData = JSON.parse(error);
-          if (errorData.error) {
-            errorMessage = errorData.error;
+          try {
+            const errorData = JSON.parse(error);
+            if (errorData.error) {
+              errorMessage = errorData.error;
+              if (errorData.details) {
+                errorDescription = errorData.details;
+              }
+            }
+          } catch (parseError) {
+            // If the error isn't JSON, use the error string directly
+            errorMessage = error;
           }
+        } else if (error instanceof Error) {
+          errorMessage = error.message || 'Unknown error';
         }
       } catch (e) {
-        // If parsing fails, use the default message
+        // If any parsing fails, use the default message
+        console.error('Error parsing error message:', e);
       }
+      
       toast.error(errorMessage, {
-        duration: 5000,
-        description: 'The system is experiencing technical difficulties.'
+        duration: 8000,
+        description: errorDescription
+      });
+      
+      // Log the full error to help with debugging
+      console.error('Full error details:', {
+        error,
+        parsed: { message: errorMessage, description: errorDescription }
       });
     },
   });

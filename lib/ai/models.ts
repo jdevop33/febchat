@@ -19,7 +19,7 @@ export const myProvider = customProvider({
     'title-model': {
       specificationVersion: 'v1',
       provider: 'anthropic',
-      modelId: 'claude-3-sonnet-20240229',
+      modelId: 'claude-3-sonnet-20240220',
       supportsImageUrls: true,
       supportsStructuredOutputs: true,
       defaultObjectGenerationMode: 'json',
@@ -43,7 +43,7 @@ export const myProvider = customProvider({
         }
         
         const response = await anthropic.messages.create({
-          model: 'claude-3-sonnet-20240229',
+          model: 'claude-3-sonnet-20240220',
           max_tokens: 1000,
           system: system,
           messages: [
@@ -77,7 +77,7 @@ export const myProvider = customProvider({
           rawCall: {
             rawPrompt: options.prompt,
             rawSettings: {
-              model: 'claude-3-sonnet-20240229',
+              model: 'claude-3-sonnet-20240220',
               max_tokens: 1000,
               temperature: 0.5
             }
