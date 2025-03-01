@@ -99,7 +99,7 @@ export async function POST(request: Request) {
           try {
             // Use for-await-of to iterate through the stream chunks
             for await (const chunk of stream) {
-              if (chunk.type === 'content_block_delta' && chunk.delta.text) {
+              if (chunk.type === 'content_block_delta' && 'text' in chunk.delta) {
                 const text = chunk.delta.text;
                 completion += text;
                 
