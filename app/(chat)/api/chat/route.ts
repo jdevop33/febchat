@@ -155,15 +155,15 @@ export async function POST(request: Request) {
         
         console.log(`Formatted ${formattedMessages.length} messages for Anthropic API`);
 
-        // Create the stream with tools enabled
+        // Create the stream - note: tools are passed through the system message
+        // This is a workaround since the Anthropic SDK doesn't directly support
+        // the same tool format as the Vercel AI SDK
         const stream = await anthropic.messages.create({
           model: modelName,
           max_tokens: 2000, // Reduced to prevent Vercel function timeouts
           system: systemMessage,
           messages: formattedMessages,
           temperature: 0.5,
-          tools: [searchBylawsTool],
-          tool_choice: "auto",
           stream: true
         });
         
@@ -191,29 +191,20 @@ export async function POST(request: Request) {
                     // Forward the chunk to the client
                     writer.writeData({ text });
                   } 
-                } else if (chunk.type === 'tool_call') {
-                  // Tool call - Claude is using the search tool
-                  console.debug('Tool call detected:', JSON.stringify(chunk).substring(0, 200));
+                } else if (chunk.type === 'content_block_start' && chunk.content_block?.type === 'tool_use') {
+                  // Tool use detected - usually when Claude searches for something
+                  console.debug('Tool use detected in content block');
                   
                   // Let the user know we're searching the bylaws
                   writer.writeData({ 
                     text: "\n\n(Searching bylaws database...)\n\n" 
                   });
                   
-                } else if (chunk.type === 'tool_result') {
-                  // Tool result coming back from the search
-                  console.debug('Tool result received');
-                  
-                  if (chunk.tool_result && chunk.tool_result.content) {
-                    try {
-                      // Try to parse and log the search results
-                      const resultData = JSON.parse(chunk.tool_result.content);
-                      console.debug(`Search found ${resultData.found ? resultData.results?.length || 0 : 0} bylaws`);
-                    } catch (e) {
-                      console.error('Error parsing tool result:', e);
-                    }
-                  }
-                  
+                } else if (chunk.type === 'content_block_start' && 
+                           chunk.content_block && 
+                           'tool_result' in chunk.content_block) {
+                  // Tool result block - results from search
+                  console.debug('Tool result detected in content block');
                 } else if (chunk.type === 'content_block_start') {
                   // New content block starting
                   console.debug('Content block start received');
