@@ -96,8 +96,9 @@ export async function POST(request: Request) {
     });
 
     try {
-      // Import tools
+      // Import tools and needed functions
       const { searchBylawsTool } = await import('@/lib/ai/tools/search-bylaws');
+      const { searchBylaws } = await import('@/lib/bylaw-search');
       
       // TOOLS INTEGRATION IS COMPLEX - FOR NOW, LET'S USE THE DIRECT CALL APPROACH
       // We'll invoke the bylaw search function directly
@@ -108,33 +109,14 @@ export async function POST(request: Request) {
         const userQuery = userMessage.content.toString();
         console.log(`Searching bylaws for: ${userQuery}`);
         
-        // Instead of using tool directly, use the function it wraps
-        const searchResults = await searchBylaws(userQuery, 
-          userQuery.toLowerCase().includes('tree') ? { category: 'trees' } : undefined
-        );
+        // Execute the bylaw search through the tool directly
+        bylawResults = await searchBylawsTool.execute({
+          query: userQuery,
+          category: userQuery.toLowerCase().includes('tree') ? 'trees' : undefined
+        });
         
-        // Format results like the tool would
-        if (searchResults && searchResults.length > 0) {
-          const formattedResults = searchResults.map(result => ({
-            bylawNumber: result.metadata.bylawNumber || 'Unknown',
-            title: result.metadata.title || 'Untitled Bylaw',
-            section: result.metadata.section || 'Unknown Section',
-            content: result.text,
-            url: result.metadata.url || `https://oakbay.civicweb.net/document`
-          }));
-          
-          bylawResults = {
-            found: true,
-            results: formattedResults
-          };
-        } else {
-          bylawResults = {
-            found: false,
-            message: 'No relevant bylaws found.'
-          };
-        }
-        
-        console.log(`Bylaw search returned ${bylawResults.found ? bylawResults.results.length : 0} results`);
+        // The bylawResults are already properly formatted by the tool
+        console.log(`Bylaw search returned ${bylawResults?.found ? bylawResults.results.length : 0} results`);
       } catch (e) {
         console.error("Error searching bylaws:", e);
       }
