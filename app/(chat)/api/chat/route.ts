@@ -109,11 +109,50 @@ export async function POST(request: Request) {
         const userQuery = userMessage.content.toString();
         console.log(`Searching bylaws for: ${userQuery}`);
         
-        // Execute the bylaw search through the tool directly
-        bylawResults = await searchBylawsTool.execute({
-          query: userQuery,
-          category: userQuery.toLowerCase().includes('tree') ? 'trees' : undefined
-        });
+        try {
+          // Execute the bylaw search through the tool
+          // For tools created with the 'tool' function, we need a second parameter for run ID
+          bylawResults = await searchBylawsTool.execute(
+            {
+              query: userQuery,
+              category: userQuery.toLowerCase().includes('tree') ? 'trees' : undefined
+            },
+            "search-run-" + Date.now() // Add a unique run ID as second parameter
+          );
+        } catch (toolError) {
+          // If tool approach fails, fall back to direct function call
+          console.error("Tool execution failed, falling back to direct function call:", toolError);
+          
+          // Create a filter if needed
+          const filter: Record<string, string> = {};
+          if (userQuery.toLowerCase().includes('tree')) {
+            filter.category = 'trees';
+          }
+          
+          // Call the search function directly
+          const searchResults = await searchBylaws(userQuery, filter);
+          
+          if (searchResults && searchResults.length > 0) {
+            // Format results in the same way the tool would
+            const formattedResults = searchResults.map(result => ({
+              bylawNumber: result.metadata.bylawNumber || 'Unknown',
+              title: result.metadata.title || 'Untitled Bylaw',
+              section: result.metadata.section || 'Unknown Section',
+              content: result.text,
+              url: result.metadata.url || `https://oakbay.civicweb.net/document`
+            }));
+            
+            bylawResults = {
+              found: true,
+              results: formattedResults
+            };
+          } else {
+            bylawResults = {
+              found: false,
+              message: 'No relevant bylaws found.'
+            };
+          }
+        }
         
         // The bylawResults are already properly formatted by the tool
         console.log(`Bylaw search returned ${bylawResults?.found ? bylawResults.results.length : 0} results`);
