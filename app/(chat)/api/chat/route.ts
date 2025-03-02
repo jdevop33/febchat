@@ -14,9 +14,8 @@ import {
   generateUUID,
   getMostRecentUserMessage,
 } from '@/lib/utils';
-
-// Import types for Anthropic API
-import type { AnthropicError } from '@anthropic-ai/sdk';
+import type { BylawToolResult } from '@/lib/bylaw-search/types';
+import type { MessageStreamEvent } from '@anthropic-ai/sdk/resources/messages';
 
 import { generateTitleFromUserMessage } from '../../actions';
 
@@ -52,18 +51,14 @@ const formatMessagesForAnthropic = (messages: Array<Message>) => {
   });
 };
 
-// Type for bylaw search results
-interface BylawResult {
-  found: boolean; 
-  results?: Array<any>; 
-  message?: string;
-}
+// Using the proper imported type from bylaw-search/types.ts
+// No need to redefine it here
 
 // Main API endpoint for chat
 export async function POST(request: Request) {
   try {
     // Check API key at the beginning - fail fast if missing
-    if (\!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.ANTHROPIC_API_KEY) {
       return createErrorResponse(
         'Server configuration error: Missing API key',
         'The API key for the AI service is not configured. Please contact support.'
@@ -80,19 +75,19 @@ export async function POST(request: Request) {
 
     // User authentication
     const session = await auth();
-    if (\!session?.user?.id) {
+    if (!session?.user?.id) {
       return createErrorResponse('Unauthorized', undefined, 401);
     }
 
     // Get user message and validate
     const userMessage = getMostRecentUserMessage(messages);
-    if (\!userMessage) {
+    if (!userMessage) {
       return createErrorResponse('No user message found', undefined, 400);
     }
 
     // Get or create chat
     const chat = await getChatById({ id });
-    if (\!chat) {
+    if (!chat) {
       const title = await generateTitleFromUserMessage({ message: userMessage });
       await saveChat({ id, userId: session.user.id, title });
     }
@@ -110,16 +105,31 @@ export async function POST(request: Request) {
       
       // TOOLS INTEGRATION IS COMPLEX - FOR NOW, LET'S USE THE DIRECT CALL APPROACH
       // We'll invoke the bylaw search function directly
-      let bylawResults: BylawResult | null = null;
+      let bylawResults: BylawToolResult | null = null;
       
       try {
         // Search for bylaws related to the user's query 
-        const userQuery = userMessage.content.toString();
+        const userQuery = typeof userMessage.content === 'string' 
+          ? userMessage.content 
+          : Array.isArray(userMessage.content) 
+            ? JSON.stringify(userMessage.content) 
+            : '';
+            
         console.log(`Searching bylaws for: ${userQuery}`);
         
         try {
           // Use the wrapped tool executor to handle TypeScript issues
-          const executeSearchTool = createToolExecutor<any, any>(searchBylawsTool.execute);
+          // Define the type explicitly to match the tool's parameters
+          type SearchBylawParams = { 
+            query: string; 
+            category?: string; 
+            bylawNumber?: string;
+          };
+            
+          const executeSearchTool = createToolExecutor<SearchBylawParams, BylawToolResult>(
+            searchBylawsTool.execute as any // Use type assertion to avoid complex type issues
+          );
+          
           bylawResults = await executeSearchTool({
             query: userQuery,
             category: userQuery.toLowerCase().includes('tree') ? 'trees' : undefined
@@ -190,7 +200,7 @@ Content: ${result.content || 'No content available'}
       console.log(`System prompt length: ${enhancedSystemMessage.length}`);
       console.log(`Messages count: ${formattedMessages.length}`);
       
-      let response;
+      let response: AsyncIterable<MessageStreamEvent>;
       try {
         // Create Anthropic message stream
         response = await anthropic.messages.create({
@@ -220,8 +230,6 @@ Content: ${result.content || 'No content available'}
       
       // Extract the stream from the response
       const stream = response;
-      const streamId = typeof response === 'object' && '_request_id' in response ? 
-        response._request_id : '';
       
       // Prepare message ID for saving later
       const messageId = generateUUID();
@@ -234,7 +242,7 @@ Content: ${result.content || 'No content available'}
           try {
             // Process stream chunks - simplified for reliability
             for await (const chunk of stream) {
-              if (chunk.type === 'content_block_delta' && 'text' in chunk.delta) {
+              if (chunk.type === 'content_block_delta' && chunk.delta && 'text' in chunk.delta) {
                 const text = chunk.delta.text;
                 completion += text;
                 writer.writeData({ text });
@@ -304,18 +312,18 @@ export async function DELETE(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
-  if (\!id) {
+  if (!id) {
     return createErrorResponse('Not Found', undefined, 404);
   }
 
   const session = await auth();
-  if (\!session?.user?.id) {
+  if (!session?.user?.id) {
     return createErrorResponse('Unauthorized', undefined, 401);
   }
 
   try {
     const chat = await getChatById({ id });
-    if (\!chat || chat.userId \!== session.user.id) {
+    if (!chat || chat.userId !== session.user.id) {
       return createErrorResponse('Unauthorized', undefined, 401);
     }
 

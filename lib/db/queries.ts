@@ -24,7 +24,7 @@ if (!process.env.POSTGRES_URL) {
 }
 
 // Create database client with connection pooling and retry logic
-let client;
+let client: ReturnType<typeof postgres>;
 try {
   client = postgres(process.env.POSTGRES_URL || '', {
     max: 10, // connection pool size
