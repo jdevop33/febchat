@@ -1,5 +1,4 @@
 import type { Message } from 'ai';
-import { createDataStreamResponse } from 'ai';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env.local
@@ -24,7 +23,6 @@ import type { BylawToolResult } from '@/lib/bylaw-search/types';
 import Anthropic from '@anthropic-ai/sdk';
 
 import { generateTitleFromUserMessage } from '../../actions';
-import type { ContentBlockDeltaEvent, ContentBlockStartEvent, MessageDeltaEvent } from '@anthropic-ai/sdk/resources/messages';
 
 export const maxDuration = 300; // 5 minutes max duration for the request
 

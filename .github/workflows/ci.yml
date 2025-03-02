@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Run linting
+        run: pnpm lint
+        
+      - name: Build project
+        run: pnpm build
+        env:
+          # Use dummy values for CI build
+          ANTHROPIC_API_KEY: sk-ant-api00000000-0000000000000000
+          OPENAI_API_KEY: sk-0000000000000000000000000000000000000000
+          # Use mock data instead of real database/vector search in tests
+          MOCK_DB: true
+          MOCK_VECTOR_SEARCH: true

@@ -107,6 +107,27 @@ export async function searchBylaws(
   query: string,
   filter?: Partial<ChunkMetadata>,
 ): Promise<Array<BylawSearchResult>> {
+  // Use mock data if MOCK_VECTOR_SEARCH is enabled (for CI and testing)
+  if (process.env.MOCK_VECTOR_SEARCH === 'true') {
+    console.log('🧪 Using mock vector search data (MOCK_VECTOR_SEARCH=true)');
+    // Return mock results immediately
+    return mockBylawData
+      .filter((item) => item.text.toLowerCase().includes(query.toLowerCase()))
+      .filter((item) => {
+        if (!filter) return true;
+        return Object.entries(filter).every(([key, value]) => {
+          const typedKey = key as keyof typeof item.metadata;
+          return item.metadata[typedKey] === value;
+        });
+      })
+      .slice(0, 5)
+      .map((chunk) => ({
+        text: chunk.text,
+        metadata: chunk.metadata,
+        score: 0.85,
+      }));
+  }
+  
   // Try to use Pinecone for real production environment
   try {
     // Import here to avoid circular dependencies
@@ -117,43 +138,55 @@ export async function searchBylaws(
 
     // Check if we have Pinecone credentials
     if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
-      // Get Pinecone index
-      const index = getPineconeIndex();
+      console.log('Using Pinecone for vector search');
+      
+      try {
+        // Get Pinecone index
+        const index = getPineconeIndex();
 
-      // Get OpenAI embeddings model
-      const embeddings = new OpenAIEmbeddings({
-        modelName: 'text-embedding-3-small',
-        openAIApiKey: process.env.OPENAI_API_KEY,
-      });
+        // Get OpenAI embeddings model
+        const embeddings = new OpenAIEmbeddings({
+          modelName: 'text-embedding-3-small',
+          openAIApiKey: process.env.OPENAI_API_KEY,
+        });
 
-      // Generate embedding for query
-      const queryEmbedding = await embeddings.embedQuery(query);
+        // Generate embedding for query
+        const queryEmbedding = await embeddings.embedQuery(query);
 
-      // Build filter if provided
-      const pineconeFilter = filter
-        ? Object.entries(filter).reduce(
-            (acc, [key, value]) => {
-              acc[key] = { $eq: value };
-              return acc;
-            },
-            {} as Record<string, any>,
-          )
-        : undefined;
+        // Build filter if provided
+        const pineconeFilter = filter
+          ? Object.entries(filter).reduce(
+              (acc, [key, value]) => {
+                acc[key] = { $eq: value };
+                return acc;
+              },
+              {} as Record<string, any>,
+            )
+          : undefined;
 
-      // Search Pinecone
-      const results = await index.query({
-        vector: queryEmbedding,
-        topK: 5,
-        includeMetadata: true,
-        filter: pineconeFilter ? { $and: [pineconeFilter] } : undefined,
-      });
+        // Search Pinecone
+        const results = await index.query({
+          vector: queryEmbedding,
+          topK: 5,
+          includeMetadata: true,
+          filter: pineconeFilter ? { $and: [pineconeFilter] } : undefined,
+        });
 
-      // Format results
-      return (results.matches || []).map((match) => ({
-        text: match.metadata?.text as string,
-        metadata: match.metadata as ChunkMetadata,
-        score: match.score || 0,
-      }));
+        console.log(`Pinecone returned ${results.matches?.length || 0} results`);
+
+        // Format results
+        return (results.matches || []).map((match) => ({
+          text: match.metadata?.text as string,
+          metadata: match.metadata as ChunkMetadata,
+          score: match.score || 0,
+        }));
+      } catch (pineconeError) {
+        console.error('Error querying Pinecone:', pineconeError);
+        throw pineconeError; // Re-throw to fall back to mock data
+      }
+    } else {
+      console.log('Pinecone credentials not found, falling back to mock data');
+      throw new Error('Pinecone credentials missing');
     }
   } catch (error) {
     console.error('Error using Pinecone for bylaw search:', error);

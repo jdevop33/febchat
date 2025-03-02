@@ -1,6 +1,19 @@
-# Oak Bay Municipal Bylaws Assistant
+# Oak Bay Municipal Bylaws Assistant (FebChat)
 
 A specialized AI assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.
+
+![CI](https://github.com/jdevop33/febchat/actions/workflows/ci.yml/badge.svg)
+
+## 🚨 IMPORTANT SERVICE ANNOUNCEMENT 🚨
+
+We've made significant improvements to the chat functionality:
+
+1. Fixed 500 Internal Server errors with API integration
+2. Replaced streaming with more reliable non-streaming approach
+3. Added improved error handling and diagnostic logging
+4. Enhanced bylaw search with fallback to static data when vector search is unavailable
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for solutions to common issues.
 
 ## Features
 

@@ -89,14 +89,16 @@ This tests the connection to Pinecone vector database and the bylaw search funct
 - Check PINECONE_API_KEY and PINECONE_INDEX environment variables
 - Verify OPENAI_API_KEY is valid
 
-### 4. Chat API 500 Error
+### 4. Chat API 500 Error or Streaming Issues
 
-**Cause:** Multiple potential issues, typically related to API keys or database.
+**Cause:** Multiple potential issues, typically related to API keys, database, or streaming implementation.
 
 **Fix:**
 - Check server logs for the exact error message
 - Verify all environment variables are set correctly
 - Run each test script to isolate the failing component
+- Note: We've replaced streaming with a simpler non-streaming approach for reliability
+- If you see "message channel closed before a response was received", this has been fixed by the non-streaming implementation
 
 ## 🚀 Production Deployment Checks
 
