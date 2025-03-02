@@ -45,7 +45,7 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   console.log('Vote API: PATCH request received');
   try {
-    let requestData;
+    let requestData: any;
     try {
       requestData = await request.json();
       console.log('Vote API: Request data parsed');

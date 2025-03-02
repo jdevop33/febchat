@@ -4,9 +4,10 @@ import { customProvider } from 'ai';
 // Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 
-// Model configuration with environment variable fallbacks for flexibility
-export const DEFAULT_MODEL_ID = process.env.CLAUDE_MODEL || 'claude-3-7-sonnet-20250219'; 
-export const FALLBACK_MODEL_ID = process.env.CLAUDE_FALLBACK_MODEL || 'claude-3-5-sonnet-20240620';
+// Model configuration using specific model versions for stability in production
+// Using explicit model IDs as recommended in the Anthropic documentation
+export const DEFAULT_MODEL_ID = 'claude-3-7-sonnet-20250219'; 
+export const FALLBACK_MODEL_ID = 'claude-3-5-sonnet-20240620';
 
 // Log model configuration on startup
 console.log(`Claude AI configuration:`);
@@ -14,33 +15,29 @@ console.log(` - Primary model: ${DEFAULT_MODEL_ID}`);
 console.log(` - Fallback model: ${FALLBACK_MODEL_ID}`);
 
 // Initialize the Anthropic client with the required headers and configuration
+// Following Anthropic TypeScript SDK documentation
 export let anthropic: Anthropic;
 try {
+  // Initialize Anthropic client following the recommended pattern in documentation
   anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY || '', // Empty string will cause explicit errors
-    // Set required API version header
-    defaultHeaders: {
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json'
-    }
+    apiKey: process.env.ANTHROPIC_API_KEY, // Will default to process.env["ANTHROPIC_API_KEY"]
+    // The SDK automatically handles the required headers
   });
   console.log("Anthropic client initialized successfully");
+  // Validate API key at initialization time to fail fast
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('WARNING: ANTHROPIC_API_KEY environment variable is not set. Chat functionality will fail.');
+  }
 } catch (error) {
   console.error("Error initializing Anthropic client:", error);
   // Create a fallback client that will throw more informative errors
   anthropic = new Anthropic({
-    apiKey: 'missing_api_key_see_logs',
-    defaultHeaders: {
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json'
-    }
+    apiKey: 'missing_api_key_see_logs'
   });
+  console.error('CRITICAL: Anthropic client failed to initialize properly. Chat functionality will not work.');
 }
 
-// Validate environment during initialization
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.error('ANTHROPIC_API_KEY environment variable is not set. Chat functionality will fail.');
-}
+// Validation moved to the initialization block above
 
 // Custom provider for title generation
 export const myProvider = customProvider({
@@ -58,11 +55,15 @@ export const myProvider = customProvider({
         const userContent = extractUserContent(options.prompt);
         
         try {
+          // Following the recommended pattern from Anthropic documentation
           const response = await anthropic.messages.create({
             model: DEFAULT_MODEL_ID,
             max_tokens: 1000,
             system,
-            messages: [{ role: 'user', content: userContent }],
+            messages: [{ 
+              role: 'user', 
+              content: [{ type: 'text', text: userContent }]
+            }],
             temperature: 0.5,
             stream: false
           });
