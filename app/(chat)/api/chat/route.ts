@@ -1,5 +1,9 @@
 import type { Message } from 'ai';
 import { createDataStreamResponse } from 'ai';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 import { auth } from '@/app/(auth)/auth';
 // Import the pre-configured Anthropic client and model IDs
@@ -211,21 +215,55 @@ export async function POST(request: Request) {
   try {
     console.log("Chat API: Starting request processing");
     
-    // Log environment check
+    // Log environment check with detailed information
+    const apiKey = process.env.ANTHROPIC_API_KEY || '';
+    const apiKeyValid = apiKey && apiKey.trim() !== '' && apiKey.startsWith('sk-ant-');
+    
     console.log("Chat API: Environment check", {
-      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      hasAnthropicKey: !!apiKey,
+      apiKeyLooksValid: apiKeyValid,
+      apiKeyLength: apiKey ? apiKey.length : 0,
       hasOpenAIKey: !!process.env.OPENAI_API_KEY,
       nodeEnv: process.env.NODE_ENV,
-      selectedModel: process.env.CLAUDE_MODEL,
-      fallbackModel: process.env.CLAUDE_FALLBACK_MODEL
+      selectedModel: process.env.CLAUDE_MODEL || DEFAULT_MODEL_ID,
+      fallbackModel: process.env.CLAUDE_FALLBACK_MODEL || FALLBACK_MODEL_ID
     });
     
-    // Check API key at the beginning - fail fast if missing
-    if (!process.env.ANTHROPIC_API_KEY) {
+    // Check API key at the beginning - fail fast if missing or invalid
+    if (!apiKey || apiKey.trim() === '') {
       console.error("Chat API: Missing API key");
       return createErrorResponse(
         'Server configuration error: Missing API key',
         'The API key for the AI service is not configured. Please contact support.'
+      );
+    }
+    
+    // Check API key format
+    if (!apiKey.startsWith('sk-ant-')) {
+      console.error("Chat API: API key format looks invalid (doesn't start with sk-ant-)");
+      return createErrorResponse(
+        'Server configuration error: Invalid API key format',
+        'The API key for the AI service appears to be invalid. Please contact support.'
+      );
+    }
+    
+    // Test API key with minimal request
+    try {
+      console.log("Chat API: Testing API key validity with minimal request");
+      await anthropic.messages.create({
+        model: FALLBACK_MODEL_ID, // Use fallback model for the test
+        max_tokens: 5,
+        system: "Test message",
+        messages: [{ role: 'user', content: [{ type: 'text', text: 'Hello' }] }],
+        stream: false
+      });
+      console.log("Chat API: API key validation successful");
+    } catch (apiKeyError) {
+      console.error("Chat API: API key validation failed:", apiKeyError);
+      return createErrorResponse(
+        'Authentication error with AI provider',
+        'The server failed to authenticate with the AI service. Please try again later.',
+        401
       );
     }
 
@@ -470,52 +508,49 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
       
       // Use the configured model from environment or default
       const modelName = DEFAULT_MODEL_ID;
-      let formattedMessages = formatMessagesForAnthropic(messages);
       
-      // Ensure messages array follows Anthropic API requirements
+      // Create a simplified message format for better reliability
+      // Instead of using the complex formatting logic which might cause issues,
+      // simplify to just the latest user message for more reliable operation
+      const userQuery = typeof userMessage.content === 'string' 
+        ? userMessage.content.substring(0, 1000) // Limit length for safety
+        : 'What can you tell me about Oak Bay bylaws?';
       
-      // 1. Ensure we have at least one valid message
-      if (formattedMessages.length === 0) {
-        // Force a minimal message set if empty 
-        const defaultMessage: UserMessage = { role: 'user', content: 'Hello' };
-        formattedMessages = [defaultMessage];
-      }
+      console.log("Chat API: Using simplified messaging with user query:", userQuery.substring(0, 50) + "...");
       
-      // 2. Ensure the first message is from the user (Anthropic requirement)
-      if (formattedMessages[0].role !== 'user') {
-        const userMessage: UserMessage = { role: 'user', content: 'Hello' };
-        formattedMessages.unshift(userMessage);
-      }
-      
-      // 3. Ensure alternating user/assistant pattern (Anthropic requirement)
-      // If two consecutive messages have the same role, insert a placeholder
-      for (let i = 1; i < formattedMessages.length; i++) {
-        if (formattedMessages[i].role === formattedMessages[i-1].role) {
-          if (formattedMessages[i].role === 'user') {
-            // Insert assistant message between consecutive user messages
-            const assistantMessage: AssistantMessage = { 
-              role: 'assistant', 
-              content: 'I understand. Please continue.' 
-            };
-            formattedMessages.splice(i, 0, assistantMessage);
-          } else {
-            // Insert user message between consecutive assistant messages
-            const userMessage: UserMessage = { 
-              role: 'user', 
-              content: 'Please continue.' 
-            };
-            formattedMessages.splice(i, 0, userMessage);
-          }
+      // Create a simple, reliable message format
+      const simplifiedMessages: Array<MessageParam> = [
+        { 
+          role: 'user',
+          content: [{ 
+            type: 'text', 
+            text: userQuery 
+          }]
         }
-      }
+      ];
       
-      // 4. Ensure the last message is not from assistant
-      if (formattedMessages.length > 0 && formattedMessages[formattedMessages.length - 1].role === 'assistant') {
-        const finalUserMessage: UserMessage = { 
-          role: 'user', 
-          content: 'Please respond to my question' 
-        };
-        formattedMessages.push(finalUserMessage);
+      // Use the original formatting function as backup only if needed for complex conversations
+      let formattedMessages = simplifiedMessages;
+      
+      // Only use the complex formatter for multi-turn conversations
+      if (messages.length > 2) {
+        try {
+          const complexFormattedMessages = formatMessagesForAnthropic(messages);
+          // Verify the formatting is valid
+          if (complexFormattedMessages.length > 0 && 
+              complexFormattedMessages[0].role === 'user' &&
+              (complexFormattedMessages.length === 1 || 
+               complexFormattedMessages[complexFormattedMessages.length-1].role !== 'assistant')) {
+            console.log("Chat API: Using complex message formatting for multi-turn conversation");
+            formattedMessages = complexFormattedMessages;
+          } else {
+            console.log("Chat API: Complex formatting produced invalid messages, using simplified format");
+          }
+        } catch (formatError) {
+          console.error("Chat API: Error in message formatting, using simplified format:", formatError);
+        }
+      } else {
+        console.log("Chat API: Using simplified message format for short conversation");
       }
       
       // Add extensive debugging info to track exactly what's happening
@@ -794,7 +829,7 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
       // Prepare message ID for saving later
       const messageId = generateUUID();
       
-      // Return streaming response
+      // Return streaming response with simplified streaming logic
       return createDataStreamResponse({
         execute: async (writer) => {
           let completion = '';
@@ -802,34 +837,57 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
           let totalChunks = 0;
           let textChunks = 0;
           
+          // Function to save the completion to the database
+          const saveCompletionToDatabase = async (text: string) => {
+            try {
+              await saveMessages({
+                messages: [{
+                  id: messageId,
+                  chatId: id,
+                  role: 'assistant',
+                  content: text,
+                  createdAt: new Date(),
+                }],
+              });
+              console.log('Successfully saved message to database');
+              return true;
+            } catch (dbError) {
+              console.error('Failed to save message to database:', dbError);
+              return false;
+            }
+          };
+          
           try {
-            // Add timeout for stream processing to prevent hanging
-            // This is different from the request timeout - this is for the entire streaming operation
-            const timeout = setTimeout(() => {
+            // Single global timeout for the entire streaming operation
+            const streamTimeout = setTimeout(() => {
               console.error('Stream processing timed out after 60 seconds');
               streamErrors = true;
-              writer.writeData({ 
-                text: "\n\nI apologize, but the response timed out. Please try again with a shorter query." 
-              });
-            }, 60000); // 60 second global timeout for entire stream processing
+              const timeoutMessage = "\n\nI apologize, but the response timed out. Please try again with a shorter query.";
+              writer.writeData({ text: timeoutMessage });
+              
+              // Save timeout message to database
+              if (completion.trim().length === 0) {
+                saveCompletionToDatabase(timeoutMessage.trim());
+              }
+            }, 60000); // 60 second global timeout
             
-            // Process stream chunks with more detailed logging and error handling
             try {
-              // Track when we last received a chunk to detect stalls
+              // Simplified chunk tracking
               let lastChunkTime = Date.now();
               let chunkTimeout: NodeJS.Timeout | null = null;
               
-              // Create a timeout that will trigger if we go too long between chunks
+              // Simplified chunk stall detection
               const resetChunkTimeout = () => {
                 if (chunkTimeout) clearTimeout(chunkTimeout);
                 chunkTimeout = setTimeout(() => {
                   const secondsSinceLastChunk = (Date.now() - lastChunkTime) / 1000;
                   console.error(`Stream stalled: No chunks received for ${secondsSinceLastChunk.toFixed(1)} seconds`);
-                  throw new Error(`Stream stalled after ${totalChunks} chunks`);
-                }, 15000); // 15 second timeout between chunks
+                  // Instead of throwing, we'll handle this gracefully
+                  const stallMessage = "\n\nI apologize, but the response was interrupted. Please try again.";
+                  writer.writeData({ text: stallMessage });
+                  completion += stallMessage;
+                }, 10000); // 10 second timeout
               };
-              
-              resetChunkTimeout();
               
               for await (const chunk of stream) {
                 // Reset the timeout since we got a new chunk
@@ -984,33 +1042,22 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
                 completion = errorMsg.trim();
               }
             } finally {
-              clearTimeout(timeout);
-            }
-            
-            // Save complete response to database
-            if (completion.trim().length === 0) {
-              const fallbackMessage = "I'm sorry, I wasn't able to generate a response. Please try again.";
-              completion = fallbackMessage;
+              // Clear both timeouts
+              clearTimeout(streamTimeout);
+              if (chunkTimeout) clearTimeout(chunkTimeout);
               
-              if (!streamErrors) {
-                writer.writeData({ text: fallbackMessage });
+              // Ensure we have a valid completion to save
+              if (completion.trim().length === 0) {
+                const fallbackMessage = "I'm sorry, I wasn't able to generate a response. Please try again.";
+                completion = fallbackMessage;
+                
+                if (!streamErrors) {
+                  writer.writeData({ text: fallbackMessage });
+                }
               }
-            }
-            
-            try {
-              await saveMessages({
-                messages: [{
-                  id: messageId,
-                  chatId: id,
-                  role: 'assistant',
-                  content: completion,
-                  createdAt: new Date(),
-                }],
-              });
-              console.log('Successfully saved message to database');
-            } catch (dbError) {
-              console.error('Failed to save message to database:', dbError);
-              // Don't expose database errors to the user, they already have the response
+              
+              // Save the response to the database using our utility function
+              await saveCompletionToDatabase(completion);
             }
           } catch (e) {
             console.error('Fatal error in stream execution:', e);
@@ -1049,19 +1096,45 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
   } catch (error) {
     console.error('Unexpected error in chat API:', error);
     
-    // Get stack trace for better debugging
+    // Enhanced error reporting with more diagnostic information
     if (error instanceof Error) {
       console.error('Stack trace:', error.stack);
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      
+      // Log additional properties that might be useful
+      const errorObj = Object.getOwnPropertyNames(error).reduce((acc, prop) => {
+        try {
+          // @ts-ignore - Dynamically access properties
+          acc[prop] = error[prop];
+        } catch (e) {
+          acc[prop] = 'Error accessing property';
+        }
+        return acc;
+      }, {} as Record<string, any>);
+      
+      console.error('Error properties:', JSON.stringify(errorObj, null, 2));
     }
     
+    // Format a better error message for the user
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Error details:', errorMessage);
     
-    // In production, provide a generic error message but log the details
-    return createErrorResponse(
-      'An unexpected error occurred',
-      process.env.NODE_ENV === 'development' ? errorMessage : 'Please try again later or contact support.'
-    );
+    // In development, provide more detailed errors
+    if (process.env.NODE_ENV === 'development') {
+      return createErrorResponse(
+        'An unexpected error occurred in the chat API',
+        `Error: ${errorMessage}\n\nCheck server logs for more details.`,
+        500
+      );
+    } else {
+      // In production, use a more user-friendly message
+      return createErrorResponse(
+        'Our chat service is experiencing technical difficulties',
+        'Please try again in a few moments. If the problem persists, contact support.',
+        500
+      );
+    }
   }
 }
 
