@@ -29,8 +29,12 @@ const createErrorResponse = (message: string, details?: string, status = 500) =>
   );
 };
 
-// Import the correct MessageParam type from anthropic
+// Import the correct types from Anthropic SDK
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+
+// Define message types based on the Anthropic API specification
+type UserMessage = { role: 'user'; content: string };
+type AssistantMessage = { role: 'assistant'; content: string };
 
 /**
  * Format messages for Anthropic API
@@ -43,7 +47,7 @@ const formatMessagesForAnthropic = (messages: Array<Message>): MessageParam[] =>
     .map(msg => {
       // Convert message role to appropriate Anthropic role
       const msgRole = msg.role as string;
-      const role = msgRole === 'user' || msgRole === 'tool' ? 'user' : 'assistant';
+      const role = msgRole === 'user' || msgRole === 'tool' ? 'user' as const : 'assistant' as const;
       
       // Handle content based on type
       if (typeof msg.content === 'string') {
@@ -314,12 +318,14 @@ Content: ${result.content || 'No content available'}
       // 1. Ensure we have at least one valid message
       if (formattedMessages.length === 0) {
         // Force a minimal message set if empty 
-        formattedMessages = [{ role: 'user', content: 'Hello' }];
+        const defaultMessage: UserMessage = { role: 'user', content: 'Hello' };
+        formattedMessages = [defaultMessage];
       }
       
       // 2. Ensure the first message is from the user (Anthropic requirement)
       if (formattedMessages[0].role !== 'user') {
-        formattedMessages.unshift({ role: 'user', content: 'Hello' });
+        const userMessage: UserMessage = { role: 'user', content: 'Hello' };
+        formattedMessages.unshift(userMessage);
       }
       
       // 3. Ensure alternating user/assistant pattern (Anthropic requirement)
@@ -328,23 +334,29 @@ Content: ${result.content || 'No content available'}
         if (formattedMessages[i].role === formattedMessages[i-1].role) {
           if (formattedMessages[i].role === 'user') {
             // Insert assistant message between consecutive user messages
-            formattedMessages.splice(i, 0, { 
+            const assistantMessage: AssistantMessage = { 
               role: 'assistant', 
               content: 'I understand. Please continue.' 
-            });
+            };
+            formattedMessages.splice(i, 0, assistantMessage);
           } else {
             // Insert user message between consecutive assistant messages
-            formattedMessages.splice(i, 0, { 
+            const userMessage: UserMessage = { 
               role: 'user', 
               content: 'Please continue.' 
-            });
+            };
+            formattedMessages.splice(i, 0, userMessage);
           }
         }
       }
       
       // 4. Ensure the last message is not from assistant
       if (formattedMessages.length > 0 && formattedMessages[formattedMessages.length - 1].role === 'assistant') {
-        formattedMessages.push({ role: 'user', content: 'Please respond to my question' });
+        const finalUserMessage: UserMessage = { 
+          role: 'user', 
+          content: 'Please respond to my question' 
+        };
+        formattedMessages.push(finalUserMessage);
       }
       
       console.log(`Using model: ${modelName}`);
@@ -397,9 +409,11 @@ Content: ${result.content || 'No content available'}
           console.log("Attempting to fix message format issues...");
           
           // Create a minimal valid message set
-          formattedMessages = [
-            { role: 'user', content: 'Hello, I need information about Oak Bay bylaws.' }
-          ];
+          const validUserMessage: UserMessage = {
+            role: 'user',
+            content: 'Hello, I need information about Oak Bay bylaws.'
+          };
+          formattedMessages = [validUserMessage];
         }
         
         // Create Anthropic message stream
