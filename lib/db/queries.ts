@@ -20,105 +20,75 @@ import {
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 
-// For production deployment on Vercel, we should always use real DB
-// For local development, use MOCK_DB=true flag for testing without PostgreSQL
 const isProduction = env.NODE_ENV === 'production';
-let useMockDb = !isProduction && env.MOCK_DB === 'true';
-
-// Create a mock storage for testing without a database
-const mockStorage: {
-  users: Map<string, any>;
-  chats: Map<string, any>;
-  messages: Map<string, any[]>;
-  votes: Map<string, any>;
-  documents: Map<string, any>;
-  suggestions: Map<string, any>;
-} = {
-  users: new Map(),
-  chats: new Map(),
-  messages: new Map(),
-  votes: new Map(),
-  documents: new Map(),
-  suggestions: new Map(),
-};
 
 console.log(`Environment: ${env.NODE_ENV || 'development'}`);
-console.log(`Database mode: ${useMockDb ? 'MOCK (in-memory)' : 'REAL (PostgreSQL)'}`);
+console.log(`Database mode: REAL (PostgreSQL)`);
 
-// In production, ensure database URL exists
-if (isProduction && !env.POSTGRES_URL && !env.DATABASE_URL) {
-  console.error('CRITICAL ERROR: Neither POSTGRES_URL nor DATABASE_URL environment variable is set in production!');
-  throw new Error('Database connection configuration missing in production environment');
+// Ensure database URL exists
+if (!env.POSTGRES_URL && !env.DATABASE_URL) {
+  console.error('CRITICAL ERROR: Neither POSTGRES_URL nor DATABASE_URL environment variable is set!');
+  throw new Error('Database connection configuration missing');
 }
 
 // DB client and ORM initialization
 let client: any;
 let db: any;
 
-if (useMockDb) {
-  console.log('Using mock in-memory database for testing');
-  // Create a dummy client for TypeScript compatibility
-  client = {} as ReturnType<typeof postgres>;
-  db = {}; // Mock DB object
-} else {
-  try {
-    if (isProduction) {
-      // In production on Vercel, use the Vercel Postgres SDK
-      console.log('Using Vercel Postgres integration in production');
-      
-      // Initialize Drizzle with Vercel's SQL client
-      db = vercelDrizzle({
-        schema: { user, chat, message, vote, document, suggestion }
-      });
-      
-      // No need to test connection as Vercel handles this
-      console.log('✅ Using Vercel Postgres integration');
+try {
+  if (isProduction) {
+    // In production on Vercel, use the Vercel Postgres SDK
+    console.log('Using Vercel Postgres integration in production');
+    
+    // Initialize Drizzle with Vercel's SQL client
+    db = vercelDrizzle({
+      schema: { user, chat, message, vote, document, suggestion }
+    });
+    
+    // No need to test connection as Vercel handles this
+    console.log('✅ Using Vercel Postgres integration');
+  } else {
+    // For development or other environments, use postgres-js
+    console.log('Connecting to PostgreSQL database...');
+    const connectionString = env.POSTGRES_URL || env.DATABASE_URL || '';
+    
+    if (connectionString) {
+      // Only log first few characters for security
+      console.log(`Connection string starts with: ${connectionString.substring(0, 20)}...`);
     } else {
-      // For development or other environments, use postgres-js
-      console.log('Connecting to PostgreSQL database...');
-      const connectionString = env.POSTGRES_URL || env.DATABASE_URL || '';
-      
-      if (connectionString) {
-        // Only log first few characters for security
-        console.log(`Connection string starts with: ${connectionString.substring(0, 20)}...`);
-      } else {
-        throw new Error('No database connection string available');
-      }
-      
-      // Create pooled client
-      client = postgres(connectionString, {
-        max: 10,
-        idle_timeout: 20,
-        connect_timeout: 30,
-        connection: {
-          application_name: 'febchat-app',
-        },
-        ssl: false,
-        debug: true,
-      });
-      
-      console.log('Database connection pool initialized');
-      
-      // Initialize Drizzle ORM
-      db = drizzle(client, {
-        schema: { user, chat, message, vote, document, suggestion }
-      });
-      
-      // Test connection
-      try {
-        const result = await db.execute(sql`SELECT 1 as test`);
-        console.log('✅ Successfully connected to database');
-      } catch (queryError) {
-        console.error('❌ Failed to connect to database:', queryError);
-        console.log('⚠️ Automatically enabling mock database mode for development');
-        useMockDb = true;
-      }
+      throw new Error('No database connection string available');
     }
-  } catch (error) {
-    console.error('Failed to initialize database connection:', error);
-    console.log('⚠️ Database connection failed, enabling mock mode');
-    useMockDb = true;
+    
+    // Create pooled client
+    client = postgres(connectionString, {
+      max: 10,
+      idle_timeout: 20,
+      connect_timeout: 30,
+      connection: {
+        application_name: 'febchat-app',
+      },
+      ssl: true,
+    });
+    
+    console.log('Database connection pool initialized');
+    
+    // Initialize Drizzle ORM
+    db = drizzle(client, {
+      schema: { user, chat, message, vote, document, suggestion }
+    });
+    
+    // Test connection
+    try {
+      const result = await db.execute(sql`SELECT 1 as test`);
+      console.log('✅ Successfully connected to database');
+    } catch (queryError) {
+      console.error('❌ Failed to connect to database:', queryError);
+      throw new Error('Database connection failed');
+    }
   }
+} catch (error) {
+  console.error('Failed to initialize database connection:', error);
+  throw new Error('Database connection initialization failed');
 }
 
 /**
@@ -137,14 +107,6 @@ class DbOperationError extends Error {
  * Get a user by email
  */
 export async function getUser(email: string): Promise<Array<User>> {
-  if (useMockDb) {
-    // Mock implementation
-    console.log(`[MOCK] Getting user with email: ${email}`);
-    const mockUser = Array.from(mockStorage.users.values())
-      .filter((u: any) => u.email === email);
-    return mockUser;
-  }
-  
   try {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
@@ -181,21 +143,7 @@ export async function saveChat({
   userId: string;
   title: string;
   visibility?: 'public' | 'private';
-}) {
-  if (useMockDb) {
-    // Mock implementation
-    console.log(`[MOCK] Saving chat with ID: ${id}`);
-    const chatData = {
-      id,
-      createdAt: new Date(),
-      userId,
-      title,
-      visibility,
-    };
-    mockStorage.chats.set(id, chatData);
-    return;
-  }
-  
+}) {  
   try {
     return await db.insert(chat).values({
       id,
@@ -236,12 +184,6 @@ export async function getChatsByUserId({ id }: { id: string }) {
 }
 
 export async function getChatById({ id }: { id: string }) {
-  if (useMockDb) {
-    // Mock implementation
-    console.log(`[MOCK] Getting chat with ID: ${id}`);
-    return mockStorage.chats.get(id);
-  }
-  
   try {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
     return selectedChat;
@@ -259,30 +201,6 @@ export async function saveMessages({ messages }: { messages: Array<Message> }) {
     return; // Nothing to save
   }
   
-  if (useMockDb) {
-    // Mock implementation
-    console.log(`[MOCK] Saving ${messages.length} messages`);
-    
-    for (const msg of messages) {
-      if (!msg.chatId) {
-        console.error('Message is missing chatId:', msg);
-        continue;
-      }
-      
-      // Initialize chat message array if it doesn't exist
-      if (!mockStorage.messages.has(msg.chatId)) {
-        mockStorage.messages.set(msg.chatId, []);
-      }
-      
-      // Add message to the array
-      const chatMessages = mockStorage.messages.get(msg.chatId) || [];
-      chatMessages.push(msg);
-      mockStorage.messages.set(msg.chatId, chatMessages);
-    }
-    
-    return;
-  }
-  
   try {
     return await db.insert(message).values(messages);
   } catch (error) {
@@ -292,16 +210,6 @@ export async function saveMessages({ messages }: { messages: Array<Message> }) {
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
-  if (useMockDb) {
-    // Mock implementation
-    console.log(`[MOCK] Getting messages for chat ID: ${id}`);
-    const messages = mockStorage.messages.get(id) || [];
-    // Sort by creation date
-    return messages.sort((a, b) => 
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-    );
-  }
-  
   try {
     return await db
       .select()

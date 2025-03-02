@@ -8,8 +8,9 @@
 - `pnpm lint`: Run ESLint and Biome linting
 - `pnpm lint:fix`: Auto-fix linting issues
 - `pnpm format`: Format with Prettier (includes Tailwind class sorting)
-- `pnpm test`: Run test suite
-- `pnpm test <test-file-path>`: Run specific test file
+- `pnpm db:generate`: Generate Drizzle migrations
+- `pnpm db:migrate`: Run database migrations
+- `pnpm db:studio`: Launch Drizzle studio interface
 - `ts-node scripts/<script-name>.ts`: Run TypeScript scripts
 - `node scripts/index-bylaws.ts`: Index bylaws for search
 - `node scripts/verify-pinecone.ts`: Verify Pinecone connection
@@ -20,12 +21,13 @@
 - Single quotes for strings, double quotes for JSX attributes
 - 2-space indent, 80 char line width, trailing commas for multi-line
 - Imports: external libs first, then internal with `@/` path alias
+- Component naming: PascalCase for components, camelCase for functions/variables
 - React Server Components (RSCs) preferred over client components
-- Server Actions for mutations; client actions for UI-only operations
-- Handle errors with try/catch, use Zod for validation, toast for notifications
-- Style with Tailwind classes; use `cn()` helper for conditionals
-- Naming: PascalCase for components, camelCase for functions/variables
-- Folder structure: group by feature rather than by type
+- Server Actions for data mutations; client actions for UI-only operations
+- Error handling: use try/catch blocks, Zod for validation, toast for notifications
+- Styling: Tailwind CSS with `cn()` utility for conditional classes
+- File organization: group by feature rather than by type
+- Custom hooks: prefix with `use`, like `useIsMobile`
 
 ## Architecture
 
@@ -35,3 +37,4 @@
 - UI: Tailwind CSS + shadcn/ui components
 - Vector search: Pinecone for bylaw search functionality
 - State management: React Context + React Query where needed
+- AI integration: AI SDK with Anthropic and OpenAI

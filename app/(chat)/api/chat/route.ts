@@ -33,12 +33,15 @@ export async function POST(request: Request) {
     // Check API key at the beginning
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      console.error("Chat API: Missing API key");
+      console.error("Chat API: Missing Anthropic API key");
       return createErrorResponse(
         'Server configuration error: Missing API key',
-        'The API key for the AI service is not configured. Please set ANTHROPIC_API_KEY.'
+        'The API key for the AI service is not configured. Please check ANTHROPIC_API_KEY.'
       );
     }
+    
+    // Verify connection is possible to the API
+    console.log("Chat API: Using Anthropic API with key starting with:", apiKey.substring(0, 10) + "...");
 
     // Parse request
     let requestData: { id: string; messages: Message[]; selectedChatModel: string };

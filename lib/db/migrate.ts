@@ -3,19 +3,18 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
 const runMigrate = async () => {
-  // Skip migrations if MOCK_DB is set (useful for CI environments)
-  if (process.env.MOCK_DB === 'true') {
-    console.log('🧪 MOCK_DB is set to true, skipping migrations');
-    return;
-  }
-
-  if (!process.env.POSTGRES_URL) {
-    console.log('⚠️ POSTGRES_URL is not defined, skipping migrations');
+  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  
+  if (!connectionString) {
+    console.log('⚠️ Database connection URL is not defined, skipping migrations');
     return;
   }
 
   try {
-    const connection = postgres(process.env.POSTGRES_URL, { max: 1 });
+    const connection = postgres(connectionString, { 
+      max: 1,
+      ssl: true
+    });
     const db = drizzle(connection);
 
     console.log('⏳ Running migrations...');
