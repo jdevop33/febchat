@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { anthropic as anthropicProvider } from '@ai-sdk/anthropic';
 import { customProvider } from 'ai';
 import { env } from 'node:process';
 
@@ -22,59 +22,18 @@ if (isProduction && !env.ANTHROPIC_API_KEY) {
   throw new Error('Anthropic API key missing in production environment');
 }
 
-// Initialize Anthropic client
-export const anthropic = new Anthropic({
-  apiKey: env.ANTHROPIC_API_KEY || '',
-  timeout: 60000 // 60 second timeout
+// Create AI SDK model instances with anthropicProvider
+export const primaryModel = anthropicProvider(DEFAULT_MODEL_ID, {
+  apiKey: env.ANTHROPIC_API_KEY,
 });
 
-// Custom provider with simpler implementation
-export const myProvider = customProvider({
-  languageModels: {
-    'title-model': {
-      specificationVersion: 'v1',
-      provider: 'anthropic',
-      modelId: DEFAULT_MODEL_ID,
-      supportsImageUrls: true,
-      supportsStructuredOutputs: true,
-      defaultObjectGenerationMode: 'json',
-      async doGenerate(options) {
-        const system = extractSystemPrompt(options.prompt);
-        const userContent = extractUserContent(options.prompt);
-        
-        try {
-          const response = await anthropic.messages.create({
-            model: DEFAULT_MODEL_ID,
-            max_tokens: 1000,
-            system,
-            messages: [{ 
-              role: 'user', 
-              content: [{ type: 'text', text: userContent }]
-            }],
-            temperature: 0.5,
-            stream: false
-          });
-          
-          return {
-            text: extractTextContent(response),
-            finishReason: 'stop',
-            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-            warnings: [],
-            rawCall: {
-              rawPrompt: options.prompt,
-              rawSettings: { model: DEFAULT_MODEL_ID, max_tokens: 1000 }
-            }
-          };
-        } catch (error) {
-          console.error('Error in title generation:', error);
-          throw error;
-        }
-      },
-      async doStream() {
-        throw new Error('Streaming not implemented for title-model');
-      }
-    }
-  }
+export const fallbackModel = anthropicProvider(FALLBACK_MODEL_ID, {
+  apiKey: env.ANTHROPIC_API_KEY,
+});
+
+// Title model for generating chat titles
+export const titleModel = anthropicProvider(DEFAULT_MODEL_ID, {
+  apiKey: env.ANTHROPIC_API_KEY
 });
 
 // Helper functions for handling AI SDK prompt types
