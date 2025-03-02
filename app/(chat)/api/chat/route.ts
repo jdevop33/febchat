@@ -41,9 +41,9 @@ export async function POST(request: Request) {
     }
 
     // Parse request
-    let requestData;
+    let requestData: { id: string; messages: Message[]; selectedChatModel: string };
     try {
-      requestData = await request.json();
+      requestData = await request.json() as { id: string; messages: Message[]; selectedChatModel: string };
       console.log("Chat API: Request data parsed");
     } catch (parseError) {
       console.error("Chat API: JSON parse error:", parseError);
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     // Get or create chat
-    let chat;
+    let chat: any;
     try {
       chat = await getChatById({ id });
       if (!chat) {
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
       console.log(`Chat API: Using AI SDK with model: ${DEFAULT_MODEL_ID}`);
       
       // Try-catch approach for fallback instead of onError callback
-      let stream;
+      let stream: any;
       try {
         // Use AI SDK's streamText function with primary model
         stream = await streamText({

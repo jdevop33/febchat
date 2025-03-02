@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 
 /**
  * Custom embeddings class that uses OpenAI for embeddings
