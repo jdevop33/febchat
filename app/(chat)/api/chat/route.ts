@@ -121,34 +121,30 @@ export async function POST(request: Request) {
     try {
       console.log(`Chat API: Using AI SDK with model: ${DEFAULT_MODEL_ID}`);
       
-      // Use AI SDK's streamText function with primary model
-      const stream = await streamText({
-        model: primaryModel,
-        messages: aiMessages,
-        system: systemPrompt({ selectedChatModel }),
-        temperature: 0.5,
-        maxTokens: 2000,
-        onError: async (error) => {
-          console.error("Chat API: Primary model failed, falling back:", error);
-          
-          // Fall back to secondary model
-          try {
-            console.log(`Chat API: Trying fallback model: ${FALLBACK_MODEL_ID}`);
-            const fallbackResult = await streamText({
-              model: fallbackModel,
-              messages: aiMessages,
-              system: systemPrompt({ selectedChatModel }),
-              temperature: 0.7,
-              maxTokens: 2000,
-            });
-            
-            return fallbackResult;
-          } catch (fallbackError) {
-            console.error("Chat API: Fallback model also failed:", fallbackError);
-            throw fallbackError;
-          }
-        }
-      });
+      // Try-catch approach for fallback instead of onError callback
+      let stream;
+      try {
+        // Use AI SDK's streamText function with primary model
+        stream = await streamText({
+          model: primaryModel,
+          messages: aiMessages,
+          system: systemPrompt({ selectedChatModel }),
+          temperature: 0.5,
+          maxTokens: 2000,
+        });
+      } catch (primaryError) {
+        console.error("Chat API: Primary model failed, falling back:", primaryError);
+        
+        // Fall back to secondary model
+        console.log(`Chat API: Trying fallback model: ${FALLBACK_MODEL_ID}`);
+        stream = await streamText({
+          model: fallbackModel,
+          messages: aiMessages,
+          system: systemPrompt({ selectedChatModel }),
+          temperature: 0.7,
+          maxTokens: 2000,
+        });
+      }
       
       // Create response with data stream
       const response = stream.toDataStreamResponse();
