@@ -29,26 +29,55 @@ const createErrorResponse = (message: string, details?: string, status = 500) =>
   );
 };
 
-const formatMessagesForAnthropic = (messages: Array<Message>) => {
-  return messages.map(msg => {
-    let content: string | unknown[];
-    
-    if (typeof msg.content === 'string') {
-      content = msg.content;
-    } else if (Array.isArray(msg.content)) {
-      content = msg.content;
-    } else {
-      try {
-        content = JSON.stringify(msg.content);
-      } catch (e) {
-        content = String(msg.content);
+// Import the correct MessageParam type from anthropic
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+
+/**
+ * Format messages for Anthropic API
+ * This function converts our app's messages to proper Anthropic API format
+ */
+const formatMessagesForAnthropic = (messages: Array<Message>): MessageParam[] => {
+  // Filter out any system messages (will be handled separately)
+  return messages
+    .filter(msg => msg.role !== 'system')
+    .map(msg => {
+      // Convert message role to appropriate Anthropic role
+      const msgRole = msg.role as string;
+      const role = msgRole === 'user' || msgRole === 'tool' ? 'user' : 'assistant';
+      
+      // Handle content based on type
+      if (typeof msg.content === 'string') {
+        // For string content, ensure it's not empty
+        const textContent = msg.content.trim() || "Hello";
+        return { role, content: textContent };
+      } else if (Array.isArray(msg.content)) {
+        // For array content, stringify it to avoid type issues
+        try {
+          // Get content array safely
+          const contentArray = msg.content as any[];
+          
+          // If content is empty, use a default message
+          if (!contentArray || contentArray.length === 0) {
+            return { role, content: "Hello" };
+          }
+          
+          // Convert complex content to string for simplicity
+          return { role, content: JSON.stringify(contentArray) };
+        } catch (e) {
+          console.error("Error processing array content:", e);
+          return { role, content: "Hello" };
+        }
+      } else {
+        // For other types, convert to string
+        try {
+          const jsonContent = JSON.stringify(msg.content);
+          return { role, content: jsonContent || "Hello" };
+        } catch (e) {
+          console.error("Error stringifying message content:", e);
+          return { role, content: "Hello" };
+        }
       }
-    }
-    
-    // Force the role to be a valid Anthropic role
-    const role = msg.role === 'user' ? 'user' as const : 'assistant' as const;
-    return { role, content };
-  });
+    });
 };
 
 // Using the proper imported type from bylaw-search/types.ts
@@ -66,12 +95,43 @@ export async function POST(request: Request) {
     }
 
     // Parse request
-    const {
-      id,
-      messages,
-      selectedChatModel,
-    }: { id: string; messages: Array<Message>; selectedChatModel: string } =
-      await request.json();
+    const requestData = await request.json();
+    
+    // Validate request structure
+    if (!requestData || typeof requestData !== 'object') {
+      return createErrorResponse('Invalid request format', undefined, 400);
+    }
+    
+    const { id, messages, selectedChatModel } = requestData;
+    
+    // Validate required fields
+    if (!id) {
+      return createErrorResponse('Chat ID is required', undefined, 400);
+    }
+    
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return createErrorResponse('Messages array is required and cannot be empty', undefined, 400);
+    }
+    
+    // Validate message format
+    for (const msg of messages) {
+      const msgRole = msg.role as string;
+      if (!msgRole || !['user', 'assistant', 'system', 'tool'].includes(msgRole)) {
+        return createErrorResponse(
+          'All messages must have a valid role (user, assistant, system, or tool)',
+          undefined, 
+          400
+        );
+      }
+      
+      // Allow empty content only for assistant messages
+      if ((!msg.content || 
+          (typeof msg.content === 'string' && msg.content.trim() === '') ||
+          (Array.isArray(msg.content) && msg.content.length === 0)
+         ) && msgRole !== 'assistant') {
+        return createErrorResponse('Messages must have non-empty content', undefined, 400);
+      }
+    }
 
     // User authentication
     const session = await auth();
@@ -82,7 +142,12 @@ export async function POST(request: Request) {
     // Get user message and validate
     const userMessage = getMostRecentUserMessage(messages);
     if (!userMessage) {
-      return createErrorResponse('No user message found', undefined, 400);
+      return createErrorResponse('No user message found in messages array', undefined, 400);
+    }
+    
+    // Validate user message content
+    if (typeof userMessage.content !== 'string' || userMessage.content.trim() === '') {
+      return createErrorResponse('User message must have non-empty text content', undefined, 400);
     }
 
     // Get or create chat
@@ -194,11 +259,33 @@ Content: ${result.content || 'No content available'}
       
       // Use the configured model from environment or default
       const modelName = DEFAULT_MODEL_ID;
-      const formattedMessages = formatMessagesForAnthropic(messages);
+      let formattedMessages = formatMessagesForAnthropic(messages);
+      
+      // Ensure we have at least one valid message
+      if (formattedMessages.length === 0) {
+        // Force a minimal message set if empty
+        formattedMessages = [{ role: 'user', content: 'Hello' }];
+      }
+      
+      // Ensure alternating user/assistant pattern (Anthropic requirement)
+      // If the last message is from assistant, add a user message
+      if (formattedMessages.length > 0 && formattedMessages[formattedMessages.length - 1].role === 'assistant') {
+        formattedMessages.push({ role: 'user', content: 'Please respond to my question' });
+      }
       
       console.log(`Using model: ${modelName}`);
       console.log(`System prompt length: ${enhancedSystemMessage.length}`);
       console.log(`Messages count: ${formattedMessages.length}`);
+      console.log(`Message roles: ${formattedMessages.map(m => m.role).join(', ')}`);
+      
+      // Debug log the messages being sent (redacted for privacy)
+      console.log(`Messages being sent to Anthropic (first 50 chars): ${
+        formattedMessages.map(m => `${m.role}: ${
+          typeof m.content === 'string' 
+            ? m.content.substring(0, 50) + (m.content.length > 50 ? '...' : '')
+            : '[complex content]'
+        }`).join(' | ')
+      }`);
       
       let response: AsyncIterable<MessageStreamEvent>;
       try {
@@ -216,16 +303,33 @@ Content: ${result.content || 'No content available'}
       } catch (apiError) {
         console.error("Anthropic API error:", apiError);
         
-        // Fall back to the configured fallback model if primary model fails
+        // Add diagnostic information
+        console.error("Error details:", 
+          typeof apiError === 'object' && apiError !== null 
+            ? JSON.stringify(apiError, null, 2)
+            : String(apiError)
+        );
+        
+        // Fall back to the configured fallback model with slightly different parameters
         console.log(`Falling back to ${FALLBACK_MODEL_ID} model`);
-        response = await anthropic.messages.create({
-          model: FALLBACK_MODEL_ID,
-          max_tokens: 2000,
-          system: enhancedSystemMessage,
-          messages: formattedMessages,
-          temperature: 0.7,
-          stream: true
-        });
+        
+        try {
+          response = await anthropic.messages.create({
+            model: FALLBACK_MODEL_ID,
+            max_tokens: 1000, // Reduce max tokens
+            system: enhancedSystemMessage.substring(0, 1000), // Truncate system message
+            messages: formattedMessages.slice(-5), // Use only last 5 messages
+            temperature: 0.7,
+            stream: true
+          });
+        } catch (fallbackError) {
+          console.error("Fallback model error:", fallbackError);
+          return createErrorResponse(
+            'Unable to generate a response',
+            'Both primary and fallback AI models failed to respond. Please try again with a simpler query.',
+            503
+          );
+        }
       }
       
       // Extract the stream from the response
@@ -238,35 +342,78 @@ Content: ${result.content || 'No content available'}
       return createDataStreamResponse({
         execute: async (writer) => {
           let completion = '';
+          let streamErrors = false;
+          let totalChunks = 0;
+          let textChunks = 0;
           
           try {
-            // Process stream chunks - simplified for reliability
-            for await (const chunk of stream) {
-              if (chunk.type === 'content_block_delta' && chunk.delta && 'text' in chunk.delta) {
-                const text = chunk.delta.text;
-                completion += text;
-                writer.writeData({ text });
+            // Add timeout for stream processing to prevent hanging
+            const timeout = setTimeout(() => {
+              console.error('Stream processing timed out after 60 seconds');
+              streamErrors = true;
+              writer.writeData({ 
+                text: "\n\nI apologize, but the response timed out. Please try again with a shorter query." 
+              });
+            }, 60000);
+            
+            // Process stream chunks with more detailed logging and error handling
+            try {
+              for await (const chunk of stream) {
+                totalChunks++;
+                
+                // Check for different chunk types
+                if (chunk.type === 'content_block_delta' && chunk.delta && 'text' in chunk.delta) {
+                  const text = chunk.delta.text;
+                  if (typeof text === 'string') {
+                    textChunks++;
+                    completion += text;
+                    writer.writeData({ text });
+                  }
+                } else if (chunk.type === 'message_delta' && 'stop_reason' in chunk.delta) {
+                  console.log(`Stream complete with stop reason: ${chunk.delta.stop_reason}`);
+                }
               }
+              
+              console.log(`Stream processed ${totalChunks} total chunks, ${textChunks} text chunks`);
+            } catch (streamError) {
+              streamErrors = true;
+              console.error('Error during stream processing:', streamError);
+              writer.writeData({ 
+                text: "\n\nI apologize, but there was an error while generating the response. Please try again." 
+              });
+            } finally {
+              clearTimeout(timeout);
             }
             
             // Save complete response to database
             if (completion.trim().length === 0) {
-              completion = "I'm sorry, I wasn't able to generate a response. Please try again.";
+              const fallbackMessage = "I'm sorry, I wasn't able to generate a response. Please try again.";
+              completion = fallbackMessage;
+              
+              if (!streamErrors) {
+                writer.writeData({ text: fallbackMessage });
+              }
             }
             
-            await saveMessages({
-              messages: [{
-                id: messageId,
-                chatId: id,
-                role: 'assistant',
-                content: completion,
-                createdAt: new Date(),
-              }],
-            });
+            try {
+              await saveMessages({
+                messages: [{
+                  id: messageId,
+                  chatId: id,
+                  role: 'assistant',
+                  content: completion,
+                  createdAt: new Date(),
+                }],
+              });
+              console.log('Successfully saved message to database');
+            } catch (dbError) {
+              console.error('Failed to save message to database:', dbError);
+              // Don't expose database errors to the user, they already have the response
+            }
           } catch (e) {
-            console.error('Error processing stream:', e);
+            console.error('Fatal error in stream execution:', e);
             writer.writeData({ 
-              text: "\n\nI apologize, but there was an error processing the response. Please try again." 
+              text: "\n\nI apologize, but there was a critical error processing the response. Please try again later." 
             });
           }
         }
