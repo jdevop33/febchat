@@ -475,12 +475,11 @@ Content: ${result.content || 'No content available'}
         
         try {
           // Create a minimal valid message for fallback
-          const fallbackMessages: MessageParam[] = [
-            { 
-              role: 'user' as const, 
-              content: userMessage?.content?.toString() || 'What can you tell me about Oak Bay bylaws?' 
-            }
-          ];
+          const fallbackUserMessage: UserMessage = {
+            role: 'user',
+            content: userMessage?.content?.toString() || 'What can you tell me about Oak Bay bylaws?'
+          };
+          const fallbackMessages: MessageParam[] = [fallbackUserMessage];
           
           // Use shorter system prompt
           const shortSystemPrompt = "You are a helpful bylaw assistant for Oak Bay Municipality. Answer questions about bylaws concisely.";
