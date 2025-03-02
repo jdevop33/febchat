@@ -4,6 +4,10 @@ import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 import {
   user,
@@ -20,10 +24,10 @@ import type { ArtifactKind } from '@/components/artifact';
 
 // Initialize database connection with error handling
 if (!process.env.POSTGRES_URL) {
-  console.error('POSTGRES_URL environment variable is not set. Database functionality will fail.');
+  console.error('CRITICAL ERROR: POSTGRES_URL environment variable is not set. Database functionality will fail.');
 }
 
-// Create database client with connection pooling and retry logic
+// Create database client with improved connection pooling and retry logic
 let client: ReturnType<typeof postgres>;
 try {
   client = postgres(process.env.POSTGRES_URL || '', {
