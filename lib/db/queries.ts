@@ -4,7 +4,6 @@ import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
-import { sql as vercelSql } from '@vercel/postgres';
 import postgres from 'postgres';
 import { env } from 'node:process';
 
@@ -115,7 +114,6 @@ if (useMockDb) {
         useMockDb = true;
       }
     }
-  }
   } catch (error) {
     console.error('Failed to initialize database connection:', error);
     console.log('⚠️ Database connection failed, enabling mock mode');

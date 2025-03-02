@@ -1,5 +1,4 @@
 import { streamText } from 'ai';
-import type { Message } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
 // Import the pre-configured AI SDK models
@@ -15,7 +14,6 @@ import {
   generateUUID,
   getMostRecentUserMessage,
 } from '@/lib/utils';
-import type { BylawToolResult } from '@/lib/bylaw-search/types';
 
 import { generateTitleFromUserMessage } from '../../actions';
 
@@ -146,25 +144,30 @@ export async function POST(request: Request) {
         });
       }
       
-      // Create response with data stream
-      const response = stream.toDataStreamResponse();
-      
-      // Save message after response stream starts
+      // First, let's collect all text for saving to DB
       let fullContent = '';
       
-      // Create a cloned stream to capture the full response for saving to DB
-      const clonedStream = stream.clone();
+      // Set up callbacks to gather text
+      const responseStream = stream.toDataStreamResponse();
       
-      // Process the cloned stream in the background to save the full message
+      // Process stream in the background to save final content
       (async () => {
         try {
-          for await (const chunk of clonedStream) {
+          // Clone the stream by processing it separately
+          const streamForSaving = await streamText({
+            model: primaryModel,
+            messages: aiMessages,
+            system: systemPrompt({ selectedChatModel }),
+          });
+          
+          // Collect all text chunks
+          for await (const chunk of streamForSaving) {
             if (chunk.type === 'text') {
               fullContent += chunk.text;
             }
           }
           
-          // Save complete response to database
+          // Save complete message to database
           await saveMessages({
             messages: [{
               id: messageId,
@@ -180,7 +183,7 @@ export async function POST(request: Request) {
         }
       })();
       
-      return response;
+      return responseStream;
     } catch (error) {
       console.error('Chat API: Error in streaming response:', error);
       

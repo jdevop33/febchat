@@ -1,6 +1,6 @@
 // Helper script to enable mock database mode
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Path to .env.local file
 const envFilePath = path.join(__dirname, '.env.local');

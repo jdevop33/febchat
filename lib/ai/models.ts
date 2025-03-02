@@ -1,5 +1,4 @@
 import { anthropic as anthropicProvider } from '@ai-sdk/anthropic';
-import { customProvider } from 'ai';
 import { env } from 'node:process';
 
 // Constants
