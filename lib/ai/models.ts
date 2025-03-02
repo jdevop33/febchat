@@ -13,10 +13,20 @@ console.log(`Claude AI configuration:`);
 console.log(` - Primary model: ${DEFAULT_MODEL_ID}`);
 console.log(` - Fallback model: ${FALLBACK_MODEL_ID}`);
 
-// Initialize the Anthropic client
-export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '', // Empty string will cause explicit errors
-});
+// Initialize the Anthropic client with error handling
+export let anthropic: Anthropic;
+try {
+  anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY || '', // Empty string will cause explicit errors
+  });
+  console.log("Anthropic client initialized successfully");
+} catch (error) {
+  console.error("Error initializing Anthropic client:", error);
+  // Create a fallback client that will throw more informative errors
+  anthropic = new Anthropic({
+    apiKey: 'missing_api_key_see_logs',
+  });
+}
 
 // Validate environment during initialization
 if (!process.env.ANTHROPIC_API_KEY) {

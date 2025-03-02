@@ -85,9 +85,30 @@ const formatMessagesForAnthropic = (messages: Array<Message>): MessageParam[] =>
 
 // Main API endpoint for chat
 export async function POST(request: Request) {
+  // Log all request details for debugging
+  console.log("Chat API: Request received", {
+    method: request.method,
+    url: request.url,
+    headers: Object.fromEntries([...request.headers.entries()].map(([key, value]) => 
+      [key, key.toLowerCase().includes('auth') ? '[REDACTED]' : value]
+    ))
+  });
+  
   try {
+    console.log("Chat API: Starting request processing");
+    
+    // Log environment check
+    console.log("Chat API: Environment check", {
+      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      nodeEnv: process.env.NODE_ENV,
+      selectedModel: process.env.CLAUDE_MODEL,
+      fallbackModel: process.env.CLAUDE_FALLBACK_MODEL
+    });
+    
     // Check API key at the beginning - fail fast if missing
     if (!process.env.ANTHROPIC_API_KEY) {
+      console.error("Chat API: Missing API key");
       return createErrorResponse(
         'Server configuration error: Missing API key',
         'The API key for the AI service is not configured. Please contact support.'
@@ -95,10 +116,18 @@ export async function POST(request: Request) {
     }
 
     // Parse request
-    const requestData = await request.json();
+    let requestData;
+    try {
+      requestData = await request.json();
+      console.log("Chat API: Request parsed successfully");
+    } catch (parseError) {
+      console.error("Chat API: Failed to parse request JSON:", parseError);
+      return createErrorResponse('Invalid JSON in request', undefined, 400);
+    }
     
     // Validate request structure
     if (!requestData || typeof requestData !== 'object') {
+      console.error("Chat API: Invalid request structure:", requestData);
       return createErrorResponse('Invalid request format', undefined, 400);
     }
     
@@ -163,10 +192,29 @@ export async function POST(request: Request) {
     });
 
     try {
-      // Import tools and needed functions
-      const { searchBylawsTool } = await import('@/lib/ai/tools/search-bylaws');
-      const { searchBylaws } = await import('@/lib/bylaw-search');
-      const { createToolExecutor } = await import('@/lib/ai/fix-tools');
+      // Import tools and needed functions with error handling
+      console.log("Chat API: Importing bylaw search tools");
+      
+      let searchBylawsTool, searchBylaws, createToolExecutor;
+      
+      try {
+        const toolsModule = await import('@/lib/ai/tools/search-bylaws');
+        const searchModule = await import('@/lib/bylaw-search');
+        const fixToolsModule = await import('@/lib/ai/fix-tools');
+        
+        searchBylawsTool = toolsModule.searchBylawsTool;
+        searchBylaws = searchModule.searchBylaws;
+        createToolExecutor = fixToolsModule.createToolExecutor;
+        
+        console.log("Chat API: Successfully imported all modules");
+      } catch (importError) {
+        console.error("Chat API: Failed to import required modules:", importError);
+        return createErrorResponse(
+          'Server configuration error',
+          'Failed to load required components. Please try again later.',
+          500
+        );
+      }
       
       // TOOLS INTEGRATION IS COMPLEX - FOR NOW, LET'S USE THE DIRECT CALL APPROACH
       // We'll invoke the bylaw search function directly
@@ -446,11 +494,19 @@ Content: ${result.content || 'No content available'}
     }
   } catch (error) {
     console.error('Unexpected error in chat API:', error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
     
+    // Get stack trace for better debugging
+    if (error instanceof Error) {
+      console.error('Stack trace:', error.stack);
+    }
+    
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error details:', errorMessage);
+    
+    // In production, provide a generic error message but log the details
     return createErrorResponse(
       'An unexpected error occurred',
-      process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      process.env.NODE_ENV === 'development' ? errorMessage : 'Please try again later or contact support.'
     );
   }
 }
