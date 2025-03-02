@@ -69,6 +69,23 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // Validate chatId and messageId format to avoid database errors
+    if (typeof chatId !== 'string' || !/^[0-9a-f-]+$/i.test(chatId)) {
+      console.log(`Vote API: Invalid chatId format: ${chatId}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid chatId format' }), 
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof messageId !== 'string' || !/^[0-9a-f-]+$/i.test(messageId)) {
+      console.log(`Vote API: Invalid messageId format: ${messageId}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid messageId format' }), 
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate vote type
     if (type !== 'up' && type !== 'down') {
       console.log(`Vote API: Invalid type - ${type}`);
@@ -90,7 +107,7 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Process vote with error handling
+    // Process vote with improved error handling
     try {
       console.log(`Vote API: Submitting ${type} vote for message ${messageId}`);
       await voteMessage({
@@ -101,8 +118,26 @@ export async function PATCH(request: Request) {
       console.log('Vote API: Vote successful');
       
       return Response.json({ success: true, message: 'Vote recorded successfully' }, { status: 200 });
-    } catch (voteError) {
+    } catch (voteError: any) {
       console.error('Vote API: Error recording vote:', voteError);
+      
+      // Handle specific error types
+      if (voteError?.message?.includes('not found')) {
+        return Response.json(
+          { error: 'Message or chat not found', details: voteError.message }, 
+          { status: 404 }
+        );
+      }
+      
+      // Handle database constraint errors
+      if (voteError?.message?.includes('constraint') || 
+          voteError?.message?.includes('foreign key')) {
+        return Response.json(
+          { error: 'Database constraint violation', details: 'The message or chat may have been deleted' }, 
+          { status: 409 }
+        );
+      }
+      
       return Response.json(
         { error: 'Failed to record vote', details: voteError instanceof Error ? voteError.message : 'Unknown error' }, 
         { status: 500 }

@@ -200,37 +200,66 @@ export async function voteMessage({
   type: 'up' | 'down';
 }) {
   try {
-    // First verify the message exists and belongs to this chat
-    const [messageExists] = await db
-      .select()
-      .from(message)
-      .where(and(eq(message.id, messageId), eq(message.chatId, chatId)));
-      
-    if (!messageExists) {
-      console.error(`Message ${messageId} not found in chat ${chatId}`);
-      throw new Error(`Message ${messageId} not found in chat ${chatId}`);
+    // Verify chat exists first
+    try {
+      const chat = await getChatById({ id: chatId });
+      if (!chat) {
+        console.error(`Chat ${chatId} not found`);
+        throw new Error(`Chat ${chatId} not found`);
+      }
+    } catch (chatError) {
+      console.error(`Error verifying chat ${chatId}:`, chatError);
+      throw new Error(`Failed to verify chat: ${chatError instanceof Error ? chatError.message : 'Unknown error'}`);
     }
     
-    // Now check for existing vote with both message ID and chat ID
-    const [existingVote] = await db
-      .select()
-      .from(vote)
-      .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
-
-    if (existingVote) {
-      console.log(`Updating existing vote for message ${messageId} in chat ${chatId}`);
-      return await db
-        .update(vote)
-        .set({ isUpvoted: type === 'up' })
+    // Verify the message exists and belongs to this chat
+    try {
+      const [messageExists] = await db
+        .select()
+        .from(message)
+        .where(and(eq(message.id, messageId), eq(message.chatId, chatId)));
+        
+      if (!messageExists) {
+        console.error(`Message ${messageId} not found in chat ${chatId}`);
+        throw new Error(`Message ${messageId} not found in chat ${chatId}`);
+      }
+    } catch (messageError) {
+      console.error(`Error verifying message ${messageId}:`, messageError);
+      throw new Error(`Failed to verify message: ${messageError instanceof Error ? messageError.message : 'Unknown error'}`);
+    }
+    
+    // Check for existing vote with both message ID and chat ID
+    try {
+      const [existingVote] = await db
+        .select()
+        .from(vote)
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+
+      if (existingVote) {
+        console.log(`Updating existing vote for message ${messageId} in chat ${chatId}`);
+        return await db
+          .update(vote)
+          .set({ isUpvoted: type === 'up' })
+          .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
+      }
+      
+      console.log(`Creating new vote for message ${messageId} in chat ${chatId}`);
+      return await db.insert(vote).values({
+        chatId,
+        messageId,
+        isUpvoted: type === 'up',
+      });
+    } catch (dbError) {
+      console.error(`Database error while ${type}voting message ${messageId} in chat ${chatId}:`, dbError);
+      
+      // Better error message for constraint violations
+      if (dbError instanceof Error && 
+         (dbError.message.includes('constraint') || dbError.message.includes('foreign key'))) {
+        throw new Error(`Database constraint violation: The message or chat referenced may have been deleted.`);
+      }
+      
+      throw new Error(`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`);
     }
-    
-    console.log(`Creating new vote for message ${messageId} in chat ${chatId}`);
-    return await db.insert(vote).values({
-      chatId,
-      messageId,
-      isUpvoted: type === 'up',
-    });
   } catch (error) {
     console.error(`Failed to ${type}vote message ${messageId} in chat ${chatId}:`, error);
     throw new DbOperationError('voteMessage', error);
