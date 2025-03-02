@@ -18,23 +18,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Export critical environment variables to client and server
-  env: {
-    // Database (only expose connection existence, not actual credentials)
-    HAS_DATABASE: !!process.env.POSTGRES_URL,
-    
-    // API Keys (only expose existence, not actual keys)
-    HAS_ANTHROPIC_API: !!process.env.ANTHROPIC_API_KEY,
-    HAS_OPENAI_API: !!process.env.OPENAI_API_KEY,
-    HAS_PINECONE_API: !!process.env.PINECONE_API_KEY,
-    
-    // Model names (safe to expose)
-    CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'claude-3-7-sonnet-20250219',
-    CLAUDE_FALLBACK_MODEL: process.env.CLAUDE_FALLBACK_MODEL || 'claude-3-5-sonnet-20240620',
-    
-    // Pinecone index name (safe to expose)
-    PINECONE_INDEX: process.env.PINECONE_INDEX || 'oak-bay-bylaws',
-  },
+  // Next.js 14+ doesn't support the env key in next.config.js
+  // Use process.env variables directly in your app instead
+  // See: https://nextjs.org/docs/pages/api-reference/next-config-js
+  env: undefined,
+  // Public environment variables should be prefixed with NEXT_PUBLIC_
+  // and defined in .env files directly
 };
 
 export default nextConfig;

@@ -57,7 +57,7 @@ async function main() {
       });
       
       console.log('✅ Text completion successful!');
-      console.log('   Response:', JSON.stringify(response.content[0]?.text).slice(0, 80) + '...');
+      console.log('   Response:', `${JSON.stringify(response.content[0]?.text).slice(0, 80)}...`);
       console.log('   Model used:', response.model);
       console.log('   Usage:', response.usage);
       
@@ -109,7 +109,7 @@ async function main() {
       });
       
       console.log('✅ Simple format test successful!');
-      if (simpleResponse.content && simpleResponse.content[0] && simpleResponse.content[0].text) {
+      if (simpleResponse.content?.[0]?.text) {
         console.log('   Response:', simpleResponse.content[0].text.slice(0, 80));
       }
     } catch (simpleError) {

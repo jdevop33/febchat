@@ -516,7 +516,7 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
         ? userMessage.content.substring(0, 1000) // Limit length for safety
         : 'What can you tell me about Oak Bay bylaws?';
       
-      console.log("Chat API: Using simplified messaging with user query:", userQuery.substring(0, 50) + "...");
+      console.log("Chat API: Using simplified messaging with user query:", `${userQuery.substring(0, 50)}...`);
       
       // Create a simple, reliable message format
       const simplifiedMessages: Array<MessageParam> = [
@@ -874,7 +874,7 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
             try {
               // Simplified chunk tracking
               let lastChunkTime = Date.now();
-              let chunkTimeout: NodeJS.Timeout | null = null;
+              let chunkTimeout: ReturnType<typeof setTimeout> | null = null;
               
               // Simplified chunk stall detection
               const resetChunkTimeout = () => {
@@ -888,6 +888,9 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
                   completion += stallMessage;
                 }, 10000); // 10 second timeout
               };
+              
+              // Define chunk timeout for safely typing setTimeout
+              const chunkTimeoutMs = 10000;
               
               for await (const chunk of stream) {
                 // Reset the timeout since we got a new chunk
@@ -1044,7 +1047,6 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
             } finally {
               // Clear both timeouts
               clearTimeout(streamTimeout);
-              if (chunkTimeout) clearTimeout(chunkTimeout);
               
               // Ensure we have a valid completion to save
               if (completion.trim().length === 0) {
