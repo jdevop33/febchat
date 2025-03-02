@@ -1,12 +1,6 @@
-import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
-
-// Load environment variables from .env.local
-config({
-  path: '.env.local',
-});
 
 const runMigrate = async () => {
   // Skip migrations if MOCK_DB is set (useful for CI environments)

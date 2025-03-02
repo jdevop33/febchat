@@ -1,13 +1,9 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config({ path: '.env.local' });
 
 import {
   user,
@@ -88,13 +84,19 @@ if (useMockDb) {
     });
     
     // Create a test query to verify connection
-    client.query('SELECT 1 as test').then(() => {
-      console.log('✅ Successfully connected to database');
-    }).catch(err => {
-      console.error('❌ Failed to connect to database:', err);
-      console.log('⚠️ Automatically enabling mock database mode');
+    try {
+      // Use drizzle instead of direct client query since the postgres package has different interfaces
+      db.execute(sql`SELECT 1 as test`).then(() => {
+        console.log('✅ Successfully connected to database');
+      }).catch(err => {
+        console.error('❌ Failed to connect to database:', err);
+        console.log('⚠️ Automatically enabling mock database mode');
+        useMockDb = true;
+      });
+    } catch (queryError) {
+      console.error('Error setting up test query:', queryError);
       useMockDb = true;
-    });
+    }
   } catch (error) {
     console.error('Failed to initialize database connection:', error);
     console.log('⚠️ Database connection failed, enabling mock mode');
