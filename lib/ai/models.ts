@@ -1,9 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { customProvider } from 'ai';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config({ path: '.env.local' });
 
 // Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
@@ -15,29 +11,11 @@ console.log(`Model configuration:`);
 console.log(` - Primary: ${DEFAULT_MODEL_ID}`);
 console.log(` - Fallback: ${FALLBACK_MODEL_ID}`);
 
-// Safety check for API key format
-const apiKey = process.env.ANTHROPIC_API_KEY || '';
-if (!apiKey) {
-  console.error('CRITICAL ERROR: ANTHROPIC_API_KEY environment variable is not set');
-}
-if (apiKey && !apiKey.startsWith('sk-ant-')) {
-  console.error('WARNING: ANTHROPIC_API_KEY format appears incorrect (should start with sk-ant-)');
-}
-
 // Initialize Anthropic client with better error handling
-export let anthropic: Anthropic;
-try {
-  anthropic = new Anthropic({
-    apiKey: apiKey,
-    timeout: 60000 // 60 second timeout
-  });
-} catch (error) {
-  console.error("Error initializing Anthropic client:", error);
-  // Create a fallback client that will throw better errors
-  anthropic = new Anthropic({
-    apiKey: 'invalid_key_see_server_logs'
-  });
-}
+export const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+  timeout: 60000 // 60 second timeout
+});
 
 // Custom provider with simpler implementation
 export const myProvider = customProvider({
@@ -88,23 +66,56 @@ export const myProvider = customProvider({
   }
 });
 
-// Helper functions
+// Helper functions for handling AI SDK prompt types
 function extractSystemPrompt(prompt: any): string {
   if (!prompt?.length) return '';
-  return prompt[0]?.role === 'system' && typeof prompt[0].content === 'string' 
-    ? prompt[0].content : '';
+  // Handle AI SDK prompt structure
+  const firstItem = prompt[0];
+  if (firstItem?.role === 'system') {
+    // Handle multiple content formats
+    if (typeof firstItem.content === 'string') {
+      return firstItem.content;
+    } else if (Array.isArray(firstItem.content)) {
+      // If it's an array of content parts, extract the text
+      for (const part of firstItem.content) {
+        if (part.type === 'text') {
+          return part.text;
+        }
+      }
+    }
+  }
+  return '';
 }
 
 function extractUserContent(prompt: any): string {
   if (!prompt?.length || prompt.length < 2) return '';
-  return prompt[1]?.role === 'user' && typeof prompt[1].content === 'string'
-    ? prompt[1].content : '';
+  // Handle AI SDK prompt structure
+  const userItem = prompt.find((item: any) => item.role === 'user') || prompt[1];
+  
+  // Handle multiple content formats
+  if (typeof userItem?.content === 'string') {
+    return userItem.content;
+  } else if (Array.isArray(userItem?.content)) {
+    // If it's an array of content parts, join the text parts
+    return userItem.content
+      .filter((part: any) => part.type === 'text')
+      .map((part: any) => part.text)
+      .join("\n");
+  }
+  return '';
 }
 
-function extractTextContent(response: any): string {
+function extractTextContent(response: Anthropic.Message): string {
   if (!response?.content?.length) return '';
-  const textBlock = response.content.find((block: any) => block.type === 'text');
-  return textBlock && 'text' in textBlock ? textBlock.text : '';
+  
+  // Handle different content block types safely
+  for (const block of response.content) {
+    if (block.type === 'text' && 'text' in block) {
+      return block.text;
+    }
+  }
+  
+  return '';
 }
 
 // Chat model definitions

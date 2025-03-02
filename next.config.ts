@@ -1,12 +1,9 @@
 import type { NextConfig } from 'next';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
 
 const nextConfig: NextConfig = {
   experimental: {
-    ppr: true,
+    // Partial Prerendering (PPR) is experimental and can cause issues
+    // ppr: true,
   },
   images: {
     remotePatterns: [

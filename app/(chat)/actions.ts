@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
-  updateChatVisiblityById,
+  updateChatVisibilityById,
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { myProvider } from '@/lib/ai/models';
@@ -21,17 +21,25 @@ export async function generateTitleFromUserMessage({
 }: {
   message: Message;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel('title-model'),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+  try {
+    // Format the message in a way the AI can understand
+    const messageContent = typeof message.content === 'string' 
+      ? message.content 
+      : JSON.stringify(message.content);
 
-  return title;
+    const { text: title } = await generateText({
+      model: myProvider.languageModel('title-model'),
+      system: `You will generate a short title based on the user message. 
+      The title should be under 80 characters, summarize the message content, 
+      and not use quotes or colons.`,
+      prompt: messageContent.substring(0, 1000), // Limit length for safety
+    });
+
+    return title || 'New Chat'; // Fallback title
+  } catch (error) {
+    console.error('Error generating title:', error);
+    return 'New Chat'; // Safe fallback
+  }
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
@@ -50,5 +58,5 @@ export async function updateChatVisibility({
   chatId: string;
   visibility: VisibilityType;
 }) {
-  await updateChatVisiblityById({ chatId, visibility });
+  await updateChatVisibilityById({ chatId, visibility });
 }

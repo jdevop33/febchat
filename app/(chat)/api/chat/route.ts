@@ -1,9 +1,5 @@
 import { createDataStreamResponse } from 'ai';
 import type { Message } from 'ai';
-import dotenv from 'dotenv';
-
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
 
 import { auth } from '@/app/(auth)/auth';
 // Import the pre-configured Anthropic client and model IDs
@@ -39,12 +35,12 @@ export async function POST(request: Request) {
   console.log("Chat API: Request received");
   try {
     // Check API key at the beginning
-    const apiKey = process.env.ANTHROPIC_API_KEY || '';
-    if (!apiKey || apiKey.trim() === '') {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
       console.error("Chat API: Missing API key");
       return createErrorResponse(
         'Server configuration error: Missing API key',
-        'The API key for the AI service is not configured. Please contact support.'
+        'The API key for the AI service is not configured. Please set ANTHROPIC_API_KEY.'
       );
     }
 
@@ -155,14 +151,22 @@ export async function POST(request: Request) {
             });
           }
           
-          // Process stream - simplify to avoid complex error states
+          // Process stream - with proper type handling for Anthropic stream chunks
           for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && 
-                chunk.delta && 
-                'text' in chunk.delta) {
-              const text = chunk.delta.text;
-              completion += text;
-              writer.writeData({ text });
+            try {
+              // Only handle content_block_delta chunks safely
+              if (chunk.type === 'content_block_delta' && chunk.delta) {
+                // We need to safely handle the delta content
+                // Different delta types have different structures
+                if ('text' in chunk.delta && typeof chunk.delta.text === 'string') {
+                  const text = chunk.delta.text;
+                  completion += text;
+                  writer.writeData({ text });
+                }
+              }
+            } catch (chunkError) {
+              console.error("Error processing chunk:", chunkError);
+              // Continue processing remaining chunks
             }
           }
           

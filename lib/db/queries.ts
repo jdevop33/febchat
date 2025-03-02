@@ -556,7 +556,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   }
 }
 
-export async function updateChatVisiblityById({
+export async function updateChatVisibilityById({
   chatId,
   visibility,
 }: {
@@ -570,3 +570,6 @@ export async function updateChatVisiblityById({
     throw error;
   }
 }
+
+// Legacy function name with typo for backward compatibility
+export const updateChatVisiblityById = updateChatVisibilityById;

@@ -16,8 +16,7 @@ export const authConfig = {
       const isOnRegister = nextUrl.pathname.startsWith('/register');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
       
-      // Debug auth status
-      console.log(`Auth status: ${isLoggedIn ? 'Logged in' : 'Not logged in'}, Path: ${nextUrl.pathname}`);
+      // Auth status check
 
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
         return Response.redirect(new URL('/', nextUrl as unknown as URL));

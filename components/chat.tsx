@@ -44,7 +44,6 @@ export function Chat({
     body: { id, selectedChatModel },
     initialMessages,
     api: '/api/chat',
-    experimental_throttle: 0, // Disable throttling for non-streaming response
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
