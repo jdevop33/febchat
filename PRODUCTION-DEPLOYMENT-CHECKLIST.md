@@ -1,4 +1,4 @@
-# Oak Bay Bylaws Chatbot Production Deployment Checklist [VERIFIED]
+# Oak Bay Bylaws Chatbot Production Deployment Checklist [FIXED]
 
 This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configured and ready for production use.
 
@@ -7,6 +7,8 @@ This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configur
 - [x] Pinecone API key is set in environment variables
 - [x] Pinecone index name is configured correctly as `oak-bay-bylaws`
 - [x] OpenAI API key is set in environment variables
+- [x] Anthropic API key is set in environment variables
+- [x] Claude model configuration (`CLAUDE_MODEL` and `CLAUDE_FALLBACK_MODEL`) is set
 - [x] Authentication secret is generated and set
 - [x] Database connection strings are configured
 

@@ -1,3 +1,5 @@
+#\!/bin/bash
+cat > temp_file.ts << 'EOL'
 import type { Message } from 'ai';
 import { createDataStreamResponse } from 'ai';
 
@@ -328,3 +330,7 @@ export async function DELETE(request: Request) {
     );
   }
 }
+EOL
+
+cp temp_file.ts app/"(chat)"/api/chat/route.ts
+rm temp_file.ts

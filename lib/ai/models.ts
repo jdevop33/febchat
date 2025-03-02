@@ -3,7 +3,15 @@ import { customProvider } from 'ai';
 
 // Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
-export const DEFAULT_MODEL_ID = 'claude-3-7-sonnet-20250219';
+
+// Model configuration with environment variable fallbacks for flexibility
+export const DEFAULT_MODEL_ID = process.env.CLAUDE_MODEL || 'claude-3-7-sonnet-20250219'; 
+export const FALLBACK_MODEL_ID = process.env.CLAUDE_FALLBACK_MODEL || 'claude-3-5-sonnet-20240620';
+
+// Log model configuration on startup
+console.log(`Claude AI configuration:`);
+console.log(` - Primary model: ${DEFAULT_MODEL_ID}`);
+console.log(` - Fallback model: ${FALLBACK_MODEL_ID}`);
 
 // Initialize the Anthropic client
 export const anthropic = new Anthropic({

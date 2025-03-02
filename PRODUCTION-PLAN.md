@@ -635,10 +635,13 @@ export function BylawSearchFilters({
 
 ## 12. Recent Updates and Fixes
 
-- **Model Upgrade**: Updated to Claude 3.7 Sonnet model (claude-3-7-sonnet-20250219) with fallback to Claude 3.5 Sonnet
-- **API Integration**: Fixed Anthropic API integration with improved error handling
+- **Model Configuration**: Updated to use configurable Claude models via environment variables:
+  - Primary: `CLAUDE_MODEL=claude-3-7-sonnet-20250219` (or -latest for development)
+  - Fallback: `CLAUDE_FALLBACK_MODEL=claude-3-5-sonnet-20240620`
+- **API Integration**: Fixed Anthropic API integration with improved error handling and model failover
 - **Database Resilience**: Enhanced database connection pooling with error handling
-- **Vector Search**: Improved Pinecone integration with better error handling
-- **Authentication**: Fixed authentication workflow and user management
+- **Vector Search**: Improved Pinecone integration with better error handling and fallback mechanisms
+- **Authentication**: Fixed authentication workflow and user management with better debugging
 - **UI Integration**: Added support for UI avatars and improved image configuration
-- **Build Process**: Streamlined build process and deployment checklist
+- **Build Process**: Streamlined build process and TypeScript compatibility improvements
+- **Deployment Process**: Updated deployment checklist with environment variable configuration
