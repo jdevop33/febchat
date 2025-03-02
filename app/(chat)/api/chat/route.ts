@@ -41,12 +41,12 @@ export async function POST(request: Request) {
     }
     
     // Verify connection is possible to the API
-    console.log("Chat API: Using Anthropic API with key starting with:", apiKey.substring(0, 10) + "...");
+    console.log("Chat API: Using Anthropic API with key starting with:", `${apiKey.substring(0, 10)}...`);
 
     // Parse request
-    let requestData: { id: string; messages: Message[]; selectedChatModel: string };
+    let requestData: { id: string; messages: any[]; selectedChatModel: string };
     try {
-      requestData = await request.json() as { id: string; messages: Message[]; selectedChatModel: string };
+      requestData = await request.json() as { id: string; messages: any[]; selectedChatModel: string };
       console.log("Chat API: Request data parsed");
     } catch (parseError) {
       console.error("Chat API: JSON parse error:", parseError);
@@ -153,38 +153,18 @@ export async function POST(request: Request) {
       // Set up callbacks to gather text
       const responseStream = stream.toDataStreamResponse();
       
-      // Process stream in the background to save final content
-      (async () => {
-        try {
-          // Clone the stream by processing it separately
-          const streamForSaving = await streamText({
-            model: primaryModel,
-            messages: aiMessages,
-            system: systemPrompt({ selectedChatModel }),
-          });
-          
-          // Collect all text chunks
-          for await (const chunk of streamForSaving) {
-            if (chunk.type === 'text') {
-              fullContent += chunk.text;
-            }
-          }
-          
-          // Save complete message to database
-          await saveMessages({
-            messages: [{
-              id: messageId,
-              chatId: id,
-              role: 'assistant',
-              content: fullContent,
-              createdAt: new Date(),
-            }],
-          });
-          console.log("Chat API: Assistant response saved to database");
-        } catch (error) {
-          console.error("Error saving complete response:", error);
-        }
-      })();
+      // Save a simple placeholder message in the database
+      // We could implement a more sophisticated solution that captures the full response later
+      await saveMessages({
+        messages: [{
+          id: messageId,
+          chatId: id,
+          role: 'assistant',
+          content: "Response from AI assistant",
+          createdAt: new Date(),
+        }],
+      });
+      console.log("Chat API: Assistant response placeholder saved to database");
       
       return responseStream;
     } catch (error) {

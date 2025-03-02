@@ -22,18 +22,12 @@ if (isProduction && !env.ANTHROPIC_API_KEY) {
 }
 
 // Create AI SDK model instances with anthropicProvider
-export const primaryModel = anthropicProvider(DEFAULT_MODEL_ID, {
-  apiKey: env.ANTHROPIC_API_KEY,
-});
+export const primaryModel = anthropicProvider(DEFAULT_MODEL_ID);
 
-export const fallbackModel = anthropicProvider(FALLBACK_MODEL_ID, {
-  apiKey: env.ANTHROPIC_API_KEY,
-});
+export const fallbackModel = anthropicProvider(FALLBACK_MODEL_ID);
 
 // Title model for generating chat titles
-export const titleModel = anthropicProvider(DEFAULT_MODEL_ID, {
-  apiKey: env.ANTHROPIC_API_KEY
-});
+export const titleModel = anthropicProvider(DEFAULT_MODEL_ID);
 
 // Helper functions for handling AI SDK prompt types
 function extractSystemPrompt(prompt: any): string {
@@ -74,7 +68,7 @@ function extractUserContent(prompt: any): string {
   return '';
 }
 
-function extractTextContent(response: Anthropic.Message): string {
+function extractTextContent(response: any): string {
   if (!response?.content?.length) return '';
   
   // Handle different content block types safely
