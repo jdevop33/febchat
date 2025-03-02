@@ -14,6 +14,7 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx...
 POSTGRES_URL=postgres://user:password@host/database
 PINECONE_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx...
 PINECONE_INDEX=oak-bay-bylaws
+MOCK_DB=true               # Optional: Enable in-memory database for testing
 ```
 
 ### Testing Environment Variables
@@ -23,6 +24,24 @@ Run the following command to check if your environment variables are loading cor
 ```bash
 node -e "require('dotenv').config({path:'.env.local'}); console.log('ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY?.slice(0, 10)); console.log('POSTGRES_URL:', process.env.POSTGRES_URL?.slice(0, 20))"
 ```
+
+## 💾 Database Issues
+
+If you're experiencing database connection issues, you can use the mock database mode to test the application without a real database:
+
+1. Run the helper script to enable mock database mode:
+   ```bash
+   node enable-mock-db.js
+   ```
+2. Restart your application
+3. The application will now use an in-memory database instead of PostgreSQL
+
+This is useful for:
+- Testing when you don't have access to the production database
+- Verifying if database connection issues are causing other problems
+- Development without setting up a local PostgreSQL instance
+
+Note: All data will be stored in memory and lost when the server restarts.
 
 ## 🧪 Diagnostic Test Scripts
 
