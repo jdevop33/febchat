@@ -296,15 +296,27 @@ export async function POST(request: Request) {
       // Setup parameters for Anthropic API
       let enhancedSystemMessage = systemPrompt({ selectedChatModel });
       
-      // Enhance the system message with bylaw results if found
+      // Enhance the system message with bylaw results if found - with length limits
       if (bylawResults?.found && bylawResults.results) {
-        const formattedBylawInfo = bylawResults.results.map(result => {
+        // Limit to top 5 results to prevent exceeding token limits
+        const limitedResults = bylawResults.results.slice(0, 5);
+        console.log(`Using ${limitedResults.length} of ${bylawResults.results.length} bylaw results`);
+        
+        const formattedBylawInfo = limitedResults.map(result => {
+          // Limit content length to reduce token usage
+          const contentPreview = typeof result.content === 'string' 
+            ? result.content.substring(0, 800) 
+            : String(result.content || '').substring(0, 800);
+            
           return `
 Bylaw: ${result.bylawNumber || 'Unknown'} (${result.title || 'Untitled Bylaw'})
 Section: ${result.section || 'Unknown Section'}
-Content: ${result.content || 'No content available'}
+Content: ${contentPreview || 'No content available'}${contentPreview.length >= 800 ? '...' : ''}
 `;
         }).join("\n---\n");
+        
+        // Measure and log the size of the bylaw info being added
+        console.log(`Bylaw info size: ${formattedBylawInfo.length} characters`);
         
         enhancedSystemMessage += `\n\nRELEVANT BYLAW INFORMATION:\n${formattedBylawInfo}\n\nWhen answering user questions, use ONLY the bylaw information provided above. Cite the exact bylaw number and section in your response.`;
       }
@@ -359,10 +371,28 @@ Content: ${result.content || 'No content available'}
         formattedMessages.push(finalUserMessage);
       }
       
+      // Add extensive debugging info to track exactly what's happening
+      console.log('=== DETAILED API CALL DIAGNOSTICS ===');
       console.log(`Using model: ${modelName}`);
-      console.log(`System prompt length: ${enhancedSystemMessage.length}`);
+      console.log(`System prompt length: ${enhancedSystemMessage.length} characters`);
+      console.log(`System prompt snippet: ${enhancedSystemMessage.substring(0, 100)}...`);
       console.log(`Messages count: ${formattedMessages.length}`);
-      console.log(`Message roles: ${formattedMessages.map(m => m.role).join(', ')}`);
+      console.log(`Message roles sequence: ${formattedMessages.map(m => m.role.charAt(0)).join('')}`);
+      
+      // Log more details about each message (without exposing full content)
+      formattedMessages.forEach((msg, idx) => {
+        const contentPreview = typeof msg.content === 'string' 
+          ? `${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}`
+          : '[complex content]';
+        console.log(`Message #${idx}: role=${msg.role}, content_length=${msg.content.length}, preview="${contentPreview}"`);
+      });
+      
+      // Log additional environment info
+      console.log('Environment:', {
+        nodeEnv: process.env.NODE_ENV,
+        hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY?.length,
+        vercelEnv: process.env.VERCEL_ENV || 'unknown'
+      });
       
       // Debug log the messages being sent (redacted for privacy)
       console.log(`Messages being sent to Anthropic (first 50 chars): ${
@@ -418,14 +448,36 @@ Content: ${result.content || 'No content available'}
         
         // Create Anthropic message stream
         console.log("Sending request to Anthropic API...");
-        response = await anthropic.messages.create({
-          model: modelName,
-          max_tokens: 2000,
-          system: enhancedSystemMessage,
-          messages: formattedMessages,
-          temperature: 0.5,
-          stream: true
-        });
+        
+        try {
+          // Log the exact request parameters (helps debug API issues)
+          const requestParams = {
+            model: modelName,
+            maxTokens: 2000,
+            systemPromptLength: enhancedSystemMessage.length,
+            messageCount: formattedMessages.length,
+            messagePattern: formattedMessages.map(m => m.role.charAt(0)).join(''),
+            temperature: 0.5,
+            stream: true
+          };
+          console.log("API Request parameters:", requestParams);
+          
+          response = await anthropic.messages.create({
+            model: modelName,
+            max_tokens: 2000,
+            system: enhancedSystemMessage,
+            messages: formattedMessages,
+            temperature: 0.5,
+            stream: true
+          });
+        } catch (requestError) {
+          console.error("Failed to create request:", requestError);
+          // Handle stack trace safely
+          if (requestError instanceof Error) {
+            console.error("Stack trace:", requestError.stack);
+          }
+          throw requestError; // Re-throw to be caught by the outer catch
+        }
         
         console.log("Successfully created Anthropic stream");
       } catch (apiError) {
@@ -455,6 +507,7 @@ Content: ${result.content || 'No content available'}
         
         // For specific error codes, provide more helpful responses
         if (statusCode === 401) {
+          console.error("Authentication error with API key");
           return createErrorResponse(
             'Authentication error',
             'API key may be invalid or expired. Please check server configuration.',
@@ -463,10 +516,36 @@ Content: ${result.content || 'No content available'}
         }
         
         if (statusCode === 400) {
+          console.error("Bad request error - likely invalid message format or content");
+          
+          // Add specific debugging for 400 errors
+          console.log("Message format debug info:");
+          console.log(`- First message role: ${formattedMessages[0]?.role}`);
+          console.log(`- Message sequence: ${formattedMessages.map(m => m.role.charAt(0)).join('')}`);
+          console.log(`- System prompt length: ${enhancedSystemMessage.length}`);
+          
           return createErrorResponse(
-            'Invalid request',
-            'The AI service rejected our request. Using simplified prompt for future queries may help.',
+            'Invalid request format',
+            'The AI service rejected our request format. Please try a simpler query.',
             400
+          );
+        }
+        
+        if (statusCode === 429) {
+          console.error("Rate limit exceeded");
+          return createErrorResponse(
+            'Rate limit exceeded',
+            'Too many requests to the AI service. Please try again in a few moments.',
+            429
+          );
+        }
+        
+        if (statusCode === 413 || statusCode === 414 || errorDetails.includes('too long') || errorDetails.includes('token limit')) {
+          console.error("Content too large error");
+          return createErrorResponse(
+            'Content too large',
+            'The request contains too much text. Try a shorter query with more specific details.',
+            413
           );
         }
         
@@ -474,31 +553,60 @@ Content: ${result.content || 'No content available'}
         console.log(`Falling back to ${FALLBACK_MODEL_ID} model`);
         
         try {
-          // Create a minimal valid message for fallback
+          // Create an extremely minimal valid message for fallback
+          // Ensure it's as simple as possible to avoid format errors
+          const userQuery = typeof userMessage?.content === 'string' 
+            ? userMessage.content.substring(0, 200)  // Limit length
+            : 'What can you tell me about Oak Bay bylaws?';
+            
+          console.log(`Using fallback with simplified query: "${userQuery}"`);
+          
           const fallbackUserMessage: UserMessage = {
             role: 'user',
-            content: userMessage?.content?.toString() || 'What can you tell me about Oak Bay bylaws?'
+            content: userQuery
           };
           const fallbackMessages: MessageParam[] = [fallbackUserMessage];
           
-          // Use shorter system prompt
-          const shortSystemPrompt = "You are a helpful bylaw assistant for Oak Bay Municipality. Answer questions about bylaws concisely.";
+          // Use very short system prompt
+          const shortSystemPrompt = "You are a helpful bylaw assistant for Oak Bay. Be concise.";
+          
+          // Log the exact fallback request
+          console.log("Fallback request details:", {
+            model: FALLBACK_MODEL_ID,
+            systemPrompt: shortSystemPrompt,
+            message: userQuery,
+          });
           
           response = await anthropic.messages.create({
             model: FALLBACK_MODEL_ID,
-            max_tokens: 1000,
-            system: shortSystemPrompt,
-            messages: fallbackMessages,
-            temperature: 0.7,
+            max_tokens: 800,                // Reduced token count
+            system: shortSystemPrompt,      // Minimal system prompt
+            messages: fallbackMessages,     // Single user message
+            temperature: 0.7,              
             stream: true
           });
           
           console.log("Successfully created fallback stream");
         } catch (fallbackError) {
           console.error("Fallback model error:", fallbackError);
+          
+          // Extract any useful error information
+          let fallbackErrorDetails = "Unknown fallback error";
+          if (typeof fallbackError === 'object' && fallbackError !== null) {
+            fallbackErrorDetails = JSON.stringify(fallbackError, (key, value) => {
+              if (typeof value === 'string' && value.length > 100) {
+                return value.substring(0, 100) + '...';
+              }
+              return value;
+            });
+            
+            console.error("Fallback error details:", fallbackErrorDetails);
+          }
+          
+          // At this point, we've tried everything - return a helpful error to the user
           return createErrorResponse(
             'Unable to generate a response',
-            'Both primary and fallback AI models failed to respond. Please try again with a simpler query.',
+            'Our AI service is currently having difficulties. Please try again in a few minutes or with a simpler query.',
             503
           );
         }
@@ -530,21 +638,69 @@ Content: ${result.content || 'No content available'}
             
             // Process stream chunks with more detailed logging and error handling
             try {
+              // Track when we last received a chunk to detect stalls
+              let lastChunkTime = Date.now();
+              let chunkTimeout: NodeJS.Timeout | null = null;
+              
+              // Create a timeout that will trigger if we go too long between chunks
+              const resetChunkTimeout = () => {
+                if (chunkTimeout) clearTimeout(chunkTimeout);
+                chunkTimeout = setTimeout(() => {
+                  const secondsSinceLastChunk = (Date.now() - lastChunkTime) / 1000;
+                  console.error(`Stream stalled: No chunks received for ${secondsSinceLastChunk.toFixed(1)} seconds`);
+                  throw new Error(`Stream stalled after ${totalChunks} chunks`);
+                }, 15000); // 15 second timeout between chunks
+              };
+              
+              resetChunkTimeout();
+              
               for await (const chunk of stream) {
+                // Reset the timeout since we got a new chunk
+                resetChunkTimeout();
+                
+                // Track time between chunks
+                const now = Date.now();
+                const secsSinceLastChunk = (now - lastChunkTime) / 1000;
+                if (secsSinceLastChunk > 2) {
+                  console.log(`Delay of ${secsSinceLastChunk.toFixed(1)}s between chunks ${totalChunks} and ${totalChunks+1}`);
+                }
+                lastChunkTime = now;
+                
                 totalChunks++;
                 
-                // Check for different chunk types
+                // Parse and validate the chunk
+                if (!chunk) {
+                  console.warn(`Received empty chunk at position ${totalChunks}`);
+                  continue;
+                }
+                
+                // Log chunk type for debugging
+                if (totalChunks === 1 || totalChunks % 50 === 0) {
+                  console.log(`Processing chunk #${totalChunks} of type: ${chunk.type}`);
+                }
+                
+                // Check for different chunk types with robust error handling
                 if (chunk.type === 'content_block_delta' && chunk.delta && 'text' in chunk.delta) {
                   const text = chunk.delta.text;
                   if (typeof text === 'string') {
                     textChunks++;
                     completion += text;
                     writer.writeData({ text });
+                  } else {
+                    console.warn(`Chunk ${totalChunks}: Delta text is not a string: ${typeof text}`);
                   }
                 } else if (chunk.type === 'message_delta' && 'stop_reason' in chunk.delta) {
                   console.log(`Stream complete with stop reason: ${chunk.delta.stop_reason}`);
+                } else {
+                  // Log other chunk types without flooding the logs
+                  if (totalChunks < 5 || totalChunks % 100 === 0) {
+                    console.log(`Chunk ${totalChunks}: Unhandled type "${chunk.type}"`);
+                  }
                 }
               }
+              
+              // Clean up the timeout
+              if (chunkTimeout) clearTimeout(chunkTimeout);
               
               console.log(`Stream processed ${totalChunks} total chunks, ${textChunks} text chunks`);
             } catch (streamError) {
