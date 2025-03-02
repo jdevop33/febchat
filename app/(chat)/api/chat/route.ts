@@ -36,6 +36,7 @@ const createErrorResponse = (message: string, details?: string, status = 500) =>
 };
 
 export async function POST(request: Request) {
+  console.log("Chat API: Request received");
   try {
     // Check API key at the beginning
     const apiKey = process.env.ANTHROPIC_API_KEY || '';
@@ -47,256 +48,190 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check API key format
-    if (!apiKey.startsWith('sk-ant-')) {
-      console.error("Chat API: API key format looks invalid (doesn't start with sk-ant-)");
-      return createErrorResponse(
-        'Server configuration error: Invalid API key format',
-        'The API key appears to be invalid. Please contact support.'
-      );
-    }
-
     // Parse request
     let requestData;
     try {
       requestData = await request.json();
+      console.log("Chat API: Request data parsed");
     } catch (parseError) {
+      console.error("Chat API: JSON parse error:", parseError);
       return createErrorResponse('Invalid JSON in request', undefined, 400);
     }
 
     const { id, messages, selectedChatModel } = requestData;
+    console.log(`Chat API: Processing request for chat ID: ${id}`);
 
     // Validate required fields
     if (!id || !messages || !Array.isArray(messages) || messages.length === 0) {
+      console.error("Chat API: Missing required fields");
       return createErrorResponse('Invalid request format', 'Missing required fields', 400);
     }
 
     // User authentication
     const session = await auth();
     if (!session?.user?.id) {
+      console.error("Chat API: User not authenticated");
       return createErrorResponse('Unauthorized', undefined, 401);
     }
 
     // Get user message
     const userMessage = getMostRecentUserMessage(messages);
     if (!userMessage || typeof userMessage.content !== 'string' || userMessage.content.trim() === '') {
+      console.error("Chat API: Invalid or empty user message");
       return createErrorResponse('Invalid user message', undefined, 400);
     }
 
     // Get or create chat
-    const chat = await getChatById({ id });
-    if (!chat) {
-      const title = await generateTitleFromUserMessage({ message: userMessage });
-      await saveChat({ id, userId: session.user.id, title });
+    let chat;
+    try {
+      chat = await getChatById({ id });
+      if (!chat) {
+        console.log(`Chat API: Creating new chat with ID: ${id}`);
+        const title = await generateTitleFromUserMessage({ message: userMessage });
+        await saveChat({ id, userId: session.user.id, title });
+      }
+    } catch (chatError) {
+      console.error("Chat API: Error getting/creating chat:", chatError);
+      return createErrorResponse(
+        'Database error',
+        'Error accessing chat data',
+        500
+      );
     }
 
     // Save user message
-    await saveMessages({
-      messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
-    });
-
     try {
-      // Search for bylaws related to the user's query
-      let bylawResults: BylawToolResult | null = null;
-      try {
-        const userQuery = typeof userMessage.content === 'string'
-          ? userMessage.content
-          : '';
+      await saveMessages({
+        messages: [{ ...userMessage, createdAt: new Date(), chatId: id }],
+      });
+      console.log("Chat API: User message saved");
+    } catch (saveError) {
+      console.error("Chat API: Error saving user message:", saveError);
+      return createErrorResponse(
+        'Database error',
+        'Error saving message data',
+        500
+      );
+    }
 
-        console.log(`Searching bylaws for: ${userQuery}`);
+    // Create message ID for later saving
+    const messageId = generateUUID();
 
-        // Mock bylaw search for now
-        bylawResults = {
-          found: true,
-          results: [
-            {
-              bylawNumber: '4620',
-              title: 'Tree Protection Bylaw',
-              section: '3.1',
-              content: 'No person shall cut, remove or damage any protected tree without first obtaining a tree cutting permit.',
-              url: 'https://oakbay.civicweb.net/document/bylaw/4620'
-            },
-            {
-              bylawNumber: '4620',
-              title: 'Tree Protection Bylaw',
-              section: '4.2',
-              content: 'A protected tree means any tree with a diameter of 30 centimeters or more, measured at 1.4 meters above ground level.',
-              url: 'https://oakbay.civicweb.net/document/bylaw/4620'
-            },
-            {
-              bylawNumber: '4360',
-              title: 'Zoning Bylaw',
-              section: '5.2',
-              content: 'The minimum lot size for single family residential development shall be 695 square meters.',
-              url: 'https://oakbay.civicweb.net/document/bylaw/4360'
-            }
-          ]
-        };
-      } catch (e) {
-        console.error("Error searching bylaws:", e);
-        bylawResults = null;
-      }
+    // Create simple messages format for Claude with proper typing
+    const formattedMessages = messages.map(msg => ({
+      role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
+      content: typeof msg.content === 'string' 
+        ? [{ type: 'text' as const, text: msg.content }]
+        : [{ type: 'text' as const, text: String(msg.content) }]
+    }));
 
-      // Enhance system prompt with bylaw results if found
-      let enhancedSystemMessage = systemPrompt({ selectedChatModel });
-      if (bylawResults?.found && bylawResults.results) {
-        const limitedResults = bylawResults.results.slice(0, 5);
-        const formattedBylawInfo = limitedResults.map(result => {
-          const contentPreview = typeof result.content === 'string'
-            ? result.content.substring(0, 800)
-            : String(result.content || '').substring(0, 800);
-
-          return `
-Bylaw: ${result.bylawNumber || 'Unknown'} (${result.title || 'Untitled Bylaw'})
-Section: ${result.section || 'Unknown Section'}
-Content: ${contentPreview || 'No content available'}${contentPreview.length >= 800 ? '...' : ''}
-`;
-        }).join("\n---\n");
-
-        enhancedSystemMessage += `\n\nRELEVANT BYLAW INFORMATION:\n${formattedBylawInfo}\n\nWhen answering user questions, use ONLY the bylaw information provided above. Cite the exact bylaw number and section in your response.`;
-      }
-
-      // Use simplified message format for reliability
-      const userQuery = typeof userMessage.content === 'string'
-        ? userMessage.content.substring(0, 1000)
-        : 'What can you tell me about Oak Bay bylaws?';
-
-      // Try the primary model first
-      try {
-        const messageId = generateUUID();
-        const model = DEFAULT_MODEL_ID;
-
-        // Use non-streaming approach for better reliability
-        const response = await anthropic.messages.create({
-          model,
-          max_tokens: 1000,
-          system: enhancedSystemMessage,
-          messages: [{
-            role: 'user',
-            content: [{ type: 'text', text: userQuery }]
-          }],
-          temperature: 0.7
-        });
-
-        // Extract the text content
-        const textContent = response.content
-          .filter(block => block.type === 'text')
-          .map(block => block.text)
-          .join('\n');
-
-        // Save the message to the database
-        await saveMessages({
-          messages: [{
-            id: messageId,
-            chatId: id,
-            role: 'assistant',
-            content: textContent,
-            createdAt: new Date(),
-          }],
-        });
-
-        // Return the response
-        return new Response(
-          JSON.stringify({
-            id: messageId,
-            role: 'assistant',
-            content: textContent,
-            createdAt: new Date().toISOString()
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
-      } catch (primaryError) {
-        console.error("Error with primary model:", primaryError);
-
-        // Try fallback model
+    // Return streaming response
+    return createDataStreamResponse({
+      execute: async (writer) => {
+        let completion = '';
+        
         try {
-          const messageId = generateUUID();
-          const model = FALLBACK_MODEL_ID;
-          const shortSystemPrompt = "You are a helpful bylaw assistant for Oak Bay. Be concise.";
-
-          const response = await anthropic.messages.create({
-            model,
-            max_tokens: 800,
-            system: shortSystemPrompt,
-            messages: [{
-              role: 'user',
-              content: [{ type: 'text', text: userQuery.substring(0, 500) }]
-            }],
-            temperature: 0.7
-          });
-
-          // Extract text content
-          const textContent = response.content
-            .filter(block => block.type === 'text')
-            .map(block => block.text)
-            .join('\n');
-
-          // Save message
+          // Create stream with fallback option
+          let stream;
+          try {
+            console.log(`Chat API: Trying primary model: ${DEFAULT_MODEL_ID}`);
+            stream = await anthropic.messages.create({
+              model: DEFAULT_MODEL_ID,
+              max_tokens: 2000,
+              system: systemPrompt({ selectedChatModel }),
+              messages: formattedMessages,
+              temperature: 0.5,
+              stream: true
+            });
+          } catch (error) {
+            console.error("Chat API: Primary model failed, falling back:", error);
+            stream = await anthropic.messages.create({
+              model: FALLBACK_MODEL_ID,
+              max_tokens: 2000,
+              system: systemPrompt({ selectedChatModel }),
+              messages: formattedMessages,
+              temperature: 0.7,
+              stream: true
+            });
+          }
+          
+          // Process stream - simplify to avoid complex error states
+          for await (const chunk of stream) {
+            if (chunk.type === 'content_block_delta' && 
+                chunk.delta && 
+                'text' in chunk.delta) {
+              const text = chunk.delta.text;
+              completion += text;
+              writer.writeData({ text });
+            }
+          }
+          
+          // Save complete response to database
           await saveMessages({
             messages: [{
               id: messageId,
               chatId: id,
               role: 'assistant',
-              content: textContent,
+              content: completion,
               createdAt: new Date(),
             }],
           });
-
-          return new Response(
-            JSON.stringify({
-              id: messageId,
-              role: 'assistant',
-              content: textContent,
-              createdAt: new Date().toISOString()
-            }),
-            {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            }
-          );
-        } catch (fallbackError) {
-          console.error("Error with fallback model:", fallbackError);
-          return createErrorResponse(
-            'Unable to generate a response',
-            'Our AI service is currently having difficulties. Please try again in a few minutes.'
-          );
+          console.log("Chat API: Assistant response saved to database");
+        } catch (error) {
+          console.error('Chat API: Error in streaming response:', error);
+          
+          // Non-streaming fallback as last resort
+          try {
+            console.log("Chat API: Trying non-streaming fallback");
+            const response = await anthropic.messages.create({
+              model: FALLBACK_MODEL_ID,
+              max_tokens: 1000,
+              system: "You are a helpful assistant for Oak Bay bylaws. Be concise and direct.",
+              messages: [{ 
+                role: 'user' as const, 
+                content: [{ 
+                  type: 'text' as const, 
+                  text: typeof userMessage.content === 'string' 
+                    ? userMessage.content.substring(0, 500) 
+                    : 'Hello' 
+                }]
+              }],
+              temperature: 0.7,
+              stream: false
+            });
+            
+            const textContent = response.content[0];
+            const text = textContent && 'text' in textContent ? textContent.text : "I apologize, but I encountered an issue processing your request.";
+            writer.writeData({ text });
+            
+            // Save to database
+            await saveMessages({
+              messages: [{
+                id: messageId,
+                chatId: id,
+                role: 'assistant',
+                content: text,
+                createdAt: new Date(),
+              }],
+            });
+            console.log("Chat API: Fallback response saved to database");
+          } catch (finalError) {
+            console.error("Chat API: All fallbacks failed:", finalError);
+            writer.writeData({ 
+              text: "\n\nI apologize, but there was an error processing your request. Please try again." 
+            });
+          }
         }
       }
-    } catch (error) {
-      console.error('Error in chat functionality:', error);
-      
-      // Better error categorization
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('API key') || errorMessage.includes('auth')) {
-        return createErrorResponse(
-          'Authentication error with the AI provider',
-          'Please try again later or contact support.',
-          401
-        );
-      }
-      
-      if (errorMessage.includes('model')) {
-        return createErrorResponse(
-          'The selected AI model is unavailable',
-          'Please try another model.',
-          400
-        );
-      }
-      
-      return createErrorResponse(
-        'Our AI service is temporarily unavailable',
-        'Please try again in a few minutes.'
-      );
-    }
+    });
   } catch (error) {
     console.error('Unexpected error in chat API:', error);
-    return createErrorResponse(
-      'An unexpected error occurred',
-      process.env.NODE_ENV === 'development' ? String(error) : undefined
+    return new Response(
+      JSON.stringify({ 
+        error: 'An unexpected error occurred',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
