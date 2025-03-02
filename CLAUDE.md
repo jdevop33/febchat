@@ -4,10 +4,12 @@
 
 - `pnpm dev`: Run the development server with Turbo
 - `pnpm build`: Run DB migrations and build the application
+- `pnpm start`: Run the production server
 - `pnpm lint`: Run ESLint and Biome linting
 - `pnpm lint:fix`: Run ESLint and Biome with auto-fix
 - `pnpm format`: Format code using Prettier (includes Tailwind class sorting)
 - `pnpm format:check`: Check formatting without making changes
+- `pnpm format:biome`: Format code using Biome
 - `node test-anthropic.js`: Test Anthropic API integration
 - `node test-db.js`: Test database connection
 - `node test-openai.js`: Test OpenAI API integration
@@ -18,28 +20,26 @@
 - `pnpm db:studio`: Open Drizzle Studio to manage DB
 - `pnpm db:push`: Push schema changes to database
 - `pnpm db:migrate`: Run database migrations
+- `pnpm db:check`: Check migration status
+- `pnpm db:up`: Apply pending migrations
 
 ## Code Style Guidelines
 
-- Use TypeScript with strict typing
-- Use single quotes for strings (not double quotes) - specified in .prettierrc.js
-- Tab width is 2 spaces with no tabs - specified in .prettierrc.js and biome.jsonc
-- Max line width is 80 characters
-- Trailing commas are required for multi-line expressions
-- Imports are organized by external, then internal with `@/` path alias
+- Use TypeScript with strict typing; avoid using `any` unless necessary
+- Single quotes for strings, double quotes for JSX attributes (prettier config)
+- 2-space indentation, 80 characters line width, trailing commas for multi-line
+- Organize imports: external libraries first, then internal with `@/` path alias
 - Use React Server Components (RSCs) where possible
 - Use Server Actions for server-side mutations
-- Handle errors using try/catch with specific error types
-- Use Zod for data validation
-- Use tailwind utility classes for styling with `cn()` helper
-- Tailwind classes should be automatically sorted with prettier-plugin-tailwindcss
-- Memo React components when rendering performance is critical
+- Error handling: use try/catch with specific error types, validate with Zod
+- Styling: use Tailwind utility classes with `cn()` helper for conditional classes
+- Component names: PascalCase, functions/variables: camelCase
 - Use toast from sonner for user notifications
-- Component names are PascalCase, functions/variables are camelCase
+- Memoize React components when rendering performance is critical
 
 ## Development Environment
 
-- For GCP IDX, use the dev.nix file for consistent development environment
-- The project uses both Biome and Prettier - Prettier is preferred for formatting
-- Prettier handles Tailwind class sorting via prettier-plugin-tailwindcss
-- ESLint with eslint-plugin-tailwindcss is used for additional Tailwind linting
+- Use dev.nix for consistent development environment in GCP IDX
+- Formatting: Prettier with prettier-plugin-tailwindcss for class sorting
+- Linting: ESLint + Biome (Biome for quick fixes, Prettier for final formatting)
+- Next.js 15 with React 19 RC, using TypeScript in strict mode
