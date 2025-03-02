@@ -1,19 +1,30 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { customProvider } from 'ai';
+import { env } from 'node:process';
 
 // Constants
 export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
 export const DEFAULT_MODEL_ID = 'claude-3-7-sonnet-20250219'; 
 export const FALLBACK_MODEL_ID = 'claude-3-5-sonnet-20240620';
 
+// Environment check
+const isProduction = env.NODE_ENV === 'production';
+
 // Log configuration
+console.log(`Environment: ${env.NODE_ENV || 'development'}`);
 console.log(`Model configuration:`);
 console.log(` - Primary: ${DEFAULT_MODEL_ID}`);
 console.log(` - Fallback: ${FALLBACK_MODEL_ID}`);
 
-// Initialize Anthropic client with better error handling
+// In production, ensure API key is set
+if (isProduction && !env.ANTHROPIC_API_KEY) {
+  console.error('CRITICAL ERROR: ANTHROPIC_API_KEY environment variable is not set in production!');
+  throw new Error('Anthropic API key missing in production environment');
+}
+
+// Initialize Anthropic client
 export const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
+  apiKey: env.ANTHROPIC_API_KEY || '',
   timeout: 60000 // 60 second timeout
 });
 

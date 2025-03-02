@@ -3,7 +3,10 @@ import 'server-only';
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
+import { sql as vercelSql } from '@vercel/postgres';
 import postgres from 'postgres';
+import { env } from 'node:process';
 
 import {
   user,
@@ -18,8 +21,10 @@ import {
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 
-// Check if we should use mock database
-let useMockDb = process.env.MOCK_DB === 'true';
+// For production deployment on Vercel, we should always use real DB
+// For local development, use MOCK_DB=true flag for testing without PostgreSQL
+const isProduction = env.NODE_ENV === 'production';
+let useMockDb = !isProduction && env.MOCK_DB === 'true';
 
 // Create a mock storage for testing without a database
 const mockStorage: {
@@ -38,17 +43,17 @@ const mockStorage: {
   suggestions: new Map(),
 };
 
+console.log(`Environment: ${env.NODE_ENV || 'development'}`);
 console.log(`Database mode: ${useMockDb ? 'MOCK (in-memory)' : 'REAL (PostgreSQL)'}`);
 
-// Initialize database connection with error handling
-if (!process.env.POSTGRES_URL && !useMockDb) {
-  console.error('CRITICAL ERROR: POSTGRES_URL environment variable is not set and MOCK_DB is not enabled.');
-  console.log('⚠️ Automatically enabling mock database mode due to missing connection string');
-  useMockDb = true;
+// In production, ensure database URL exists
+if (isProduction && !env.POSTGRES_URL && !env.DATABASE_URL) {
+  console.error('CRITICAL ERROR: Neither POSTGRES_URL nor DATABASE_URL environment variable is set in production!');
+  throw new Error('Database connection configuration missing in production environment');
 }
 
-// Create database client with improved connection pooling and retry logic
-let client: ReturnType<typeof postgres>;
+// DB client and ORM initialization
+let client: any;
 let db: any;
 
 if (useMockDb) {
@@ -58,45 +63,59 @@ if (useMockDb) {
   db = {}; // Mock DB object
 } else {
   try {
-    console.log('Connecting to PostgreSQL database...');
-    if (process.env.POSTGRES_URL) {
-      console.log(`Connection string starts with: ${process.env.POSTGRES_URL.substring(0, 20)}...`);
-    }
-    
-    client = postgres(process.env.POSTGRES_URL || '', {
-      max: 10, // connection pool size
-      idle_timeout: 20, // how long a connection can stay idle in pool
-      connect_timeout: 30, // extended connection timeout
-      connection: {
-        application_name: 'febchat-app',
-      },
-      onnotice: (notice) => {
-        console.log('Database notice:', notice);
-      },
-      debug: process.env.NODE_ENV === 'development',
-    });
-    
-    console.log('Database connection pool initialized');
-    
-    // Initialize Drizzle ORM
-    db = drizzle(client, {
-      schema: { user, chat, message, vote, document, suggestion }
-    });
-    
-    // Create a test query to verify connection
-    try {
-      // Use drizzle instead of direct client query since the postgres package has different interfaces
-      db.execute(sql`SELECT 1 as test`).then(() => {
-        console.log('✅ Successfully connected to database');
-      }).catch(err => {
-        console.error('❌ Failed to connect to database:', err);
-        console.log('⚠️ Automatically enabling mock database mode');
-        useMockDb = true;
+    if (isProduction) {
+      // In production on Vercel, use the Vercel Postgres SDK
+      console.log('Using Vercel Postgres integration in production');
+      
+      // Initialize Drizzle with Vercel's SQL client
+      db = vercelDrizzle({
+        schema: { user, chat, message, vote, document, suggestion }
       });
-    } catch (queryError) {
-      console.error('Error setting up test query:', queryError);
-      useMockDb = true;
+      
+      // No need to test connection as Vercel handles this
+      console.log('✅ Using Vercel Postgres integration');
+    } else {
+      // For development or other environments, use postgres-js
+      console.log('Connecting to PostgreSQL database...');
+      const connectionString = env.POSTGRES_URL || env.DATABASE_URL || '';
+      
+      if (connectionString) {
+        // Only log first few characters for security
+        console.log(`Connection string starts with: ${connectionString.substring(0, 20)}...`);
+      } else {
+        throw new Error('No database connection string available');
+      }
+      
+      // Create pooled client
+      client = postgres(connectionString, {
+        max: 10,
+        idle_timeout: 20,
+        connect_timeout: 30,
+        connection: {
+          application_name: 'febchat-app',
+        },
+        ssl: false,
+        debug: true,
+      });
+      
+      console.log('Database connection pool initialized');
+      
+      // Initialize Drizzle ORM
+      db = drizzle(client, {
+        schema: { user, chat, message, vote, document, suggestion }
+      });
+      
+      // Test connection
+      try {
+        const result = await db.execute(sql`SELECT 1 as test`);
+        console.log('✅ Successfully connected to database');
+      } catch (queryError) {
+        console.error('❌ Failed to connect to database:', queryError);
+        console.log('⚠️ Automatically enabling mock database mode for development');
+        useMockDb = true;
+      }
     }
+  }
   } catch (error) {
     console.error('Failed to initialize database connection:', error);
     console.log('⚠️ Database connection failed, enabling mock mode');
