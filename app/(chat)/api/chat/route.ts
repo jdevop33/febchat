@@ -85,7 +85,7 @@ const formatMessagesForAnthropic = (messages: Array<Message>): any[] => {
           };
         } else if (Array.isArray(msg.content)) {
           // Handle array content
-          if (!msg.content || msg.content.length === 0) {
+          if (!msg.content || (msg.content as any[]).length === 0) {
             return { 
               role, 
               content: [{ type: 'text', text: "Hello" }] 
@@ -93,7 +93,8 @@ const formatMessagesForAnthropic = (messages: Array<Message>): any[] => {
           }
           
           // Check if it's already correctly formatted
-          if (msg.content.every(item => 
+          const contentArray = msg.content as any[];
+          if (contentArray.every(item => 
             typeof item === 'object' && item !== null && 
             'type' in item && 
             (item.type === 'text' || item.type === 'image')
@@ -389,9 +390,9 @@ export async function POST(request: Request) {
             bylawNumber?: string;
           };
             
-          const executeSearchTool = createToolExecutor<SearchBylawParams, BylawToolResult>(
+          const executeSearchTool = createToolExecutor(
             searchBylawsTool.execute as any // Use type assertion to avoid complex type issues
-          );
+          ) as (params: SearchBylawParams) => Promise<BylawToolResult>;
           
           bylawResults = await executeSearchTool({
             query: userQuery,
@@ -889,8 +890,10 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
                     case 'content_block_delta': {
                       // Handle incremental text updates (most common event type)
                       const deltaEvent = chunk as ContentBlockDeltaEvent;
-                      if (deltaEvent.delta?.text) {
-                        const text = deltaEvent.delta.text;
+                      // Handle TextDelta from Anthropic's streaming API
+                      const delta = deltaEvent.delta as any;
+                      if (delta?.text) {
+                        const text = delta.text;
                         textChunks++;
                         completion += text;
                         writer.writeData({ text });
@@ -905,12 +908,14 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
                       
                     case 'message_delta': {
                       // Message metadata has been updated - includes token usage and stop reason
+                      // Cast to any to safely access properties
                       const msgDelta = chunk as MessageDeltaEvent;
-                      if (msgDelta.delta?.stop_reason) {
-                        console.log(`Stream complete with stop reason: ${msgDelta.delta.stop_reason}`);
+                      const deltaProp = msgDelta.delta as any;
+                      if (deltaProp?.stop_reason) {
+                        console.log(`Stream complete with stop reason: ${deltaProp.stop_reason}`);
                       }
-                      if (msgDelta.delta?.usage) {
-                        console.log('Token usage:', msgDelta.delta.usage);
+                      if (deltaProp?.usage) {
+                        console.log('Token usage:', deltaProp.usage);
                       }
                       break;
                     }
