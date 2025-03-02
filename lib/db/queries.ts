@@ -196,34 +196,61 @@ export async function voteMessage({
   type: 'up' | 'down';
 }) {
   try {
+    // First verify the message exists and belongs to this chat
+    const [messageExists] = await db
+      .select()
+      .from(message)
+      .where(and(eq(message.id, messageId), eq(message.chatId, chatId)));
+      
+    if (!messageExists) {
+      console.error(`Message ${messageId} not found in chat ${chatId}`);
+      throw new Error(`Message ${messageId} not found in chat ${chatId}`);
+    }
+    
+    // Now check for existing vote with both message ID and chat ID
     const [existingVote] = await db
       .select()
       .from(vote)
-      .where(and(eq(vote.messageId, messageId)));
+      .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
 
     if (existingVote) {
+      console.log(`Updating existing vote for message ${messageId} in chat ${chatId}`);
       return await db
         .update(vote)
         .set({ isUpvoted: type === 'up' })
         .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
     }
+    
+    console.log(`Creating new vote for message ${messageId} in chat ${chatId}`);
     return await db.insert(vote).values({
       chatId,
       messageId,
       isUpvoted: type === 'up',
     });
   } catch (error) {
-    console.error('Failed to upvote message in database', error);
-    throw error;
+    console.error(`Failed to ${type}vote message ${messageId} in chat ${chatId}:`, error);
+    throw new DbOperationError('voteMessage', error);
   }
 }
 
 export async function getVotesByChatId({ id }: { id: string }) {
   try {
-    return await db.select().from(vote).where(eq(vote.chatId, id));
+    console.log(`Getting votes for chat ${id}`);
+    
+    // First verify the chat exists
+    const chatExists = await getChatById({ id });
+    if (!chatExists) {
+      console.log(`Chat ${id} not found, returning empty votes array`);
+      return []; // Return empty array instead of throwing an error
+    }
+    
+    const votes = await db.select().from(vote).where(eq(vote.chatId, id));
+    console.log(`Found ${votes.length} votes for chat ${id}`);
+    return votes;
   } catch (error) {
-    console.error('Failed to get votes by chat id from database', error);
-    throw error;
+    console.error(`Failed to get votes for chat ${id} from database:`, error);
+    // Return empty array instead of throwing to handle the case gracefully
+    return [];
   }
 }
 
