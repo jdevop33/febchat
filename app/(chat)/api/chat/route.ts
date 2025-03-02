@@ -309,14 +309,40 @@ Content: ${result.content || 'No content available'}
       const modelName = DEFAULT_MODEL_ID;
       let formattedMessages = formatMessagesForAnthropic(messages);
       
-      // Ensure we have at least one valid message
+      // Ensure messages array follows Anthropic API requirements
+      
+      // 1. Ensure we have at least one valid message
       if (formattedMessages.length === 0) {
-        // Force a minimal message set if empty
+        // Force a minimal message set if empty 
         formattedMessages = [{ role: 'user', content: 'Hello' }];
       }
       
-      // Ensure alternating user/assistant pattern (Anthropic requirement)
-      // If the last message is from assistant, add a user message
+      // 2. Ensure the first message is from the user (Anthropic requirement)
+      if (formattedMessages[0].role !== 'user') {
+        formattedMessages.unshift({ role: 'user', content: 'Hello' });
+      }
+      
+      // 3. Ensure alternating user/assistant pattern (Anthropic requirement)
+      // If two consecutive messages have the same role, insert a placeholder
+      for (let i = 1; i < formattedMessages.length; i++) {
+        if (formattedMessages[i].role === formattedMessages[i-1].role) {
+          if (formattedMessages[i].role === 'user') {
+            // Insert assistant message between consecutive user messages
+            formattedMessages.splice(i, 0, { 
+              role: 'assistant', 
+              content: 'I understand. Please continue.' 
+            });
+          } else {
+            // Insert user message between consecutive assistant messages
+            formattedMessages.splice(i, 0, { 
+              role: 'user', 
+              content: 'Please continue.' 
+            });
+          }
+        }
+      }
+      
+      // 4. Ensure the last message is not from assistant
       if (formattedMessages.length > 0 && formattedMessages[formattedMessages.length - 1].role === 'assistant') {
         formattedMessages.push({ role: 'user', content: 'Please respond to my question' });
       }
@@ -337,7 +363,47 @@ Content: ${result.content || 'No content available'}
       
       let response: AsyncIterable<MessageStreamEvent>;
       try {
+        // Log the first 2 formatted messages to help debug issues (without exposing full content)
+        console.log("API Request Preview:");
+        console.log(`- Model: ${modelName}`);
+        console.log(`- Max tokens: 2000`);
+        console.log(`- System prompt length: ${enhancedSystemMessage.length} chars`);
+        console.log(`- Total messages: ${formattedMessages.length}`);
+        console.log(`- First message role: ${formattedMessages[0]?.role || 'none'}`);
+        console.log(`- Message pattern: ${formattedMessages.map(m => m.role.charAt(0)).join('')}`);
+        
+        // Validate message format before sending to API
+        const messageFormatErrors = [];
+        
+        if (formattedMessages.length === 0) {
+          messageFormatErrors.push("Messages array is empty");
+        }
+        
+        if (formattedMessages.length > 0 && formattedMessages[0].role !== 'user') {
+          messageFormatErrors.push("First message must be from 'user'");
+        }
+        
+        // Check for alternating pattern
+        for (let i = 1; i < formattedMessages.length; i++) {
+          if (formattedMessages[i].role === formattedMessages[i-1].role) {
+            messageFormatErrors.push(`Messages at position ${i-1} and ${i} both have role '${formattedMessages[i].role}'`);
+          }
+        }
+        
+        if (messageFormatErrors.length > 0) {
+          console.error("Message format validation errors:", messageFormatErrors);
+          
+          // Attempt to fix the format before giving up
+          console.log("Attempting to fix message format issues...");
+          
+          // Create a minimal valid message set
+          formattedMessages = [
+            { role: 'user', content: 'Hello, I need information about Oak Bay bylaws.' }
+          ];
+        }
+        
         // Create Anthropic message stream
+        console.log("Sending request to Anthropic API...");
         response = await anthropic.messages.create({
           model: modelName,
           max_tokens: 2000,
@@ -351,25 +417,70 @@ Content: ${result.content || 'No content available'}
       } catch (apiError) {
         console.error("Anthropic API error:", apiError);
         
-        // Add diagnostic information
-        console.error("Error details:", 
-          typeof apiError === 'object' && apiError !== null 
-            ? JSON.stringify(apiError, null, 2)
-            : String(apiError)
-        );
+        // Detailed error analysis
+        let errorDetails = "Unknown error";
+        let statusCode = 0;
         
-        // Fall back to the configured fallback model with slightly different parameters
+        if (typeof apiError === 'object' && apiError !== null) {
+          // Try to extract useful error information
+          errorDetails = JSON.stringify(apiError, (key, value) => {
+            // Exclude any huge values that might bloat logs
+            if (typeof value === 'string' && value.length > 500) {
+              return value.substring(0, 500) + '... [truncated]';
+            }
+            return value;
+          }, 2);
+          
+          // Try to get status code
+          if ('status' in apiError) {
+            statusCode = Number(apiError.status);
+          }
+        }
+        
+        console.error(`Anthropic API error details: [Status: ${statusCode}]`, errorDetails);
+        
+        // For specific error codes, provide more helpful responses
+        if (statusCode === 401) {
+          return createErrorResponse(
+            'Authentication error',
+            'API key may be invalid or expired. Please check server configuration.',
+            401
+          );
+        }
+        
+        if (statusCode === 400) {
+          return createErrorResponse(
+            'Invalid request',
+            'The AI service rejected our request. Using simplified prompt for future queries may help.',
+            400
+          );
+        }
+        
+        // Fall back to the configured fallback model with simplified parameters
         console.log(`Falling back to ${FALLBACK_MODEL_ID} model`);
         
         try {
+          // Create a minimal valid message for fallback
+          const fallbackMessages: MessageParam[] = [
+            { 
+              role: 'user' as const, 
+              content: userMessage?.content?.toString() || 'What can you tell me about Oak Bay bylaws?' 
+            }
+          ];
+          
+          // Use shorter system prompt
+          const shortSystemPrompt = "You are a helpful bylaw assistant for Oak Bay Municipality. Answer questions about bylaws concisely.";
+          
           response = await anthropic.messages.create({
             model: FALLBACK_MODEL_ID,
-            max_tokens: 1000, // Reduce max tokens
-            system: enhancedSystemMessage.substring(0, 1000), // Truncate system message
-            messages: formattedMessages.slice(-5), // Use only last 5 messages
+            max_tokens: 1000,
+            system: shortSystemPrompt,
+            messages: fallbackMessages,
             temperature: 0.7,
             stream: true
           });
+          
+          console.log("Successfully created fallback stream");
         } catch (fallbackError) {
           console.error("Fallback model error:", fallbackError);
           return createErrorResponse(
