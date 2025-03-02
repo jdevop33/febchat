@@ -824,6 +824,15 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
       try {
         console.log("Using simplified non-streaming approach for better reliability");
         
+        // Add additional logging for request debugging
+        console.log("About to make request to Claude with params:", {
+          model: modelName,
+          max_tokens: 1000,
+          systemPromptLength: enhancedSystemMessage.length,
+          messageCount: 1,
+          temperature: 0.7
+        });
+        
         // Make a simple non-streaming request to Claude
         const response = await anthropic.messages.create({
           model: modelName,
@@ -844,6 +853,8 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
           .map(block => block.text)
           .join('\n');
           
+        console.log(`Extracted ${textContent.length} characters of text content`);
+        
         // Save the message to the database
         await saveMessages({
           messages: [{
@@ -857,19 +868,20 @@ Content: ${contentPreview || 'No content available'}${contentPreview.length >= 8
         
         console.log("Successfully saved message to database");
         
-        // Format the response for the client
-        const formattedResponse = {
-          id: messageId,
-          role: 'assistant',
-          content: textContent,
-          createdAt: new Date().toISOString()
-        };
-        
-        // Return the response as JSON
-        return new Response(JSON.stringify({ message: formattedResponse }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
+        // Format the response for the ai SDK
+        // This matches the format expected by the vercel/ai SDK
+        return new Response(
+          JSON.stringify({
+            id: messageId,
+            role: 'assistant',
+            content: textContent,
+            createdAt: new Date().toISOString()
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
         
       } catch (error) {
         console.error("Error in simplified chat approach:", error);
