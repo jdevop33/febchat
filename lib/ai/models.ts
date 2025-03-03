@@ -1,19 +1,18 @@
-import { anthropic as anthropicProvider } from '@ai-sdk/anthropic';
+import { anthropic } from '@ai-sdk/anthropic';
+import { openai } from '@ai-sdk/openai';
+import { customProvider } from 'ai';
 import { env } from 'node:process';
 
-// Constants
-export const DEFAULT_CHAT_MODEL: string = 'oak-bay-bylaws';
-export const DEFAULT_MODEL_ID = 'claude-3-7-sonnet-20250219'; 
-export const FALLBACK_MODEL_ID = 'claude-3-5-sonnet-20240620';
+// Constants - Using Claude 3.7 Sonnet for everything
+export const DEFAULT_CHAT_MODEL = 'oak-bay-bylaws';
+export const MODEL_ID = 'claude-3-7-sonnet-20250219';
 
 // Environment check
 const isProduction = env.NODE_ENV === 'production';
 
 // Log configuration
 console.log(`Environment: ${env.NODE_ENV || 'development'}`);
-console.log(`Model configuration:`);
-console.log(` - Primary: ${DEFAULT_MODEL_ID}`);
-console.log(` - Fallback: ${FALLBACK_MODEL_ID}`);
+console.log(`Using Claude 3.7 Sonnet for all functionality`);
 
 // In production, ensure API key is set
 if (isProduction && !env.ANTHROPIC_API_KEY) {
@@ -21,67 +20,27 @@ if (isProduction && !env.ANTHROPIC_API_KEY) {
   throw new Error('Anthropic API key missing in production environment');
 }
 
-// Create AI SDK model instances with anthropicProvider
-export const primaryModel = anthropicProvider(DEFAULT_MODEL_ID);
+// Create a simplified provider that uses Claude 3.7 Sonnet for everything
+export const myProvider = customProvider({
+  languageModels: {
+    'oak-bay-bylaws': anthropic(MODEL_ID),
+    'chat-model-small': anthropic(MODEL_ID),
+    'chat-model-large': anthropic(MODEL_ID),
+    'title-model': anthropic(MODEL_ID),
+    'artifact-model': anthropic(MODEL_ID),
+  },
+  imageModels: {
+    'small-model': openai.image('dall-e-3'),
+    'large-model': openai.image('dall-e-3'),
+  },
+});
 
-export const fallbackModel = anthropicProvider(FALLBACK_MODEL_ID);
+// For compatibility with existing code
+export const primaryModel = anthropic(MODEL_ID);
+export const fallbackModel = anthropic(MODEL_ID);
+export const titleModel = anthropic(MODEL_ID);
 
-// Title model for generating chat titles
-export const titleModel = anthropicProvider(DEFAULT_MODEL_ID);
-
-// Helper functions for handling AI SDK prompt types
-function extractSystemPrompt(prompt: any): string {
-  if (!prompt?.length) return '';
-  // Handle AI SDK prompt structure
-  const firstItem = prompt[0];
-  if (firstItem?.role === 'system') {
-    // Handle multiple content formats
-    if (typeof firstItem.content === 'string') {
-      return firstItem.content;
-    } else if (Array.isArray(firstItem.content)) {
-      // If it's an array of content parts, extract the text
-      for (const part of firstItem.content) {
-        if (part.type === 'text') {
-          return part.text;
-        }
-      }
-    }
-  }
-  return '';
-}
-
-function extractUserContent(prompt: any): string {
-  if (!prompt?.length || prompt.length < 2) return '';
-  // Handle AI SDK prompt structure
-  const userItem = prompt.find((item: any) => item.role === 'user') || prompt[1];
-  
-  // Handle multiple content formats
-  if (typeof userItem?.content === 'string') {
-    return userItem.content;
-  } else if (Array.isArray(userItem?.content)) {
-    // If it's an array of content parts, join the text parts
-    return userItem.content
-      .filter((part: any) => part.type === 'text')
-      .map((part: any) => part.text)
-      .join("\n");
-  }
-  return '';
-}
-
-function extractTextContent(response: any): string {
-  if (!response?.content?.length) return '';
-  
-  // Handle different content block types safely
-  for (const block of response.content) {
-    if (block.type === 'text' && 'text' in block) {
-      return block.text;
-    }
-  }
-  
-  return '';
-}
-
-// Chat model definitions
+// Chat model definitions - keeping this simple
 interface ChatModel {
   id: string;
   name: string;

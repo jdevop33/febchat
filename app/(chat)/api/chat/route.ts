@@ -2,7 +2,7 @@ import { streamText } from 'ai';
 
 import { auth } from '@/app/(auth)/auth';
 // Import the pre-configured AI SDK models
-import { primaryModel, fallbackModel, DEFAULT_MODEL_ID, FALLBACK_MODEL_ID } from '@/lib/ai/models';
+import { primaryModel, MODEL_ID } from '@/lib/ai/models';
 import { systemPrompt } from '@/lib/ai/prompts';
 import {
   deleteChatById,
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     }
     
     // Verify connection is possible to the API
-    console.log("Chat API: Using Anthropic API with key starting with:", `${apiKey.substring(0, 10)}...`);
+    console.log("Chat API: Using Claude 3.7 Sonnet");
 
     // Parse request
     let requestData: { id: string; messages: any[]; selectedChatModel: string };
@@ -118,49 +118,37 @@ export async function POST(request: Request) {
       content: typeof msg.content === 'string' ? msg.content : String(msg.content)
     }));
 
-    // Create a stream with proper AI SDK pattern
+    // Create a stream with Claude 3.7 Sonnet
     try {
-      console.log(`Chat API: Using AI SDK with model: ${DEFAULT_MODEL_ID}`);
+      console.log(`Chat API: Using Claude 3.7 Sonnet (${MODEL_ID})`);
       
-      // Try-catch approach for fallback instead of onError callback
-      let stream: any;
-      try {
-        // Use AI SDK's streamText function with primary model
-        stream = await streamText({
-          model: primaryModel,
-          messages: aiMessages,
-          system: systemPrompt({ selectedChatModel }),
-          temperature: 0.5,
-          maxTokens: 2000,
-        });
-      } catch (primaryError) {
-        console.error("Chat API: Primary model failed, falling back:", primaryError);
-        
-        // Fall back to secondary model
-        console.log(`Chat API: Trying fallback model: ${FALLBACK_MODEL_ID}`);
-        stream = await streamText({
-          model: fallbackModel,
-          messages: aiMessages,
-          system: systemPrompt({ selectedChatModel }),
-          temperature: 0.7,
-          maxTokens: 2000,
-        });
-      }
+      // Use AI SDK's streamText function with Claude 3.7 Sonnet
+      const stream = await streamText({
+        model: primaryModel,
+        messages: aiMessages,
+        system: systemPrompt({ selectedChatModel }),
+        temperature: 0.5,
+        maxTokens: 4000,
+        providerOptions: {
+          anthropic: {
+            // Enable extended thinking for complex queries
+            thinking: { type: 'enabled', budgetTokens: 8000 }
+          }
+        }
+      });
       
-      // First, let's collect all text for saving to DB
-      let fullContent = '';
+      // Set up the response stream
+      const responseStream = stream.toDataStreamResponse({
+        sendReasoning: true // Enable sending reasoning to the client
+      });
       
-      // Set up callbacks to gather text
-      const responseStream = stream.toDataStreamResponse();
-      
-      // Save a simple placeholder message in the database
-      // We could implement a more sophisticated solution that captures the full response later
+      // Save a placeholder message in the database
       await saveMessages({
         messages: [{
           id: messageId,
           chatId: id,
           role: 'assistant',
-          content: "Response from AI assistant",
+          content: "Response from Claude 3.7 Sonnet",
           createdAt: new Date(),
         }],
       });
@@ -170,37 +158,25 @@ export async function POST(request: Request) {
     } catch (error) {
       console.error('Chat API: Error in streaming response:', error);
       
-      // Ultimate fallback for catastrophic errors
-      try {
-        console.log("Chat API: Trying simplified fallback");
-        
-        // Use a simple text response
-        const fallbackText = "I apologize, but I encountered an issue processing your request. Please try again.";
-        
-        // Save to database
-        await saveMessages({
-          messages: [{
-            id: messageId,
-            chatId: id,
-            role: 'assistant',
-            content: fallbackText,
-            createdAt: new Date(),
-          }],
-        });
-        
-        // Return simple response
-        return new Response(
-          JSON.stringify({ text: fallbackText }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
-        );
-      } catch (finalError) {
-        console.error("Chat API: All fallbacks failed:", finalError);
-        return createErrorResponse(
-          'An error occurred', 
-          'All fallback options failed',
-          500
-        );
-      }
+      // Fallback for catastrophic errors
+      const fallbackText = "I apologize, but I encountered an issue processing your request. Please try again.";
+      
+      // Save to database
+      await saveMessages({
+        messages: [{
+          id: messageId,
+          chatId: id,
+          role: 'assistant',
+          content: fallbackText,
+          createdAt: new Date(),
+        }],
+      });
+      
+      // Return simple response
+      return new Response(
+        JSON.stringify({ text: fallbackText }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
     }
   } catch (error) {
     console.error('Unexpected error in chat API:', error);

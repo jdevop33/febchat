@@ -9,7 +9,7 @@ import {
   updateChatVisibilityById,
 } from '@/lib/db/queries';
 import type { VisibilityType } from '@/components/visibility-selector';
-import { titleModel } from '@/lib/ai/models';
+import { myProvider } from '@/lib/ai/models';
 
 export async function saveChatModelAsCookie(model: string) {
   const cookieStore = await cookies();
@@ -28,7 +28,7 @@ export async function generateTitleFromUserMessage({
       : JSON.stringify(message.content);
 
     const { text: title } = await generateText({
-      model: titleModel,
+      model: myProvider.languageModel('title-model'),
       system: `You will generate a short title based on the user message. 
       The title should be under 80 characters, summarize the message content, 
       and not use quotes or colons.`,
