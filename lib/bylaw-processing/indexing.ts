@@ -117,15 +117,32 @@ export async function indexBylawChunks(
     const texts = chunks.map((chunk) => chunk.text);
     const embeddingsResults = await embeddings.embedDocuments(texts);
 
-    // Prepare vectors for Pinecone
-    const vectors = chunks.map((chunk, i) => ({
-      id: chunkIds[i],
-      values: embeddingsResults[i],
-      metadata: {
-        ...chunk.metadata,
-        text: chunk.text,
-      },
-    }));
+    // Prepare vectors for Pinecone - we need to sanitize metadata for Pinecone compatibility
+    const vectors = chunks.map((chunk, i) => {
+      // Pinecone only supports simple metadata types (strings, numbers, booleans)
+      // We need to sanitize complex types like objects and arrays
+      const sanitizedMetadata: Record<string, string | number | boolean | string[]> = {};
+      
+      // Extract only simple metadata fields
+      Object.entries(chunk.metadata).forEach(([key, value]) => {
+        // Skip complex objects that Pinecone doesn't support
+        if (key === 'metadataSource' || key === '_metadataSources' || typeof value === 'object') {
+          return;
+        }
+        
+        // Keep primitive values and string arrays
+        sanitizedMetadata[key] = value;
+      });
+      
+      // Add text field
+      sanitizedMetadata.text = chunk.text;
+      
+      return {
+        id: chunkIds[i],
+        values: embeddingsResults[i],
+        metadata: sanitizedMetadata,
+      };
+    });
 
     // Upsert vectors to Pinecone in batches
     console.log(`Upserting ${vectors.length} vectors to Pinecone...`);
@@ -156,7 +173,7 @@ export async function deleteBylawVectors(bylawNumber: string): Promise<void> {
     // Get Pinecone index
     const index = getPineconeIndex();
 
-    // Delete vectors by filter
+    // Delete vectors by filter - ensure we're only using simple filters
     await index.deleteMany({
       filter: {
         bylawNumber: { $eq: bylawNumber },

@@ -4,6 +4,11 @@
 
 /**
  * Metadata for a bylaw document chunk
+ * 
+ * IMPORTANT NOTES ON VECTOR DATABASE COMPATIBILITY:
+ * - When storing in Pinecone, only primitive types and string arrays are supported
+ * - Complex objects (metadataSource, _metadataSources) are stripped before storage
+ * - Use simple types whenever possible for optimal vector database compatibility
  */
 export interface BylawMetadata {
   /** The bylaw number (e.g., "4620") */
@@ -36,10 +41,16 @@ export interface BylawMetadata {
   /** If this bylaw is consolidated with other bylaws */
   consolidatedTo?: string;
   
-  /** For debugging - sources of metadata */
+  /**
+   * For debugging - sources of metadata
+   * NOTE: Not stored in vector database due to complex type
+   */
   metadataSource?: Record<string, string>;
   
-  /** For debugging - tracking metadata sources */
+  /**
+   * For debugging - tracking metadata sources
+   * NOTE: Not stored in vector database due to complex type
+   */
   _metadataSources?: {
     fromContent?: string[];
     fromFile?: string[];
@@ -55,16 +66,25 @@ export interface BylawMetadata {
   /** Expiration date - when the bylaw is no longer in effect (if applicable) */
   expirationDate?: string;
   
-  /** Amendment history - list of bylaw numbers that amended this bylaw */
+  /** 
+   * Amendment history - list of bylaw numbers that amended this bylaw
+   * NOTE: Stored as string array in vector database
+   */
   amendments?: string[];
   
-  /** Keywords - extracted or manually added keywords for improved search */
+  /** 
+   * Keywords - extracted or manually added keywords for improved search
+   * NOTE: Stored as string array in vector database
+   */
   keywords?: string[];
   
   /** Status - whether the bylaw is active, repealed, superseded, etc. */
   status?: 'active' | 'repealed' | 'superseded' | 'draft';
   
-  /** Related bylaws - list of related bylaw numbers */
+  /** 
+   * Related bylaws - list of related bylaw numbers
+   * NOTE: Stored as string array in vector database
+   */
   relatedBylaws?: string[];
 }
 
