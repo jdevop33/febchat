@@ -55,6 +55,14 @@ const THEME_COLOR_SCRIPT = `\
   updateThemeColor();
 })();`;
 
+// Initialize optimizations at application startup
+import { initializeOptimizations } from '@/lib/optimization';
+
+// This initializes optimizations only in production or when explicitly enabled
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_OPTIMIZATIONS === 'true') {
+  initializeOptimizations().catch(console.error);
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
