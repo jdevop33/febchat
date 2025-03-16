@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -8,13 +9,24 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { 
+  X, 
+  ChevronLeft, 
+  ChevronRight, 
+  Search, 
+  ZoomIn, 
+  ZoomOut, 
+  ExternalLink, 
+  Download, 
+  Loader2 
+} from 'lucide-react';
 
 interface PdfViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   bylawNumber: string;
   title: string;
+  initialPage?: number;
 }
 
 export function PdfViewerModal({
@@ -22,7 +34,15 @@ export function PdfViewerModal({
   onClose,
   bylawNumber,
   title,
+  initialPage = 1,
 }: PdfViewerModalProps) {
+  const [loading, setLoading] = useState(true);
+  const [pdfPath, setPdfPath] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(initialPage);
+  const [totalPages, setTotalPages] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Function to map bylaw number to PDF filename
   const getPdfPath = (bylawNumber: string): string => {
     // Map of known bylaw numbers to their filenames
@@ -93,23 +113,180 @@ export function PdfViewerModal({
     return `/pdfs/${bylawNumber}.pdf`;
   };
 
-  const pdfPath = getPdfPath(bylawNumber);
+  useEffect(() => {
+    if (isOpen && bylawNumber) {
+      setLoading(true);
+      setPdfPath(getPdfPath(bylawNumber));
+      
+      // Simulate PDF loading and page count detection
+      // In a real implementation, you would use PDF.js to get the actual page count
+      setTimeout(() => {
+        // Random page count between 5 and 50 for demo
+        setTotalPages(Math.floor(Math.random() * 45) + 5);
+        setLoading(false);
+      }, 1000);
+    }
+  }, [isOpen, bylawNumber]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentPage(initialPage);
+      setScale(1);
+      setSearchQuery('');
+    }
+  }, [isOpen, initialPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleZoom = (increment: number) => {
+    setScale((prevScale) => {
+      const newScale = prevScale + increment;
+      return Math.max(0.5, Math.min(2.5, newScale));
+    });
+  };
+
+  const handleSearch = () => {
+    // In a real implementation, this would search through the PDF content
+    toast.info('Searching through PDF', {
+      description: `Searching for "${searchQuery}" in ${title}`,
+    });
+    // Here you would integrate with a PDF.js search functionality
+  };
+
+  const handleDownload = () => {
+    // Trigger download of the PDF
+    const link = document.createElement('a');
+    link.href = pdfPath;
+    link.download = `Oak_Bay_Bylaw_${bylawNumber}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Downloading PDF', {
+      description: `Bylaw ${bylawNumber} is being downloaded`,
+    });
+  };
+
+  // Create PDF viewer URL with parameters
+  const viewerUrl = `${pdfPath}#page=${currentPage}&zoom=${scale * 100}`;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent className="max-w-4xl h-[80vh] p-0">
-        <AlertDialogHeader className="px-4 py-2 flex flex-row items-center justify-between">
+      <AlertDialogContent className="max-w-4xl h-[90vh] p-0">
+        <AlertDialogHeader className="px-4 py-2 flex flex-row items-center justify-between border-b">
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={18} />
           </Button>
         </AlertDialogHeader>
-        <div className="size-full p-0 flex-1">
-          <iframe
-            src={pdfPath}
-            className="w-full h-[calc(80vh-60px)]"
-            title={`Bylaw ${bylawNumber}`}
-          />
+        
+        <div className="flex items-center justify-between px-4 py-2 border-b">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={currentPage <= 1 || loading}
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              <ChevronLeft size={16} />
+            </Button>
+            <div className="flex items-center">
+              <span className="text-sm mr-1">Page</span>
+              <input 
+                type="number" 
+                value={currentPage}
+                min={1}
+                max={totalPages}
+                disabled={loading}
+                className="w-12 text-center border rounded px-1 py-0.5 text-sm"
+                onChange={(e) => handlePageChange(parseInt(e.target.value) || 1)}
+              />
+              <span className="text-sm ml-1">of {totalPages}</span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              <ChevronRight size={16} />
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleZoom(-0.1)}
+              disabled={scale <= 0.5 || loading}
+            >
+              <ZoomOut size={16} />
+            </Button>
+            <span className="text-sm w-16 text-center">
+              {Math.round(scale * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleZoom(0.1)}
+              disabled={scale >= 2.5 || loading}
+            >
+              <ZoomIn size={16} />
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search PDF..."
+                className="pl-7 pr-2 py-1 border rounded text-sm w-32"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                disabled={loading}
+              />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownload}
+              disabled={loading}
+            >
+              <Download size={16} className="mr-1" />
+              <span className="hidden sm:inline">Download</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.open(`https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`, '_blank')}
+              disabled={loading}
+            >
+              <ExternalLink size={16} className="mr-1" />
+              <span className="hidden sm:inline">View Online</span>
+            </Button>
+          </div>
+        </div>
+        
+        <div className="size-full p-0 flex-1 bg-gray-100 dark:bg-gray-800">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground mb-2" />
+              <p className="text-muted-foreground">Loading PDF...</p>
+            </div>
+          ) : (
+            <iframe
+              src={viewerUrl}
+              className="w-full h-[calc(90vh-110px)]"
+              title={`Bylaw ${bylawNumber}`}
+            />
+          )}
         </div>
       </AlertDialogContent>
     </AlertDialog>
