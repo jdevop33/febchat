@@ -46,13 +46,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get('file') as File).name;
+    // Get filename properly handling both Blob and File types
+    let filename: string;
+    
+    if ('name' in file && typeof file.name === 'string') {
+      // It's a File object
+      filename = file.name;
+    } else {
+      // It's a Blob, get the name from form data or generate one
+      const formFile = formData.get('file');
+      if (formFile && 'name' in formFile && typeof formFile.name === 'string') {
+        filename = formFile.name;
+      } else {
+        // Generate a unique filename if we can't get one
+        filename = `upload-${Date.now()}.${file.type.split('/')[1] || 'bin'}`;
+      }
+    }
+    
     const fileBuffer = await file.arrayBuffer();
 
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: 'public',
+      // Use authenticated user's ID to create a scoped upload path
+      const userId = session.user?.id || 'anonymous';
+      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+      
+      const data = await put(`users/${userId}/${sanitizedFilename}`, fileBuffer, {
+        access: 'authenticated', // Only allow authenticated users to access
+        contentType: file.type,
       });
 
       return NextResponse.json(data);

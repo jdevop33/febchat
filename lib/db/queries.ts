@@ -32,8 +32,12 @@ if (!env.POSTGRES_URL && !env.DATABASE_URL) {
 }
 
 // DB client and ORM initialization
-let client: any;
-let db: any;
+// Use proper types instead of 'any'
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import type { PgDatabase } from 'drizzle-orm/pg-core';
+
+let client: ReturnType<typeof postgres> | undefined;
+let db: PostgresJsDatabase<{user: typeof user, chat: typeof chat, message: typeof message, vote: typeof vote, document: typeof document, suggestion: typeof suggestion}> | PgDatabase<{user: typeof user, chat: typeof chat, message: typeof message, vote: typeof vote, document: typeof document, suggestion: typeof suggestion}>;
 
 try {
   if (isProduction) {
@@ -52,12 +56,12 @@ try {
     console.log('Connecting to PostgreSQL database...');
     const connectionString = env.POSTGRES_URL || env.DATABASE_URL || '';
     
-    if (connectionString) {
-      // Only log first few characters for security
-      console.log(`Connection string starts with: ${connectionString.substring(0, 20)}...`);
-    } else {
+    if (!connectionString) {
       throw new Error('No database connection string available');
     }
+    
+    // Don't log any part of the connection string for security
+    console.log('Database connection string available and will be used')
     
     // Create pooled client
     client = postgres(connectionString, {
@@ -119,7 +123,9 @@ export async function getUser(email: string): Promise<Array<User>> {
  * Create a new user with hashed password
  */
 export async function createUser(email: string, password: string) {
-  const salt = genSaltSync(10);
+  // Get salt rounds from environment or use secure default
+  const saltRounds = parseInt(env.PASSWORD_SALT_ROUNDS || '12', 10);
+  const salt = genSaltSync(saltRounds);
   const hash = hashSync(password, salt);
 
   try {
@@ -165,8 +171,8 @@ export async function deleteChatById({ id }: { id: string }) {
 
     return await db.delete(chat).where(eq(chat.id, id));
   } catch (error) {
-    console.error('Failed to delete chat by id from database');
-    throw error;
+    console.error(`Failed to delete chat ID '${id}' from database:`, error);
+    throw new DbOperationError('deleteChatById', error);
   }
 }
 
@@ -178,8 +184,8 @@ export async function getChatsByUserId({ id }: { id: string }) {
       .where(eq(chat.userId, id))
       .orderBy(desc(chat.createdAt));
   } catch (error) {
-    console.error('Failed to get chats by user from database');
-    throw error;
+    console.error(`Failed to get chats for user ID '${id}' from database:`, error);
+    throw new DbOperationError('getChatsByUserId', error);
   }
 }
 
@@ -188,8 +194,8 @@ export async function getChatById({ id }: { id: string }) {
     const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
     return selectedChat;
   } catch (error) {
-    console.error('Failed to get chat by id from database');
-    throw error;
+    console.error(`Failed to get chat ID '${id}' from database:`, error);
+    throw new DbOperationError('getChatById', error);
   }
 }
 
@@ -217,8 +223,8 @@ export async function getMessagesByChatId({ id }: { id: string }) {
       .where(eq(message.chatId, id))
       .orderBy(asc(message.createdAt));
   } catch (error) {
-    console.error('Failed to get messages by chat id from database', error);
-    throw error;
+    console.error(`Failed to get messages for chat ID '${id}' from database:`, error);
+    throw new DbOperationError('getMessagesByChatId', error);
   }
 }
 
@@ -342,8 +348,8 @@ export async function saveDocument({
       createdAt: new Date(),
     });
   } catch (error) {
-    console.error('Failed to save document in database');
-    throw error;
+    console.error(`Failed to save document '${id}' in database:`, error);
+    throw new DbOperationError('saveDocument', error);
   }
 }
 

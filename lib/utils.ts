@@ -35,11 +35,21 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function getLocalStorage(key: string) {
+export function getLocalStorage<T extends unknown[] = unknown[]>(key: string): T {
   if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return [] as unknown as T;
+      
+      const parsed = JSON.parse(item);
+      // Ensure we return an array if parsed JSON is not an array
+      return Array.isArray(parsed) ? parsed : [] as unknown as T;
+    } catch (error) {
+      console.error(`Error parsing localStorage key '${key}':`, error);
+      return [] as unknown as T;
+    }
   }
-  return [];
+  return [] as unknown as T;
 }
 
 export function generateUUID(): string {
@@ -222,8 +232,8 @@ export function getDocumentTimestampByIndex(
   documents: Array<Document>,
   index: number,
 ) {
-  if (!documents) return new Date();
-  if (index > documents.length) return new Date();
+  if (!documents || !documents.length) return new Date();
+  if (index >= documents.length) return new Date(); // Fix off-by-one error here
 
   return documents[index].createdAt;
 }
