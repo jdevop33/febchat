@@ -93,27 +93,70 @@ function addToolMessageToChat({
   });
 }
 
+/**
+ * Converts database messages to UI-friendly format with improved performance
+ * - Avoids the need to iterate over the entire array multiple times
+ * - Optimizes string concatenation
+ * - Uses proper type checking
+ */
 export function convertToUIMessages(
   messages: Array<DBMessage>,
 ): Array<Message> {
-  return messages.reduce((chatMessages: Array<Message>, message) => {
+  if (!messages || !messages.length) return [];
+  
+  // Pre-allocate result array with expected size
+  const result: Array<Message> = [];
+  
+  // Process messages in a single pass
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    
+    // Handle tool messages
     if (message.role === 'tool') {
-      return addToolMessageToChat({
-        toolMessage: message as CoreToolMessage,
-        messages: chatMessages,
-      });
+      // Find tool call message targets and update them
+      const toolMessage = message as CoreToolMessage;
+      
+      for (let j = 0; j < result.length; j++) {
+        const chatMessage = result[j];
+        
+        if (chatMessage.toolInvocations && chatMessage.toolInvocations.length > 0) {
+          chatMessage.toolInvocations = chatMessage.toolInvocations.map(toolInvocation => {
+            // Find matching tool result
+            const toolResult = toolMessage.content.find(
+              tool => tool.toolCallId === toolInvocation.toolCallId
+            );
+            
+            if (toolResult) {
+              return {
+                ...toolInvocation,
+                state: 'result',
+                result: toolResult.result,
+              };
+            }
+            
+            return toolInvocation;
+          });
+        }
+      }
+      
+      continue; // Skip to next message
     }
-
+    
+    // Handle non-tool messages
     let textContent = '';
     let reasoning: string | undefined = undefined;
     const toolInvocations: Array<ToolInvocation> = [];
-
+    
+    // Process message content based on its type
     if (typeof message.content === 'string') {
       textContent = message.content;
     } else if (Array.isArray(message.content)) {
+      // Use string builder pattern for better performance
+      const textParts: string[] = [];
+      
       for (const content of message.content) {
         if (content.type === 'text') {
-          textContent += content.text;
+          textParts.push(content.text);
         } else if (content.type === 'tool-call') {
           toolInvocations.push({
             state: 'call',
@@ -125,18 +168,22 @@ export function convertToUIMessages(
           reasoning = content.reasoning;
         }
       }
+      
+      // Join once at the end for better performance than incrementally adding
+      textContent = textParts.join('');
     }
-
-    chatMessages.push({
+    
+    // Add processed message to result
+    result.push({
       id: message.id,
       role: message.role as Message['role'],
       content: textContent,
       reasoning,
-      toolInvocations,
+      toolInvocations: toolInvocations.length > 0 ? toolInvocations : undefined,
     });
-
-    return chatMessages;
-  }, []);
+  }
+  
+  return result;
 }
 
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
@@ -224,8 +271,14 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
 }
 
 export function getMostRecentUserMessage(messages: Array<Message>) {
-  const userMessages = messages.filter((message) => message.role === 'user');
-  return userMessages.at(-1);
+  // Optimization: use find from end instead of filter + at(-1)
+  // This prevents unnecessary iteration through the entire array
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'user') {
+      return messages[i];
+    }
+  }
+  return undefined;
 }
 
 export function getDocumentTimestampByIndex(

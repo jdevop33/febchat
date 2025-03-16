@@ -146,12 +146,20 @@ export async function searchBylaws(
   }
 }
 
+// Define stop words once at module level rather than recreating each time
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'in', 'on', 'at', 'of', 'for', 'to', 'with', 'by',
+  'and', 'or', 'but', 'if', 'then', 'else', 'when', 'up', 'down', 'is',
+  'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+  'do', 'does', 'did', 'shall', 'will', 'should', 'would', 'may', 'might',
+  'must', 'can', 'could'
+]);
+
 /**
- * Extract keywords from a search query
+ * Extract keywords from a search query with improved efficiency
  */
 function extractKeywords(query: string): string[] {
-  // Remove common words and punctuation
-  const stopWords = ['a', 'an', 'the', 'in', 'on', 'at', 'of', 'for', 'to', 'with', 'by'];
+  if (!query) return [];
   
   // Clean and normalize the query
   const cleanedQuery = query.toLowerCase()
@@ -160,12 +168,16 @@ function extractKeywords(query: string): string[] {
     .trim();
   
   // Split into words and filter out stop words and short words
-  const keywords = cleanedQuery.split(' ')
-    .filter(word => 
-      word.length > 2 && !stopWords.includes(word)
-    );
+  // Using Set to prevent returning duplicate keywords
+  const keywordSet = new Set<string>();
   
-  return keywords;
+  for (const word of cleanedQuery.split(' ')) {
+    if (word.length > 2 && !STOP_WORDS.has(word)) {
+      keywordSet.add(word);
+    }
+  }
+  
+  return Array.from(keywordSet);
 }
 
 /**

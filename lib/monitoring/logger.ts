@@ -37,34 +37,90 @@ interface LogEntry {
   duration?: number;
 }
 
+// Buffer for batched logs (reduces I/O overhead in high-volume scenarios)
+const logBuffer: LogEntry[] = [];
+const MAX_BUFFER_SIZE = 20;
+const FLUSH_INTERVAL_MS = 10000; // 10 seconds
+
+// Set up periodic buffer flush
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    flushLogBuffer();
+  }, FLUSH_INTERVAL_MS);
+}
+
 /**
- * Format and write a log entry to the appropriate destination
+ * Flush buffered logs to their destination
  */
-function writeLog(entry: LogEntry): void {
-  // In production, this would send to proper logging service
-  // For now, we use structured console logs that can be parsed by log analysis tools
-  const serializedEntry = JSON.stringify(entry);
+function flushLogBuffer(): void {
+  if (logBuffer.length === 0) return;
   
-  // Use different console methods based on severity
-  switch (entry.severity) {
-    case 'debug':
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug(`[${entry.eventType}] ${serializedEntry}`);
-      }
-      break;
-    case 'info':
-      console.log(`[${entry.eventType}] ${serializedEntry}`);
-      break;
-    case 'warn':
-      console.warn(`[${entry.eventType}] ${serializedEntry}`);
-      break;
-    case 'error':
-    case 'critical':
-      console.error(`[${entry.eventType}] ${serializedEntry}`);
-      break;
+  // In a production setup, this would send logs to a centralized logging service
+  if (process.env.NODE_ENV === 'production' && process.env.LOG_ENDPOINT) {
+    // This is where you'd send logs to your logging service
+    // fetch(process.env.LOG_ENDPOINT, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(logBuffer)
+    // }).catch(err => console.error('Error sending logs:', err));
   }
   
-  // In production, critical errors would also trigger alerts
+  // For development, just print to console
+  if (process.env.NODE_ENV !== 'production') {
+    logBuffer.forEach(entry => {
+      const message = `[${entry.timestamp}] [${entry.eventType}] ${entry.message}`;
+      
+      switch (entry.severity) {
+        case 'debug':
+          console.debug(message, entry.data);
+          break;
+        case 'info':
+          console.log(message, entry.data);
+          break;
+        case 'warn':
+          console.warn(message, entry.data);
+          break;
+        case 'error':
+        case 'critical':
+          console.error(message, entry.data);
+          break;
+      }
+    });
+  }
+  
+  // Clear the buffer
+  logBuffer.length = 0;
+}
+
+/**
+ * Format and write a log entry to the appropriate destination
+ * Uses buffering for better performance in high-volume scenarios
+ */
+function writeLog(entry: LogEntry): void {
+  // Remove sensitive data in production
+  if (process.env.NODE_ENV === 'production') {
+    // Sanitize the entry data to remove potentially sensitive information
+    if (entry.data) {
+      // Remove passwords, tokens, etc.
+      const sanitizedData = { ...entry.data };
+      ['password', 'token', 'secret', 'key', 'apiKey'].forEach(key => {
+        if (key in sanitizedData) {
+          sanitizedData[key] = '[REDACTED]';
+        }
+      });
+      entry.data = sanitizedData;
+    }
+  }
+
+  // Add entry to buffer
+  logBuffer.push(entry);
+  
+  // If buffer is full or entry is critical, flush immediately
+  if (logBuffer.length >= MAX_BUFFER_SIZE || entry.severity === 'critical') {
+    flushLogBuffer();
+  }
+  
+  // For critical errors in production, also trigger immediate alerts
   if (entry.severity === 'critical' && process.env.NODE_ENV === 'production') {
     // This would integrate with an alerting system
     // sendAlert(entry);

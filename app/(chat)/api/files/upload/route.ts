@@ -46,17 +46,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename handling both Blob and File types safely
+    // Get filename properly handling both Blob and File types
     let filename: string;
-    
-    if ('name' in file && typeof file.name === 'string') {
-      // It's a File-like object with name property
-      filename = file.name;
+
+    const formFile = formData.get('file');
+    if (formFile instanceof File) {
+      // It's a File object with name property
+      filename = formFile.name;
+    } else if (file instanceof Blob) {
+      // It's a Blob without name, generate filename based on content type
+      const contentType = file.type || 'application/octet-stream';
+      const extension = contentType.split('/')[1] || 'bin';
+      filename = `upload-${Date.now()}.${extension}`;
     } else {
-      // It's a Blob without name, get content type for extension
-      const fileExtension = file.type ? file.type.split('/')[1] || 'bin' : 'bin';
-      // Generate a unique filename with timestamp and proper extension
-      filename = `upload-${Date.now()}.${fileExtension}`;
+      // Not a valid file object at all
+      return NextResponse.json(
+        { error: 'Invalid file format' },
+        { status: 400 }
+      );
     }
     
     const fileBuffer = await file.arrayBuffer();
