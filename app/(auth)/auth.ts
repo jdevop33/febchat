@@ -3,7 +3,6 @@ import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
-import type { User as DbUser } from '@/lib/db/schema';
 
 import { authConfig } from './auth.config';
 

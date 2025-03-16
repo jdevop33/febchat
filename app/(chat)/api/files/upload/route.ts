@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
       
       const data = await put(`users/${userId}/${sanitizedFilename}`, fileBuffer, {
-        access: 'authenticated', // Only allow authenticated users to access
+        access: 'public', // Using public access as required by Vercel Blob
         contentType: file.type,
       });
 
