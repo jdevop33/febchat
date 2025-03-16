@@ -18,7 +18,8 @@ import {
   ZoomOut, 
   ExternalLink, 
   Download, 
-  Loader2 
+  Loader2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface PdfViewerModalProps {
@@ -173,13 +174,31 @@ export function PdfViewerModal({
   };
 
   // Create direct PDF viewer URL with parameters
+  // Add section parameter if we're looking up a specific section
   const viewerUrl = `${pdfPath}#page=${currentPage}&zoom=${scale * 100}`;
+  
+  // Track PDF load errors
+  const [loadError, setLoadError] = useState(false);
+  
+  // Handle iframe load error
+  const handleIframeError = () => {
+    setLoadError(true);
+    setLoading(false);
+    toast.error('Error loading PDF', {
+      description: `We couldn't load the PDF for Bylaw No. ${bylawNumber}. You can try the external link instead.`
+    });
+  };
 
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent className="max-w-4xl h-[90vh] p-0">
         <AlertDialogHeader className="px-4 py-2 flex flex-row items-center justify-between border-b">
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {title}
+            <span className="ml-2 text-xs text-muted-foreground">
+              (Source document linked directly from municipal records)
+            </span>
+          </AlertDialogTitle>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={18} />
           </Button>
@@ -280,11 +299,27 @@ export function PdfViewerModal({
               <Loader2 className="size-10 animate-spin text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Loading PDF...</p>
             </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <AlertTriangle className="size-10 text-amber-500 mb-2" />
+              <p className="text-muted-foreground mb-2">Unable to load PDF</p>
+              <Button 
+                variant="default"
+                onClick={() => window.open(`https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`, '_blank')}
+              >
+                <ExternalLink size={16} className="mr-2" />
+                View on Official Website
+              </Button>
+            </div>
           ) : (
             <iframe
               src={viewerUrl}
               className="w-full h-[calc(90vh-110px)]"
               title={`Bylaw ${bylawNumber}`}
+              onError={handleIframeError}
+              onLoad={() => setLoading(false)}
+              sandbox="allow-same-origin allow-scripts allow-forms"
+              referrerPolicy="no-referrer"
             />
           )}
         </div>
