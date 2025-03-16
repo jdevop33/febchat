@@ -127,11 +127,19 @@ export async function searchBylawsOptimized(
       critical: false
     });
     
-    // Attempt fallback to standard search
-    console.log('Falling back to standard search API');
+    // Attempt fallback to standard search with robust error handling
+    console.log('Falling back to standard search API with fallback mechanisms');
     try {
-      const { searchBylaws } = await import('./search-service');
-      return searchBylaws(query, options);
+      // Try the standard search service first
+      try {
+        const { searchBylaws } = await import('./search-service');
+        return searchBylaws(query, options);
+      } catch (standardSearchError) {
+        // If standard search fails, use the direct fallback search
+        console.log('Standard search failed, using direct fallback');
+        const { fallbackSearch } = await import('./fallback-search');
+        return fallbackSearch(query, options);
+      }
     } catch (fallbackError) {
       logger.error(fallbackError as Error, 'Bylaw search fallback', {
         userId: options.userId as string,

@@ -56,9 +56,15 @@ const errorMessages: Record<string, { title: string; description: string }> = {
 };
 
 export default function AuthErrorPage() {
-  const searchParams = useSearchParams();
-  const errorType = searchParams.get('error') || 'Default';
+  // We'll use a default error initially
+  const [errorType, setErrorType] = useState('Default');
   const [timeRemaining, setTimeRemaining] = useState(10);
+  
+  // Use useEffect to handle the searchParams to avoid React hydration issues
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setErrorType(params.get('error') || 'Default');
+  }, []);
   
   // Get the appropriate error message
   const errorInfo = errorMessages[errorType] || errorMessages.Default;

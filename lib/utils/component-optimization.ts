@@ -85,11 +85,14 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
 ) {
   const LazyComponent = React.lazy(loader);
   
-  const WrappedComponent = (props: React.ComponentProps<T>) => (
-    <React.Suspense fallback={fallback || <div className="h-10 w-full animate-pulse bg-muted rounded-md"></div>}>
-      <LazyComponent {...props} />
-    </React.Suspense>
-  );
+  // Properly typed wrapped component with fixed JSX syntax
+  const WrappedComponent = (props: React.ComponentProps<T>) => {
+    return (
+      <React.Suspense fallback={fallback || <div className="h-10 w-full animate-pulse bg-muted rounded-md"></div>}>
+        <LazyComponent {...props} />
+      </React.Suspense>
+    );
+  };
   
   return WrappedComponent;
 }

@@ -14,13 +14,29 @@ import type {
 } from './types';
 
 /**
- * Initialize the OpenAI embeddings model
+ * Get the appropriate embeddings model based on configuration
  */
 function getEmbeddingsModel() {
-  return new OpenAIEmbeddings({
-    modelName: 'text-embedding-3-small',
-    openAIApiKey: process.env.OPENAI_API_KEY,
-  });
+  try {
+    // Import the embedding models module
+    const { getEmbeddingsModel, EmbeddingProvider } = require('./embedding-models');
+    
+    // Determine which provider to use based on environment variables
+    const provider = process.env.EMBEDDING_PROVIDER === 'openai' 
+      ? EmbeddingProvider.OPENAI 
+      : EmbeddingProvider.LLAMAINDEX;
+    
+    // Get the configured embeddings model
+    return getEmbeddingsModel(provider);
+  } catch (error) {
+    console.error('Error loading embedding model, falling back to OpenAI:', error);
+    
+    // Fallback to OpenAI if there's an error with the custom embeddings
+    return new OpenAIEmbeddings({
+      modelName: 'text-embedding-3-small',
+      openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+  }
 }
 
 /**
@@ -133,7 +149,7 @@ export async function searchBylaws(
         error: error as Error
       });
       
-      return performSimpleKeywordSearch(query, options);
+      return (await import('./fallback-search')).fallbackSearch(query, options);
     } catch (fallbackError) {
       // Log the fallback error (this is more serious)
       logger.error(fallbackError as Error, 'Bylaw fallback search', {

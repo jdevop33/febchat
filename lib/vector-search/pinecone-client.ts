@@ -27,9 +27,14 @@ export function getPineconeClient(): Pinecone {
   }
 
   // Create Pinecone client using v5.0+ SDK
-  pineconeInstance = new Pinecone({
-    apiKey,
-  });
+  const config: any = { apiKey };
+  
+  // Add environment if specified (optional in newer SDK versions)
+  if (process.env.PINECONE_ENVIRONMENT) {
+    config.environment = process.env.PINECONE_ENVIRONMENT;
+  }
+  
+  pineconeInstance = new Pinecone(config);
 
   return pineconeInstance;
 }
@@ -39,7 +44,7 @@ export function getPineconeClient(): Pinecone {
  */
 export function getPineconeIndex() {
   const pinecone = getPineconeClient();
-  const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws';
+  const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
   
   try {
     // In v5+, direct connection to an index using the host URL

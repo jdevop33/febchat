@@ -67,9 +67,15 @@ async function processBylawFile(filePath: string) {
       process.exit(1);
     }
 
-    // Print the OpenAI API key for debugging (first 10 characters)
+    // Print the API key and Pinecone index for debugging (first 10 characters)
     console.log(
-      `Using OpenAI API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`,
+      `Using API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`,
+    );
+    console.log(
+      `Using Pinecone index: ${process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'}`,
+    );
+    console.log(
+      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`
     );
 
     // Extract bylaw number from filename if possible
@@ -147,9 +153,15 @@ async function processBylawDirectory(dir: string) {
       process.exit(1);
     }
 
-    // Print the OpenAI API key for debugging (first 10 characters)
+    // Print the API key and Pinecone index for debugging (first 10 characters)
     console.log(
-      `Using OpenAI API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`,
+      `Using API key: ${process.env.OPENAI_API_KEY.substring(0, 10)}...`,
+    );
+    console.log(
+      `Using Pinecone index: ${process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'}`,
+    );
+    console.log(
+      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`
     );
 
     // Get list of PDF files

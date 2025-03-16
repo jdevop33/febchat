@@ -97,11 +97,28 @@ export async function indexBylawChunks(
   chunks: Array<{ text: string; metadata: Partial<BylawMetadata> }>,
 ): Promise<string[]> {
   try {
-    // Get OpenAI embeddings model using environment variables
-    const embeddings = new OpenAIEmbeddings({
-      modelName: 'text-embedding-3-small',
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    // Get the appropriate embeddings model based on configuration
+    let embeddings;
+    try {
+      // Import the embedding models module
+      const { getEmbeddingsModel, EmbeddingProvider } = require('../vector-search/embedding-models');
+      
+      // Determine which provider to use based on environment variables
+      const provider = process.env.EMBEDDING_PROVIDER === 'openai' 
+        ? EmbeddingProvider.OPENAI 
+        : EmbeddingProvider.LLAMAINDEX;
+      
+      // Get the configured embeddings model
+      embeddings = getEmbeddingsModel(provider);
+    } catch (error) {
+      console.error('Error loading embedding model, falling back to OpenAI:', error);
+      
+      // Fallback to OpenAI if there's an error with the custom embeddings
+      embeddings = new OpenAIEmbeddings({
+        modelName: 'text-embedding-3-small',
+        openAIApiKey: process.env.OPENAI_API_KEY,
+      });
+    }
 
     // Get Pinecone index
     const index = getPineconeIndex();

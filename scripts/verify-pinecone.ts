@@ -53,11 +53,25 @@ async function verifyPineconeConnection() {
     // 5. Test search functionality with a simple query
     console.log('\nTesting search functionality...');
     
-    // Create embeddings model
-    const embeddings = new OpenAIEmbeddings({
-      modelName: 'text-embedding-3-small',
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
+    // Get the appropriate embeddings model based on configuration
+    let embeddings;
+    try {
+      // Import the embedding models module
+      const { getEmbeddingsModel, EmbeddingProvider } = require('../lib/vector-search/embedding-models');
+      
+      // Use the configured default embeddings model (Llama by default)
+      embeddings = getEmbeddingsModel();
+      console.log(`Using embeddings model: ${(embeddings as any).modelName || 'llama-text-embed-v2'}`);
+    } catch (error) {
+      console.error('Error loading embedding model, falling back to OpenAI:', error);
+      
+      // Fallback to OpenAI if there's an error with the custom embeddings
+      embeddings = new OpenAIEmbeddings({
+        modelName: 'text-embedding-3-small',
+        openAIApiKey: process.env.OPENAI_API_KEY,
+      });
+      console.log('Using fallback OpenAI embeddings model: text-embedding-3-small');
+    }
     
     // Generate a test embedding
     const testQuery = 'parking regulations';
