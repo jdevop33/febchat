@@ -49,10 +49,13 @@ export const searchBylawsTool = tool({
         bylawNumber: result.metadata.bylawNumber || 'Unknown',
         title: result.metadata.title || 'Untitled Bylaw',
         section: result.metadata.section || 'Unknown Section',
+        sectionTitle: result.metadata.sectionTitle,
         content: result.text,
         url:
           result.metadata.url ||
           `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber || 'Unknown'}?section=${result.metadata.section || 'Unknown'}`,
+        isConsolidated: result.metadata.consolidatedTo ? true : false,
+        consolidatedDate: result.metadata.consolidatedTo ? `Bylaw No. ${result.metadata.consolidatedTo}` : undefined,
       }));
 
       console.log('Bylaw search results formatted successfully');

@@ -126,17 +126,34 @@ export function cleanText(text: string): string {
  */
 export function detectSections(
   text: string,
-): { sectionNumber: string; text: string }[] {
-  const sections: { sectionNumber: string; text: string }[] = [];
+): { sectionNumber: string; text: string; sectionTitle?: string }[] {
+  const sections: { sectionNumber: string; text: string; sectionTitle?: string }[] = [];
 
-  // Pattern to match section numbers like "1.", "1.1", "1.1.1"
+  // Enhanced pattern to match various section number formats:
+  // 1. Standard decimal notation: "1.", "1.1", "1.1.1"
+  // 2. Section/part prefixed: "Section 1", "Part I", "Section 1.2"
+  // 3. Roman numerals: "I.", "II.", "IV."
+  // 4. Letter-based subsections: "1(a)", "2(b)(i)", "3.1(c)"
+  // 5. Dash or parenthesis prefixed: "1-1", "1-(a)", "(1)", "(a)"
   const sectionPattern =
-    /(?:^|\n)(\d+(?:\.\d+)*)\s+(.*?)(?=(?:\n\d+(?:\.\d+)*\s+)|$)/gs;
+    /(?:^|\n)(?:(?:Section|Part|Article)\s+)?([IVXLCDM]+\.|\d+(?:[-.](?:\d+|[a-z])|(?:\(\w+\))+)?|\(\w+\))\s+(.*?)(?=(?:\n(?:(?:Section|Part|Article)\s+)?([IVXLCDM]+\.|\d+(?:[-.](?:\d+|[a-z])|(?:\(\w+\))+)?|\(\w+\))\s+)|$)/gis;
 
   let match: RegExpExecArray | null = sectionPattern.exec(text);
   while (match !== null) {
     const sectionNumber = match[1];
-    const sectionText = match[2].trim();
+    let sectionText = match[2].trim();
+    let sectionTitle: string | undefined;
+    
+    // Try to extract section title if applicable
+    // Common patterns: 
+    // - "Title. Rest of the text..."
+    // - "TITLE. Rest of the text..."
+    // - "Title - Rest of the text..."
+    const titleMatch = sectionText.match(/^([A-Z][^.:-]*(?:\s+[A-Z][^.:-]*)*)[.:-]\s+(.*)/);
+    if (titleMatch) {
+      sectionTitle = titleMatch[1].trim();
+      sectionText = titleMatch[2].trim();
+    }
     
     // Get the next match at the end of the loop
     match = sectionPattern.exec(text);
@@ -145,7 +162,30 @@ export function detectSections(
       sections.push({
         sectionNumber,
         text: sectionText,
+        sectionTitle
       });
+    }
+  }
+
+  // If no sections were found with the enhanced pattern, try a fallback approach
+  if (sections.length === 0) {
+    // Fallback pattern for less structured documents
+    // Look for numbered paragraphs or other patterns that might indicate sections
+    const fallbackPattern = /(?:^|\n)(?:\((\d+|[a-z])\)|(\d+)\.|([IVXLCDM]+)\.)\s+(.*?)(?=(?:\n(?:\(\d+|[a-z]\)|\d+\.|[IVXLCDM]+\.)\s+)|$)/gis;
+    
+    let fallbackMatch: RegExpExecArray | null = fallbackPattern.exec(text);
+    while (fallbackMatch !== null) {
+      const sectionNumber = fallbackMatch[1] || fallbackMatch[2] || fallbackMatch[3];
+      const sectionText = fallbackMatch[4].trim();
+      
+      fallbackMatch = fallbackPattern.exec(text);
+      
+      if (sectionText.length > 0) {
+        sections.push({
+          sectionNumber,
+          text: sectionText
+        });
+      }
     }
   }
 

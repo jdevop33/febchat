@@ -30,14 +30,31 @@ export function chunkBySection(
   const minLength = options.minLength || 50;
   const maxLength = options.maxLength || 1000;
 
-  // Pattern to match section numbers like "1.", "1.1", "1.1.1"
+  // Enhanced pattern to match various section number formats:
+  // - Standard decimal notation: "1.", "1.1", "1.1.1"
+  // - Section/part prefixed: "Section 1", "Part I", "Section 1.2"
+  // - Roman numerals: "I.", "II.", "IV."
+  // - Letter-based subsections: "1(a)", "2(b)(i)", "3.1(c)"
+  // - Dash or parenthesis prefixed: "1-1", "1-(a)", "(1)", "(a)"
   const sectionPattern =
-    /(?:^|\n)(\d+(?:\.\d+)*)\s+(.*?)(?=(?:\n\d+(?:\.\d+)*\s+)|$)/gs;
+    /(?:^|\n)(?:(?:Section|Part|Article)\s+)?([IVXLCDM]+\.|\d+(?:[-.](?:\d+|[a-z])|(?:\(\w+\))+)?|\(\w+\))\s+(.*?)(?=(?:\n(?:(?:Section|Part|Article)\s+)?([IVXLCDM]+\.|\d+(?:[-.](?:\d+|[a-z])|(?:\(\w+\))+)?|\(\w+\))\s+)|$)/gis;
 
   let match: RegExpExecArray | null = sectionPattern.exec(text);
   while (match !== null) {
     const sectionNumber = match[1];
-    const sectionText = match[2].trim();
+    let sectionText = match[2].trim();
+    let sectionTitle: string | undefined;
+    
+    // Try to extract section title if applicable
+    // Common patterns: 
+    // - "Title. Rest of the text..."
+    // - "TITLE. Rest of the text..."
+    // - "Title - Rest of the text..."
+    const titleMatch = sectionText.match(/^([A-Z][^.:-]*(?:\s+[A-Z][^.:-]*)*)[.:-]\s+(.*)/);
+    if (titleMatch) {
+      sectionTitle = titleMatch[1].trim();
+      sectionText = titleMatch[2].trim();
+    }
     
     // Get the next match at the end of the loop
     match = sectionPattern.exec(text);
@@ -60,6 +77,7 @@ export function chunkBySection(
             metadata: {
               ...metadata,
               section: sectionNumber,
+              sectionTitle: sectionTitle,
             },
           });
 
@@ -77,6 +95,7 @@ export function chunkBySection(
           metadata: {
             ...metadata,
             section: sectionNumber,
+            sectionTitle: sectionTitle,
           },
         });
       }
@@ -87,8 +106,94 @@ export function chunkBySection(
         metadata: {
           ...metadata,
           section: sectionNumber,
+          sectionTitle: sectionTitle,
         },
       });
+    }
+  }
+
+  // If no sections were found with the enhanced pattern, try a fallback approach
+  if (chunks.length === 0) {
+    console.log("No sections found with primary pattern, using fallback method...");
+    
+    // Fallback pattern for less structured documents
+    // Look for numbered paragraphs or other patterns that might indicate sections
+    const fallbackPattern = /(?:^|\n)(?:\((\d+|[a-z])\)|(\d+)\.|([IVXLCDM]+)\.)\s+(.*?)(?=(?:\n(?:\(\d+|[a-z]\)|\d+\.|[IVXLCDM]+\.)\s+)|$)/gis;
+    
+    let fallbackMatch: RegExpExecArray | null = fallbackPattern.exec(text);
+    while (fallbackMatch !== null) {
+      const sectionNumber = fallbackMatch[1] || fallbackMatch[2] || fallbackMatch[3];
+      const sectionText = fallbackMatch[4].trim();
+      
+      fallbackMatch = fallbackPattern.exec(text);
+      
+      if (sectionText.length > 0) {
+        // Apply the same minLength and maxLength rules
+        if (sectionText.length < minLength) {
+          continue;
+        }
+        
+        if (sectionText.length > maxLength) {
+          // Split into chunks as with the primary pattern
+          const sentences = sectionText.match(/[^.!?]+[.!?]+/g) || [];
+          let currentChunk = '';
+          
+          for (const sentence of sentences) {
+            if (currentChunk.length + sentence.length > maxLength) {
+              chunks.push({
+                text: currentChunk.trim(),
+                metadata: {
+                  ...metadata,
+                  section: sectionNumber,
+                },
+              });
+              
+              currentChunk = sentence;
+            } else {
+              currentChunk += sentence;
+            }
+          }
+          
+          if (currentChunk.length > 0) {
+            chunks.push({
+              text: currentChunk.trim(),
+              metadata: {
+                ...metadata,
+                section: sectionNumber,
+              },
+            });
+          }
+        } else {
+          chunks.push({
+            text: sectionText,
+            metadata: {
+              ...metadata,
+              section: sectionNumber,
+            },
+          });
+        }
+      }
+    }
+    
+    // If still no sections found, use basic chunking as a last resort
+    if (chunks.length === 0) {
+      console.log("No sections found with fallback pattern either, using basic paragraph chunking...");
+      
+      // Split by paragraphs
+      const paragraphs = text.split(/\n\s*\n/);
+      
+      for (let i = 0; i < paragraphs.length; i++) {
+        const paragraph = paragraphs[i].trim();
+        if (paragraph.length >= minLength) {
+          chunks.push({
+            text: paragraph,
+            metadata: {
+              ...metadata,
+              section: `p${i+1}`, // Use paragraph numbers as section identifiers
+            },
+          });
+        }
+      }
     }
   }
 

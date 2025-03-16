@@ -19,6 +19,9 @@ export interface BylawMetadata {
 
   /** The section number (e.g., "3.1") */
   section: string;
+  
+  /** The title of the section, if available */
+  sectionTitle?: string;
 
   /** The date the bylaw was enacted (ISO format) */
   dateEnacted: string;
@@ -157,7 +160,10 @@ export interface BylawToolResult {
     bylawNumber: string;
     title: string;
     section: string;
+    sectionTitle?: string;
     content: string;
     url?: string;
+    isConsolidated?: boolean;
+    consolidatedDate?: string;
   }>;
 }

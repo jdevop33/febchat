@@ -70,7 +70,63 @@ export function BylawCitation({
   const [validBylaw, setValidBylaw] = useState(true);
   const [citationFormat, setCitationFormat] = useState<'standard' | 'legal' | 'apa'>('standard');
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
-  const formattedSection = sectionTitle ? `${section}: ${sectionTitle}` : `Section ${section}`;
+  // Normalize section reference format (for internal use/storage)
+  const normalizeSection = (section: string): string => {
+    // Remove any prefix like "Section", "Part", etc.
+    let normalized = section.replace(/^(section|part|article|schedule|appendix|s\.|p\.)\s+/i, '');
+    
+    // Remove trailing period if it exists
+    normalized = normalized.replace(/\.$/, '');
+    
+    // If it's a roman numeral, convert to uppercase for consistency
+    if (/^[IVXLCDM]+$/i.test(normalized)) {
+      normalized = normalized.toUpperCase();
+    }
+    
+    return normalized;
+  };
+  
+  // Enhanced section formatting to handle various citation styles (for display)
+  const formatSection = (section: string, title?: string | null): string => {
+    // Normalize section first
+    const normalizedSection = normalizeSection(section);
+    
+    // Check if it's a roman numeral
+    const isRomanNumeral = /^[IVXLCDM]+$/i.test(normalizedSection);
+    
+    // Check if it's a lettered section like "(a)" or "(iv)"
+    const isLetterSection = /^\([a-z0-9]+\)$/i.test(normalizedSection);
+    
+    // Check if it's a numeric section with subsections like "1.2.3"
+    const isNumericWithSubsections = /^\d+(\.\d+)+$/.test(normalizedSection);
+    
+    // Check if it's a simple numeric section like "1" or "42"
+    const isSimpleNumeric = /^\d+$/.test(normalizedSection);
+    
+    // Format based on type
+    let formattedSection;
+    if (isRomanNumeral) {
+      formattedSection = `Part ${normalizedSection}`;
+    } else if (isLetterSection) {
+      formattedSection = `Subsection ${normalizedSection}`;
+    } else if (isNumericWithSubsections) {
+      formattedSection = `Section ${normalizedSection}`;
+    } else if (isSimpleNumeric) {
+      formattedSection = `Section ${normalizedSection}`;
+    } else {
+      // If we can't determine the type, just use the original section
+      formattedSection = section;
+    }
+    
+    // Add title if provided
+    if (title) {
+      formattedSection = `${formattedSection}: ${title}`;
+    }
+    
+    return formattedSection;
+  };
+  
+  const formattedSection = formatSection(section, sectionTitle);
 
   // Validate bylaw number on component mount
   useEffect(() => {
@@ -86,17 +142,38 @@ export function BylawCitation({
   const copyToClipboard = () => {
     let content = '';
     
+    // Format section string for citation
+    const getCitationSectionString = (): string => {
+      // For legal citations, use the section symbol with normalized section
+      if (citationFormat === 'legal') {
+        return `§ ${normalizeSection(section)}`;
+      }
+      
+      // For other formats, use the enhanced formatting
+      return formatSection(section, null);
+    };
+    
+    // Handle consolidated bylaw citation
+    const getConsolidationInfo = (): string => {
+      if (isConsolidated && consolidatedDate) {
+        return ` (Consolidated to ${consolidatedDate})`;
+      } else if (isConsolidated) {
+        return ` (Consolidated)`;
+      }
+      return '';
+    };
+    
     // Format citation based on selected format
     switch (citationFormat) {
       case 'legal':
-        content = `Oak Bay Bylaw No. ${bylawNumber}, § ${section} (${effectiveDate || 'n.d.'}).`;
+        content = `Oak Bay Bylaw No. ${bylawNumber}${getConsolidationInfo()}, § ${section} (${effectiveDate || 'n.d.'}).`;
         break;
       case 'apa':
-        content = `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${formattedTitle} [Bylaw No. ${bylawNumber}], Section ${section}.`;
+        content = `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${formattedTitle} [Bylaw No. ${bylawNumber}${getConsolidationInfo()}], ${getCitationSectionString()}.`;
         break;
       case 'standard':
       default:
-        content = `${formattedTitle}, Section ${section}: ${excerpt}`;
+        content = `${formattedTitle}${getConsolidationInfo()}, ${getCitationSectionString()}${excerpt ? `: ${excerpt}` : ''}`;
         break;
     }
     
@@ -128,12 +205,62 @@ export function BylawCitation({
       `${bylawNumber}.pdf`}`;
   };
   
-  // Helper function to get filename for bylaw
+  // Enhanced helper function to get filename for bylaw
   const getFilenameForBylaw = (num: string): string => {
-    // Map of bylaw numbers to filenames (abbreviated version)
+    // Comprehensive map of bylaw numbers to filenames
     const bylawMap: Record<string, string> = {
+      '3152': '3152.pdf',
       '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
-      // Add more mappings as needed
+      '3370': '3370, Water Rate Bylaw, 1981 (CONSOLIDATED)_2.pdf',
+      '3416': '3416-Boulevard-Frontage-Tax-BL-1982-CONSOLIDATED-to-May-8-2023.pdf',
+      '3531': '3531_ZoningBylawConsolidation_Aug302024.pdf',
+      '3536': '3536.pdf',
+      '3540': '3540, Parking Facilities BL 1986 (CONSOLIDATED)_1.pdf',
+      '3545': '3545-Uplands-Bylaw-1987-(CONSOLIDATED-to-February-10-2020).pdf',
+      '3550': '3550, Driveway Access BL (CONSOLIDATED).pdf',
+      '3578': '3578_Subdivision-and-Development_CONSOLIDATED-to-September-2023.pdf',
+      '3603': '3603, Business Licence Bylaw 1988 - CONSOLIDATED FIN.pdf',
+      '3805': '3805.pdf',
+      '3827': '3827, Records Administration BL 94 (CONSOLIDATED 2).pdf',
+      '3829': '3829.pdf',
+      '3832': '3832.pdf',
+      '3891': '3891-Public-Sewer-Bylaw,-1996-CONSOLIDATED.pdf',
+      '3938': '3938.pdf',
+      '3946': '3946 Sign Bylaw 1997 (CONSOLIDATED) to Sept 11 2023_0.pdf',
+      '3952': '3952, Ticket Information Utilization BL 97 (CONSOLIDATED)_2.pdf',
+      '4008': '4008.pdf',
+      '4013': '4013, Animal Control Bylaw, 1999 (CONSOLIDATED)_1.pdf',
+      '4100': '4100-Streets-Traffic-Bylaw-2000.pdf',
+      '4144': '4144, Oil Burning Equipment and Fuel Tank Regulation Bylaw, 2002.pdf',
+      '4183': '4183_Board-of-Variance-Bylaw_CONSOLIDATED-to-Sept11-2023.pdf',
+      '4222': '4222.pdf',
+      '4239': '4239, Administrative Procedures Bylaw, 2004, (CONSOLIDATED).pdf',
+      '4247': '4247 Building and Plumbing Bylaw 2005 Consolidated to September 11 2023_0.pdf',
+      '4284': '4284, Elections and Voting (CONSOLIDATED).pdf',
+      '4371': '4371-Refuse-Collection-and-Disposal-Bylaw-2007-(CONSOLIDATED).pdf',
+      '4375': '4375.pdf',
+      '4392': '4392, Sewer User Charge Bylaw 2008 (CONSOLIDATED).pdf',
+      '4421': '4421.pdf',
+      '4518': '4518.pdf',
+      '4620': '4620, Oak Bay Official Community Plan Bylaw, 2014.pdf',
+      '4671': '4671, Sign Bylaw Amendment Bylaw No. 4671, 2017.pdf',
+      '4672': '4672-Parks-and-Beaches-Bylaw-2017-CONSOLIDATED.pdf',
+      '4719': '4719, Fire Prevention and Life Safety Bylaw, 2018.pdf',
+      '4720': '4720.pdf',
+      '4740': '4740 Council Procedure Bylaw CONSOLIDATED 4740.003.pdf',
+      '4742': '4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
+      '4747': '4747, Reserve Funds Bylaw, 2020 CONSOLIDATED.pdf',
+      '4770': '4770 Heritage Commission Bylaw CONSOLIDATED 4770.001.pdf',
+      '4771': '4771 Advisory Planning Commission Bylaw CONSOLIDATED 4771.001.pdf',
+      '4772': '4772 Advisory Planning Commission Bylaw CONSOLIDATED 4772.001.pdf',
+      '4777': '4777 PRC Fees and Charges Bylaw CONSOLIDATED.pdf',
+      '4822': '4822 Council Remuneration Bylaw - DRAFT.pdf',
+      '4844': '4844-Consolidated-up to-4858.pdf',
+      '4845': '4845-Planning-and-Development-Fees-and-Charges-CONSOLIDATED.pdf',
+      '4849': '4849-Property-Tax-Exemption-Bylaw-No-4849-2023.pdf',
+      '4879': '4879, Oak Bay Business Improvement Area Bylaw, 2024.pdf',
+      '4891': 'Development Cost Charge Bylaw No. 4891, 2024.pdf',
+      '4892': 'Amenity Cost Charge Bylaw No. 4892, 2024.pdf'
     };
     
     return bylawMap[num] || `${num}.pdf`;
@@ -356,11 +483,10 @@ export function BylawCitation({
                         title: formattedTitle,
                         isConsolidated,
                         consolidatedDate,
-                        amendedBylaw,
                         citationText: excerpt,
                         sourceUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`,
                         verifiedDate: new Date().toISOString().split('T')[0],
-                        pdfPath: `/pdfs/${bylawNumber}.pdf`
+                        pdfPath: getPdfPath()
                       };
                       
                       // Log verification to console (in production, this would be saved)
