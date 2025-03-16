@@ -172,7 +172,7 @@ export function PdfViewerModal({
     });
   };
 
-  // Create PDF viewer URL with parameters
+  // Create direct PDF viewer URL with parameters
   const viewerUrl = `${pdfPath}#page=${currentPage}&zoom=${scale * 100}`;
 
   return (

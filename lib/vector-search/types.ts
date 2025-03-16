@@ -45,6 +45,27 @@ export interface BylawMetadata {
     fromFile?: string[];
     fromExplicit?: string[];
   };
+  
+  /** Verified status - indicates if bylaw info has been manually verified */
+  verified?: boolean;
+  
+  /** Effective date - when the bylaw becomes enforceable (may differ from enactment) */
+  effectiveDate?: string;
+  
+  /** Expiration date - when the bylaw is no longer in effect (if applicable) */
+  expirationDate?: string;
+  
+  /** Amendment history - list of bylaw numbers that amended this bylaw */
+  amendments?: string[];
+  
+  /** Keywords - extracted or manually added keywords for improved search */
+  keywords?: string[];
+  
+  /** Status - whether the bylaw is active, repealed, superseded, etc. */
+  status?: 'active' | 'repealed' | 'superseded' | 'draft';
+  
+  /** Related bylaws - list of related bylaw numbers */
+  relatedBylaws?: string[];
 }
 
 /**
@@ -62,6 +83,9 @@ export interface BylawSearchResult {
 
   /** The similarity score (0-1) */
   score: number;
+  
+  /** Optional keyword match score for internal use */
+  keywordScore?: number;
 }
 
 /**
@@ -76,6 +100,9 @@ export interface BylawSearchOptions {
 
   /** Metadata filters to apply */
   filters?: Record<string, any>;
+  
+  /** User ID for logging and analytics */
+  userId?: string;
 }
 
 /**

@@ -17,6 +17,7 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { toast } from 'sonner';
 import { PdfViewerModal } from './pdf-viewer-modal';
+import { CitationFeedback } from './citation-feedback';
 
 interface BylawCitationProps {
   bylawNumber: string;
@@ -53,6 +54,7 @@ export function BylawCitation({
   const [expanded, setExpanded] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [validBylaw, setValidBylaw] = useState(true);
+  const [citationFormat, setCitationFormat] = useState<'standard' | 'legal' | 'apa'>('standard');
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
 
   // Validate bylaw number on component mount
@@ -61,9 +63,24 @@ export function BylawCitation({
   }, [bylawNumber]);
 
   const copyToClipboard = () => {
-    const content = `${formattedTitle}, Section ${section}: ${excerpt}`;
+    let content = '';
+    
+    // Format citation based on selected format
+    switch (citationFormat) {
+      case 'legal':
+        content = `Oak Bay Bylaw No. ${bylawNumber}, § ${section} (${effectiveDate || 'n.d.'}).`;
+        break;
+      case 'apa':
+        content = `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${formattedTitle} [Bylaw No. ${bylawNumber}], Section ${section}.`;
+        break;
+      case 'standard':
+      default:
+        content = `${formattedTitle}, Section ${section}: ${excerpt}`;
+        break;
+    }
+    
     navigator.clipboard.writeText(content);
-    toast.success('Copied to clipboard');
+    toast.success(`${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`);
   };
   
   // External URL to civicweb
@@ -181,7 +198,20 @@ export function BylawCitation({
               )}
             </Button>
 
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
+              <div className="mr-2">
+                <select 
+                  className="h-7 px-1 py-0 text-xs rounded-md border border-input bg-transparent"
+                  value={citationFormat}
+                  onChange={(e) => setCitationFormat(e.target.value as 'standard' | 'legal' | 'apa')}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="standard">Standard</option>
+                  <option value="legal">Legal</option>
+                  <option value="apa">APA</option>
+                </select>
+              </div>
+              
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -197,7 +227,7 @@ export function BylawCitation({
                     Copy
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Copy citation to clipboard</TooltipContent>
+                <TooltipContent>Copy {citationFormat} citation to clipboard</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -235,7 +265,7 @@ export function BylawCitation({
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />
-                    External Link
+                    External
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -265,6 +295,13 @@ export function BylawCitation({
           </div>
         </CardContent>
       </Card>
+      
+      <CitationFeedback 
+        bylawNumber={bylawNumber}
+        section={section}
+        citationText={excerpt}
+        className="mt-2"
+      />
       
       {validBylaw && (
         <PdfViewerModal 
