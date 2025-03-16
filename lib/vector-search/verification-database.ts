@@ -9,8 +9,18 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Initialize Prisma client
-const prisma = new PrismaClient();
+// Initialize Prisma client - use global instance to prevent too many connections
+// For Next.js hot reloading in development
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    // Log queries in development
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 // Interface for verified bylaw data
 export interface VerifiedBylawData {
@@ -39,18 +49,21 @@ export async function verifyBylaw(bylawNumber: string): Promise<VerifiedBylawDat
     const bylaw = await prisma.bylaw.findUnique({
       where: { bylawNumber },
       include: { sections: true }
+    }).catch(err => {
+      console.warn(`Database error when verifying bylaw ${bylawNumber}:`, err);
+      return null;
     });
 
     if (!bylaw) {
       console.warn(`Bylaw ${bylawNumber} not found in verification database`);
-      return null;
+      return fallbackVerifyBylaw(bylawNumber);
     }
 
     // Verify PDF exists
     const pdfExists = fs.existsSync(path.join(process.cwd(), 'public', bylaw.pdfPath));
     if (!pdfExists) {
       console.warn(`PDF file for bylaw ${bylawNumber} not found at path ${bylaw.pdfPath}`);
-      return null;
+      return fallbackVerifyBylaw(bylawNumber);
     }
 
     return {
@@ -71,6 +84,47 @@ export async function verifyBylaw(bylawNumber: string): Promise<VerifiedBylawDat
     };
   } catch (error) {
     console.error(`Error verifying bylaw ${bylawNumber}:`, error);
+    return fallbackVerifyBylaw(bylawNumber);
+  }
+}
+
+/**
+ * Fallback verification using file mapping when database is unavailable
+ */
+export function fallbackVerifyBylaw(bylawNumber: string): VerifiedBylawData | null {
+  try {
+    // Use the existing filename mapping
+    const filename = getFilenameForBylaw(bylawNumber);
+    if (!filename) return null;
+    
+    // Check if file exists
+    const pdfPath = `/pdfs/${filename}`;
+    const fullPath = path.join(process.cwd(), 'public', pdfPath);
+    const pdfExists = fs.existsSync(fullPath);
+    
+    if (!pdfExists) {
+      console.warn(`PDF file for bylaw ${bylawNumber} not found at path ${pdfPath}`);
+      return null;
+    }
+    
+    // Parse title from filename
+    let title = filename.replace(/\.pdf$/i, '');
+    title = title.replace(/^(\d{4})[-,\s]+/, ''); // Remove bylaw number prefix
+    
+    // Detect if consolidated
+    const isConsolidated = /consolidated|consolidation/i.test(filename);
+    
+    return {
+      bylawNumber,
+      title,
+      isConsolidated,
+      pdfPath,
+      officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
+      lastVerified: new Date(),
+      sections: [] // No sections in fallback mode
+    };
+  } catch (error) {
+    console.error(`Error in fallback verification for bylaw ${bylawNumber}:`, error);
     return null;
   }
 }
@@ -155,6 +209,7 @@ export async function recordCitationFeedback(
   userComment?: string
 ): Promise<boolean> {
   try {
+    // Non-critical feature - can fail gracefully
     await prisma.citationFeedback.create({
       data: {
         bylawNumber,
@@ -163,10 +218,17 @@ export async function recordCitationFeedback(
         userComment,
         timestamp: new Date()
       }
+    }).catch(err => {
+      console.warn(`Citation feedback recording failed (non-critical) for bylaw ${bylawNumber}:`, err);
+      // Store feedback in application logs at minimum
+      console.info(`CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`);
+      return null;
     });
     return true;
   } catch (error) {
     console.error(`Error recording citation feedback for bylaw ${bylawNumber}:`, error);
+    // Store feedback in application logs at minimum
+    console.info(`CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`);
     return false;
   }
 }

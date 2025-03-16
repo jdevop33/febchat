@@ -8,10 +8,7 @@
 import { getPineconeIndex } from './pinecone-client';
 import { getEmbeddingsModel, EmbeddingProvider } from './embedding-models';
 import * as VerificationDB from './verification-database';
-import { PrismaClient } from '@prisma/client';
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
+import { prisma } from './verification-database';
 
 // Interface for search options
 export interface SearchOptions {
@@ -243,8 +240,12 @@ export async function recordSearchQuery(
         topResult: results.length > 0 ? results[0].bylawNumber : null,
         timestamp: new Date()
       }
+    }).catch(err => {
+      // Just log error and continue - this is non-critical functionality
+      console.warn('Search query logging failed (non-critical):', err);
     });
   } catch (error) {
     console.error('Error recording search query:', error);
+    // Non-critical functionality, can fail silently
   }
 }
