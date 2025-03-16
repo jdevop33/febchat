@@ -29,6 +29,22 @@ export interface BylawMetadata {
 
   /** Optional URL to the source bylaw document */
   url?: string;
+  
+  /** Original filename of the PDF document (for debugging) */
+  originalFilename?: string;
+  
+  /** If this bylaw is consolidated with other bylaws */
+  consolidatedTo?: string;
+  
+  /** For debugging - sources of metadata */
+  metadataSource?: Record<string, string>;
+  
+  /** For debugging - tracking metadata sources */
+  _metadataSources?: {
+    fromContent?: string[];
+    fromFile?: string[];
+    fromExplicit?: string[];
+  };
 }
 
 /**

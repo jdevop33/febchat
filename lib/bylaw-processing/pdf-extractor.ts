@@ -66,13 +66,13 @@ export async function extractFromPDF(
     const dateMatch = filename.match(/(\d{4}[-_]?\d{2}[-_]?\d{2})/);
 
     // Track where metadata comes from for debugging
-    const metadataSource = {
+    const metadataSourceInfo: Record<string, string> = {
       bylawNumber: bylawNumber ? 'filename' : (metadata.bylawNumber ? 'provided' : 'none'),
       dateEnacted: dateMatch ? 'filename' : (metadata.dateEnacted ? 'provided' : 'none'),
     };
     
     console.log(`Extracted metadata from filename: ${filename}`);
-    console.log(`- Bylaw number: ${bylawNumber || 'Not found'} (source: ${metadataSource.bylawNumber})`);
+    console.log(`- Bylaw number: ${bylawNumber || 'Not found'} (source: ${metadataSourceInfo.bylawNumber})`);
     
     // Combine extracted metadata with provided metadata
     const combinedMetadata: Partial<BylawMetadata> = {
@@ -83,8 +83,9 @@ export async function extractFromPDF(
       ...(dateMatch && !metadata.dateEnacted
         ? { dateEnacted: dateMatch[1] }
         : {}),
+      originalFilename: filename,
       lastUpdated: new Date().toISOString(),
-      metadataSource, // For debugging
+      metadataSource: metadataSourceInfo, // For debugging
     };
 
     return {
@@ -273,7 +274,7 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
   }
   
   // Store the metadata source information for debugging
-  metadata.metadataSource = metadataSource;
+  metadata.metadataSource = metadataSource as Record<string, string>;
 
   // Attempt to detect category
   if (

@@ -74,8 +74,8 @@ export async function processBylawPDF(
       _metadataSources: {
         fromContent: Object.keys(textMetadata),
         fromFile: Object.keys(extractedMetadata),
-        fromExplicit: Object.keys(metadata),
-      }
+        fromExplicit: Object.keys(metadata)
+      } as BylawMetadata['_metadataSources']
     };
 
     // Step 5: Chunk the text
