@@ -28,6 +28,13 @@ interface BylawCitationProps {
   className?: string;
   effectiveDate?: string;
   financialImpact?: string;
+  isVerified?: boolean;
+  isConsolidated?: boolean;
+  consolidatedDate?: string;
+  pdfPath?: string;
+  officialUrl?: string;
+  sectionTitle?: string;
+  score?: number;
 }
 
 // List of bylaw numbers that we know exist in our PDF collection
@@ -50,17 +57,31 @@ export function BylawCitation({
   effectiveDate,
   financialImpact,
   className,
+  isVerified = false,
+  isConsolidated = false,
+  consolidatedDate,
+  pdfPath,
+  officialUrl,
+  sectionTitle,
+  score,
 }: BylawCitationProps) {
   const [expanded, setExpanded] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [validBylaw, setValidBylaw] = useState(true);
   const [citationFormat, setCitationFormat] = useState<'standard' | 'legal' | 'apa'>('standard');
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
+  const formattedSection = sectionTitle ? `${section}: ${sectionTitle}` : `Section ${section}`;
 
   // Validate bylaw number on component mount
   useEffect(() => {
-    setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
-  }, [bylawNumber]);
+    // If explicitly marked as verified, trust that
+    if (isVerified) {
+      setValidBylaw(true);
+    } else {
+      // Otherwise check against our known list
+      setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
+    }
+  }, [bylawNumber, isVerified]);
 
   const copyToClipboard = () => {
     let content = '';
@@ -83,8 +104,8 @@ export function BylawCitation({
     toast.success(`${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`);
   };
   
-  // External URL to civicweb
-  const externalUrl = `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
+  // External URL to civicweb - use provided URL or build one
+  const externalUrl = officialUrl || `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
 
   // Function to handle PDF not found
   const handlePdfNotFound = () => {
@@ -94,6 +115,28 @@ export function BylawCitation({
     
     // Auto-open external link if PDF not found
     window.open(externalUrl, '_blank');
+  };
+  
+  // Function to get the appropriate PDF path
+  const getPdfPath = () => {
+    if (pdfPath) {
+      return pdfPath;
+    }
+    
+    return `/pdfs/${VALIDATED_BYLAWS.includes(bylawNumber) ? 
+      getFilenameForBylaw(bylawNumber) : 
+      `${bylawNumber}.pdf`}`;
+  };
+  
+  // Helper function to get filename for bylaw
+  const getFilenameForBylaw = (num: string): string => {
+    // Map of bylaw numbers to filenames (abbreviated version)
+    const bylawMap: Record<string, string> = {
+      '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
+      // Add more mappings as needed
+    };
+    
+    return bylawMap[num] || `${num}.pdf`;
   };
 
   return (
@@ -116,7 +159,18 @@ export function BylawCitation({
               <FileText size={16} className="shrink-0" />
               <div className="font-medium">
                 {formattedTitle}
-                {!validBylaw && (
+                {isVerified ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                        Verified
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      This citation has been verified against official sources
+                    </TooltipContent>
+                  </Tooltip>
+                ) : !validBylaw && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AlertTriangle size={14} className="ml-2 text-amber-500 inline" />
@@ -134,7 +188,12 @@ export function BylawCitation({
                   Effective: {effectiveDate}
                 </span>
               )}
-              <span>Section {section}</span>
+              {isConsolidated && (
+                <span className="rounded bg-purple-100 px-2 py-0.5 text-xs dark:bg-purple-900/40">
+                  Consolidated{consolidatedDate ? `: ${consolidatedDate}` : ''}
+                </span>
+              )}
+              <span>{formattedSection}</span>
             </div>
           </div>
 
@@ -339,6 +398,10 @@ export function BylawCitation({
           onClose={() => setIsPdfOpen(false)}
           bylawNumber={bylawNumber}
           title={formattedTitle}
+          pdfPath={getPdfPath()}
+          initialPage={1}
+          section={section}
+          isVerified={isVerified}
         />
       )}
     </>

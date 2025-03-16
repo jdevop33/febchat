@@ -5,6 +5,10 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { searchBylaws } from '@/lib/vector-search/search-service';
+import { 
+  searchBylawsWithVerification, 
+  recordSearchQuery 
+} from '@/lib/vector-search/enhanced-search';
 import { z } from 'zod';
 
 // Schema for search request validation
@@ -96,8 +100,49 @@ export async function POST(request: Request) {
       results = cachedEntry.results;
       fromCache = true;
     } else {
-      // Perform search
-      results = await searchBylaws(query, searchOptions);
+      // Perform search with verification
+      try {
+        // Convert searchOptions to enhanced search format
+        const enhancedOptions = {
+          topK: limit,
+          bylawFilter: filters?.bylawNumber,
+          categoryFilter: filters?.category,
+          dateRange: filters?.dateFrom || filters?.dateTo ? {
+            start: filters.dateFrom,
+            end: filters.dateTo
+          } : undefined
+        };
+        
+        // Use the enhanced search with verification
+        const verifiedResults = await searchBylawsWithVerification(query, enhancedOptions);
+        
+        // Record query for analytics
+        await recordSearchQuery(query, verifiedResults);
+        
+        // Convert verified results to expected format
+        results = verifiedResults.map(result => ({
+          id: `bylaw-${result.bylawNumber}-${result.section}`,
+          score: result.score,
+          text: result.content,
+          metadata: {
+            bylawNumber: result.bylawNumber,
+            title: result.title,
+            section: result.section,
+            sectionTitle: result.sectionTitle,
+            category: result.section.includes('1') ? 'general' : 'specific', // Placeholder
+            dateEnacted: result.enactmentDate,
+            lastUpdated: result.consolidatedDate,
+            isVerified: result.isVerified,
+            pdfPath: result.pdfPath,
+            officialUrl: result.officialUrl,
+            isConsolidated: result.isConsolidated
+          }
+        }));
+      } catch (error) {
+        console.error('Enhanced search failed, falling back to standard search:', error);
+        // Fall back to original search if enhanced search fails
+        results = await searchBylaws(query, searchOptions);
+      }
       
       // Cache results
       if (searchCache.size >= MAX_CACHE_SIZE) {
@@ -114,28 +159,37 @@ export async function POST(request: Request) {
       });
     }
 
-    // Format and return results with cache indicator
+    // Format and return results with cache indicator and verification info
     const formattedResults = results.map((result: any) => ({
       id: result.id,
       bylawNumber: result.metadata.bylawNumber,
       title: result.metadata.title,
       section: result.metadata.section,
+      sectionTitle: result.metadata.sectionTitle,
       content: result.text,
-      url:
-        result.metadata.url ||
-        `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
+      url: result.metadata.officialUrl || 
+           `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
+      pdfPath: result.metadata.pdfPath || `/pdfs/${result.metadata.bylawNumber}.pdf`,
       score: result.score,
+      isVerified: result.metadata.isVerified === undefined ? false : result.metadata.isVerified,
+      isConsolidated: result.metadata.isConsolidated || false,
       metadata: {
         category: result.metadata.category,
         dateEnacted: result.metadata.dateEnacted,
-        lastUpdated: result.metadata.lastUpdated,
+        lastUpdated: result.metadata.lastUpdated || result.metadata.consolidatedDate,
+        amendedBylaw: result.metadata.amendedBylaw,
       },
     }));
+    
+    // Count verified results
+    const verifiedCount = formattedResults.filter(result => result.isVerified).length;
     
     const response = NextResponse.json({
       success: true,
       query,
       count: results.length,
+      verifiedCount,
+      verificationRate: results.length > 0 ? (verifiedCount / results.length) : 0,
       fromCache,
       results: formattedResults,
     });

@@ -28,6 +28,9 @@ interface PdfViewerModalProps {
   bylawNumber: string;
   title: string;
   initialPage?: number;
+  pdfPath?: string;
+  section?: string;
+  isVerified?: boolean;
 }
 
 export function PdfViewerModal({
@@ -36,9 +39,12 @@ export function PdfViewerModal({
   bylawNumber,
   title,
   initialPage = 1,
+  pdfPath,
+  section,
+  isVerified = false,
 }: PdfViewerModalProps) {
   const [loading, setLoading] = useState(true);
-  const [pdfPath, setPdfPath] = useState<string>('');
+  const [pdfUrl, setPdfUrl] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(0);
   const [scale, setScale] = useState(1);
@@ -117,7 +123,9 @@ export function PdfViewerModal({
   useEffect(() => {
     if (isOpen && bylawNumber) {
       setLoading(true);
-      setPdfPath(getPdfPath(bylawNumber));
+      
+      // Use the provided PDF path or fall back to our mapping
+      setPdfUrl(pdfPath || getPdfPath(bylawNumber));
       
       // Simulate PDF loading and page count detection
       // In a real implementation, you would use PDF.js to get the actual page count
@@ -127,7 +135,7 @@ export function PdfViewerModal({
         setLoading(false);
       }, 1000);
     }
-  }, [isOpen, bylawNumber]);
+  }, [isOpen, bylawNumber, pdfPath]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -162,7 +170,7 @@ export function PdfViewerModal({
   const handleDownload = () => {
     // Trigger download of the PDF
     const link = document.createElement('a');
-    link.href = pdfPath;
+    link.href = pdfUrl;
     link.download = `Oak_Bay_Bylaw_${bylawNumber}.pdf`;
     document.body.appendChild(link);
     link.click();
@@ -175,7 +183,7 @@ export function PdfViewerModal({
 
   // Create direct PDF viewer URL with parameters
   // Add section parameter if we're looking up a specific section
-  const viewerUrl = `${pdfPath}#page=${currentPage}&zoom=${scale * 100}`;
+  const viewerUrl = `${pdfUrl}#page=${currentPage}&zoom=${scale * 100}`;
   
   // Track PDF load errors
   const [loadError, setLoadError] = useState(false);
@@ -193,12 +201,20 @@ export function PdfViewerModal({
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent className="max-w-4xl h-[90vh] p-0">
         <AlertDialogHeader className="px-4 py-2 flex flex-row items-center justify-between border-b">
-          <AlertDialogTitle>
-            {title}
-            <span className="ml-2 text-xs text-muted-foreground">
-              (Source document linked directly from municipal records)
-            </span>
-          </AlertDialogTitle>
+          <div>
+            <AlertDialogTitle className="flex items-center">
+              {title}
+              {isVerified && (
+                <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                  Verified
+                </span>
+              )}
+            </AlertDialogTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Source document linked directly from municipal records
+              {section && ` - Section ${section}`}
+            </p>
+          </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X size={18} />
           </Button>
