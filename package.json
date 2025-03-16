@@ -17,7 +17,12 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
-    "db:up": "drizzle-kit up"
+    "db:up": "drizzle-kit up",
+    "pinecone:upload": "npx tsx scripts/upload-pdfs-to-pinecone.ts",
+    "pinecone:upload:llama": "npx tsx scripts/upload-with-llama-embeddings.ts",
+    "pinecone:namespace": "npx tsx scripts/pinecone-namespace-upload.ts",
+    "pinecone:verify": "npx tsx scripts/verify-pinecone.ts",
+    "pdfs:organize": "npx tsx scripts/organize-bylaws.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.1.11",
