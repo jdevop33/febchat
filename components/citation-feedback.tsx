@@ -95,10 +95,10 @@ export function CitationFeedback({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6"
+                className="size-6"
                 onClick={() => handleFeedback('correct')}
               >
-                <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
+                <ThumbsUp className="size-3.5 text-green-600" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>This citation is correct</TooltipContent>
@@ -109,10 +109,10 @@ export function CitationFeedback({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6"
+                className="size-6"
                 onClick={() => handleFeedback('incorrect')}
               >
-                <ThumbsDown className="h-3.5 w-3.5 text-red-600" />
+                <ThumbsDown className="size-3.5 text-red-600" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>This citation is incorrect</TooltipContent>
@@ -123,10 +123,10 @@ export function CitationFeedback({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-6 w-6"
+                className="size-6"
                 onClick={() => handleFeedback('incomplete')}
               >
-                <MessageCircle className="h-3.5 w-3.5 text-amber-600" />
+                <MessageCircle className="size-3.5 text-amber-600" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>This citation is incomplete</TooltipContent>
@@ -165,7 +165,7 @@ export function CitationFeedback({
                 variant="default"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={() => submitFeedback(feedbackType!)}
+                onClick={() => feedbackType && submitFeedback(feedbackType)}
                 disabled={isSubmitting}
               >
                 <Send size={12} className="mr-1" />

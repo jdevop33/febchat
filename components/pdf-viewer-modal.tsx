@@ -204,7 +204,7 @@ export function PdfViewerModal({
                 max={totalPages}
                 disabled={loading}
                 className="w-12 text-center border rounded px-1 py-0.5 text-sm"
-                onChange={(e) => handlePageChange(parseInt(e.target.value) || 1)}
+                onChange={(e) => handlePageChange(Number.parseInt(e.target.value) || 1)}
               />
               <span className="text-sm ml-1">of {totalPages}</span>
             </div>

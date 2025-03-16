@@ -109,9 +109,9 @@ export function BylawSearchFilters({
         
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
-            {activeFilters.map((filter, index) => (
+            {activeFilters.map((filter) => (
               <span 
-                key={index} 
+                key={`filter-${filter}`} 
                 className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-200"
               >
                 {filter}

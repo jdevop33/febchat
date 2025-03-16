@@ -2,8 +2,8 @@
  * API endpoint to find a PDF file for a bylaw number
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {

@@ -2,9 +2,9 @@
  * API endpoint to handle PDF viewing with page and scale parameters
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { type NextRequest, NextResponse } from 'next/server';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
     // Return information about the PDF and viewing URL
     return NextResponse.json({
       filename: pdfFilename,
-      page: parseInt(page),
-      scale: parseFloat(scale),
+      page: Number.parseInt(page),
+      scale: Number.parseFloat(scale),
       url: directUrl,
       fileSize: fs.statSync(pdfPath).size,
     });
