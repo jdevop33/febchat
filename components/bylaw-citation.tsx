@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from './ui/card';
 import {
@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   FileSearch,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -28,6 +29,17 @@ interface BylawCitationProps {
   financialImpact?: string;
 }
 
+// List of bylaw numbers that we know exist in our PDF collection
+const VALIDATED_BYLAWS = [
+  '3152', '3210', '3370', '3416', '3531', '3536', '3540', '3545',
+  '3550', '3578', '3603', '3805', '3827', '3829', '3832', '3891',
+  '3938', '3946', '3952', '4008', '4013', '4100', '4144', '4183',
+  '4222', '4239', '4247', '4284', '4371', '4375', '4392', '4421',
+  '4518', '4620', '4671', '4672', '4719', '4720', '4740', '4742',
+  '4747', '4770', '4771', '4772', '4777', '4822', '4844', '4845',
+  '4849', '4879', '4892', '4866', '4891', '4861'
+];
+
 export function BylawCitation({
   bylawNumber,
   section,
@@ -40,12 +52,31 @@ export function BylawCitation({
 }: BylawCitationProps) {
   const [expanded, setExpanded] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [validBylaw, setValidBylaw] = useState(true);
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
+
+  // Validate bylaw number on component mount
+  useEffect(() => {
+    setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
+  }, [bylawNumber]);
 
   const copyToClipboard = () => {
     const content = `${formattedTitle}, Section ${section}: ${excerpt}`;
     navigator.clipboard.writeText(content);
     toast.success('Copied to clipboard');
+  };
+  
+  // External URL to civicweb
+  const externalUrl = `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
+
+  // Function to handle PDF not found
+  const handlePdfNotFound = () => {
+    toast.error('PDF not found', {
+      description: `We couldn't find the PDF for Bylaw No. ${bylawNumber} in our system. Please check the external link for the official document.`
+    });
+    
+    // Auto-open external link if PDF not found
+    window.open(externalUrl, '_blank');
   };
 
   return (
@@ -53,15 +84,28 @@ export function BylawCitation({
       <Card
         className={cn(
           'my-3 border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20 cursor-pointer',
+          !validBylaw && 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
           className,
         )}
-        onClick={() => setIsPdfOpen(true)}
+        onClick={() => validBylaw ? setIsPdfOpen(true) : handlePdfNotFound()}
       >
         <CardContent className="pt-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
               <FileText size={16} className="shrink-0" />
-              <div className="font-medium">{formattedTitle}</div>
+              <div className="font-medium">
+                {formattedTitle}
+                {!validBylaw && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertTriangle size={14} className="ml-2 text-amber-500 inline" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      This bylaw may not be available in our PDF library. External link is recommended.
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {effectiveDate && (
@@ -153,7 +197,7 @@ export function BylawCitation({
                     className="h-8 px-2 text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsPdfOpen(true);
+                      validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
                     }}
                   >
                     <FileSearch size={14} className="mr-1" />
@@ -161,7 +205,7 @@ export function BylawCitation({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Open the bylaw PDF
+                  {validBylaw ? 'Open the bylaw PDF' : 'PDF may not be available'}
                 </TooltipContent>
               </Tooltip>
 
@@ -170,13 +214,13 @@ export function BylawCitation({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-2 text-xs"
+                    className={cn(
+                      "h-8 px-2 text-xs", 
+                      !validBylaw && "border-amber-200 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(
-                        `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`,
-                        '_blank',
-                      );
+                      window.open(externalUrl, '_blank');
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />
@@ -211,12 +255,14 @@ export function BylawCitation({
         </CardContent>
       </Card>
       
-      <PdfViewerModal 
-        isOpen={isPdfOpen}
-        onClose={() => setIsPdfOpen(false)}
-        bylawNumber={bylawNumber}
-        title={formattedTitle}
-      />
+      {validBylaw && (
+        <PdfViewerModal 
+          isOpen={isPdfOpen}
+          onClose={() => setIsPdfOpen(false)}
+          bylawNumber={bylawNumber}
+          title={formattedTitle}
+        />
+      )}
     </>
   );
 }

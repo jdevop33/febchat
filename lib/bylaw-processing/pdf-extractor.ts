@@ -36,19 +36,55 @@ export async function extractFromPDF(
 
     // Try to extract bylaw number and date from filename
     const filename = path.basename(filePath, '.pdf');
-    const bylawNumberMatch = filename.match(/bylaw[-_]?(\d+)/i);
+    
+    // More comprehensive bylaw number extraction - try multiple patterns
+    let bylawNumber;
+    
+    // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
+    const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);
+    if (explicitBylawMatch) {
+      bylawNumber = explicitBylawMatch[1];
+    }
+    
+    // Pattern 2: Starting with number pattern like "4620 - Something"
+    if (!bylawNumber) {
+      const startingNumberMatch = filename.match(/^(\d+)(?:[,\s_-]|$)/i);
+      if (startingNumberMatch) {
+        bylawNumber = startingNumberMatch[1];
+      }
+    }
+    
+    // Pattern 3: Number followed by comma or parentheses like "No. 4620," or "No. 4620 ("
+    if (!bylawNumber) {
+      const commaNumberMatch = filename.match(/No\.?\s+(\d+)[,\(\s]/i);
+      if (commaNumberMatch) {
+        bylawNumber = commaNumberMatch[1];
+      }
+    }
+    
+    // Look for date patterns
     const dateMatch = filename.match(/(\d{4}[-_]?\d{2}[-_]?\d{2})/);
 
+    // Track where metadata comes from for debugging
+    const metadataSource = {
+      bylawNumber: bylawNumber ? 'filename' : (metadata.bylawNumber ? 'provided' : 'none'),
+      dateEnacted: dateMatch ? 'filename' : (metadata.dateEnacted ? 'provided' : 'none'),
+    };
+    
+    console.log(`Extracted metadata from filename: ${filename}`);
+    console.log(`- Bylaw number: ${bylawNumber || 'Not found'} (source: ${metadataSource.bylawNumber})`);
+    
     // Combine extracted metadata with provided metadata
     const combinedMetadata: Partial<BylawMetadata> = {
       ...metadata,
-      ...(bylawNumberMatch && !metadata.bylawNumber
-        ? { bylawNumber: bylawNumberMatch[1] }
+      ...(bylawNumber && !metadata.bylawNumber
+        ? { bylawNumber }
         : {}),
       ...(dateMatch && !metadata.dateEnacted
         ? { dateEnacted: dateMatch[1] }
         : {}),
       lastUpdated: new Date().toISOString(),
+      metadataSource, // For debugging
     };
 
     return {
@@ -120,34 +156,124 @@ export function detectSections(
  */
 export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
   const metadata: Partial<BylawMetadata> = {};
+  const metadataSource: Record<string, string> = {};
 
-  // Extract bylaw number
-  const bylawNumberMatch = text.match(/Bylaw No\.\s+(\d+)/i);
-  if (bylawNumberMatch) {
-    metadata.bylawNumber = bylawNumberMatch[1];
+  // Extract bylaw number - try multiple patterns
+  // Pattern 1: "Bylaw No. 1234"
+  const bylawNumberMatch1 = text.match(/Bylaw\s+No\.?\s+(\d+)/i);
+  if (bylawNumberMatch1) {
+    metadata.bylawNumber = bylawNumberMatch1[1];
+    metadataSource.bylawNumber = 'pattern1';
+  }
+  
+  // Pattern 2: "Corporation of Oak Bay Bylaw 1234"
+  if (!metadata.bylawNumber) {
+    const bylawNumberMatch2 = text.match(/(?:Corporation|District|Municipality|Oak Bay)[\s\w]+Bylaw\s+(?:No\.?\s+)?(\d+)/i);
+    if (bylawNumberMatch2) {
+      metadata.bylawNumber = bylawNumberMatch2[1];
+      metadataSource.bylawNumber = 'pattern2';
+    }
+  }
+  
+  // Pattern 3: "Bylaw 1234" at beginning of line
+  if (!metadata.bylawNumber) {
+    const bylawNumberMatch3 = text.match(/(?:^|\n)Bylaw\s+(?:No\.?\s+)?(\d+)/i);
+    if (bylawNumberMatch3) {
+      metadata.bylawNumber = bylawNumberMatch3[1];
+      metadataSource.bylawNumber = 'pattern3';
+    }
+  }
+  
+  // Extract consolidated bylaw number if present (sometimes appears in the title)
+  const consolidatedMatch = text.match(/consolidated\s+to\s+(?:bylaw\s+)?(?:no\.?\s+)?(\d+)/i);
+  if (consolidatedMatch) {
+    metadata.consolidatedTo = consolidatedMatch[1];
+    metadataSource.consolidatedTo = 'text';
   }
 
-  // Extract bylaw title
-  const titleMatch = text.match(
-    /(?:BYLAW|Bylaw)[^\n]*?(?:TO|to)[^\n]*?([^\n]+)/,
+  // Extract bylaw title - try multiple patterns
+  // Pattern 1: "Bylaw ... TO ..."
+  const titleMatch1 = text.match(
+    /(?:BYLAW|Bylaw)[^\n]*?(?:TO|to)[^\n]*?([^\n\.]+)/i,
   );
-  if (titleMatch) {
-    metadata.title = titleMatch[1].trim();
+  if (titleMatch1) {
+    metadata.title = titleMatch1[1].trim();
+    metadataSource.title = 'pattern1';
+  }
+  
+  // Pattern 2: After "CITED AS" or similar
+  if (!metadata.title) {
+    const titleMatch2 = text.match(
+      /(?:cited as|known as|entitled)[^\n]*?["'](.+?)["']/i,
+    );
+    if (titleMatch2) {
+      metadata.title = titleMatch2[1].trim();
+      metadataSource.title = 'pattern2';
+    }
+  }
+  
+  // Fall back to using first capitalized phrase after "Bylaw"
+  if (!metadata.title) {
+    const titleMatch3 = text.match(
+      /Bylaw\s+(?:No\.?\s+)?\d+\s+[-–—]\s+(.+?)(?:\n|\.)/i
+    );
+    if (titleMatch3) {
+      metadata.title = titleMatch3[1].trim();
+      metadataSource.title = 'pattern3';
+    }
   }
 
-  // Extract date enacted
-  const dateMatch = text.match(
-    /(?:ENACTED|Enacted|adopted|ADOPTED)[^\n]*?(\d{1,2}(?:st|nd|rd|th)?\s+day\s+of\s+\w+,\s+\d{4})/i,
+  // Extract date enacted - try multiple date formats
+  // Pattern 1: "X day of Month, Year"
+  const dateMatch1 = text.match(
+    /(?:ENACTED|Enacted|adopted|ADOPTED)[^\n]*?(\d{1,2}(?:st|nd|rd|th)?\s+day\s+of\s+\w+,?\s+\d{4})/i,
   );
-  if (dateMatch) {
-    const dateString = dateMatch[1].replace(/(st|nd|rd|th)/, '');
+  if (dateMatch1) {
+    const dateString = dateMatch1[1].replace(/(st|nd|rd|th)/, '');
     try {
       const date = new Date(dateString);
       metadata.dateEnacted = date.toISOString().split('T')[0];
+      metadataSource.dateEnacted = 'pattern1';
     } catch (error) {
       console.warn('Failed to parse date:', dateString);
     }
   }
+  
+  // Pattern 2: "Month Day, Year"
+  if (!metadata.dateEnacted) {
+    const dateMatch2 = text.match(
+      /(?:ENACTED|Enacted|adopted|ADOPTED)[^\n]*?(\w+\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4})/i,
+    );
+    if (dateMatch2) {
+      const dateString = dateMatch2[1].replace(/(st|nd|rd|th)/, '');
+      try {
+        const date = new Date(dateString);
+        metadata.dateEnacted = date.toISOString().split('T')[0];
+        metadataSource.dateEnacted = 'pattern2';
+      } catch (error) {
+        console.warn('Failed to parse date:', dateString);
+      }
+    }
+  }
+  
+  // Pattern 3: ISO format or numeric dates
+  if (!metadata.dateEnacted) {
+    const dateMatch3 = text.match(
+      /(?:ENACTED|Enacted|adopted|ADOPTED|dated)[^\n]*?(\d{4}[-\/]\d{1,2}[-\/]\d{1,2})/i,
+    );
+    if (dateMatch3) {
+      try {
+        const date = new Date(dateMatch3[1].replace(/\//g, '-'));
+        metadata.dateEnacted = date.toISOString().split('T')[0];
+        metadataSource.dateEnacted = 'pattern3';
+      } catch (error) {
+        console.warn('Failed to parse date:', dateMatch3[1]);
+      }
+    }
+  }
+  
+  // Store the metadata source information for debugging
+  metadata.metadataSource = metadataSource;
 
   // Attempt to detect category
   if (

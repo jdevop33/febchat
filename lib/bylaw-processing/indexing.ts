@@ -34,12 +34,48 @@ export async function processBylawPDF(
     // Step 3: Extract metadata from text if not provided
     const textMetadata = extractBylawMetadata(cleanedText);
 
-    // Step 4: Combine all metadata
+    // Step 4: Combine all metadata with proper precedence
+    // Explicitly extract and prioritize bylaw numbers to avoid override confusion
+    const bylawNumber = 
+      // First priority: explicitly provided metadata (most reliable)
+      metadata.bylawNumber || 
+      // Second priority: filename-based extraction (fairly reliable)
+      extractedMetadata.bylawNumber || 
+      // Third priority: content-based extraction (least reliable)
+      textMetadata.bylawNumber;
+    
+    console.log('Bylaw number sources:');
+    console.log(`- Explicitly provided: ${metadata.bylawNumber || 'None'}`);
+    console.log(`- From filename: ${extractedMetadata.bylawNumber || 'None'}`);
+    console.log(`- From content: ${textMetadata.bylawNumber || 'None'}`);
+    console.log(`- Final choice: ${bylawNumber || 'None'}`);
+    
+    // Do the same for title
+    const title = 
+      metadata.title || 
+      textMetadata.title || 
+      extractedMetadata.title;
+    
+    // Combine all metadata
     const combinedMetadata: Partial<BylawMetadata> = {
+      // Start with content-based metadata (lowest priority)
       ...textMetadata,
+      // Override with file properties (medium priority)
       ...extractedMetadata,
+      // Override with explicitly provided metadata (highest priority)
       ...metadata,
+      // Set specific fields with our priority logic
+      bylawNumber: bylawNumber || undefined,
+      title: title || undefined,
+      // Add timestamp
       lastUpdated: new Date().toISOString(),
+      
+      // For debugging: record the sources
+      _metadataSources: {
+        fromContent: Object.keys(textMetadata),
+        fromFile: Object.keys(extractedMetadata),
+        fromExplicit: Object.keys(metadata),
+      }
     };
 
     // Step 5: Chunk the text

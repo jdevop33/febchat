@@ -74,12 +74,39 @@ async function processBylawFile(filePath: string) {
 
     // Extract bylaw number from filename if possible
     const filename = path.basename(filePath, '.pdf');
-    const bylawNumberMatch =
-      filename.match(/bylaw[-_]?(\d+)/i) || filename.match(/^(\d+)[,\s_-]/i); // Also match patterns like "4722, ..."
+    
+    // More comprehensive bylaw number extraction - use multiple patterns
+    let bylawNumber;
+    
+    // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
+    const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);
+    if (explicitBylawMatch) {
+      bylawNumber = explicitBylawMatch[1];
+    }
+    
+    // Pattern 2: Starting with number pattern like "4620 - Something"
+    if (!bylawNumber) {
+      const startingNumberMatch = filename.match(/^(\d+)(?:[,\s_-]|$)/i);
+      if (startingNumberMatch) {
+        bylawNumber = startingNumberMatch[1];
+      }
+    }
+    
+    // Pattern 3: Number followed by comma or parentheses like "No. 4620," or "No. 4620 ("
+    if (!bylawNumber) {
+      const commaNumberMatch = filename.match(/No\.?\s+(\d+)[,\(\s]/i);
+      if (commaNumberMatch) {
+        bylawNumber = commaNumberMatch[1];
+      }
+    }
+    
+    console.log(`Processing file: ${filename}`);
+    console.log(`Extracted bylaw number from filename: ${bylawNumber || 'None'}`);
 
-    // Process the file
+    // Process the file with extracted metadata
     const chunkIds = await processBylawPDF(filePath, {
-      bylawNumber: bylawNumberMatch ? bylawNumberMatch[1] : undefined,
+      bylawNumber: bylawNumber,
+      originalFilename: filename // Store the original filename for reference
     });
 
     console.log(`Successfully processed file with ${chunkIds.length} chunks.`);
