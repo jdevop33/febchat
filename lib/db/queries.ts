@@ -65,9 +65,9 @@ try {
     
     // Create pooled client with configurable settings
     client = postgres(connectionString, {
-      max: parseInt(env.DB_POOL_MAX || '10', 10),           // Maximum connections
-      idle_timeout: parseInt(env.DB_IDLE_TIMEOUT || '20', 10),   // Seconds to keep idle connections
-      connect_timeout: parseInt(env.DB_CONNECT_TIMEOUT || '30', 10),  // Seconds to wait for connection
+      max: Number.parseInt(env.DB_POOL_MAX || '10', 10),           // Maximum connections
+      idle_timeout: Number.parseInt(env.DB_IDLE_TIMEOUT || '20', 10),   // Seconds to keep idle connections
+      connect_timeout: Number.parseInt(env.DB_CONNECT_TIMEOUT || '30', 10),  // Seconds to wait for connection
       connection: {
         application_name: 'febchat-app',
       },
@@ -130,7 +130,7 @@ export async function getUser(email: string): Promise<Array<User>> {
  */
 export async function createUser(email: string, password: string) {
   // Get salt rounds from environment or use secure default
-  const saltRounds = parseInt(env.PASSWORD_SALT_ROUNDS || '12', 10);
+  const saltRounds = Number.parseInt(env.PASSWORD_SALT_ROUNDS || '12', 10);
   const salt = genSaltSync(saltRounds);
   const hash = hashSync(password, salt);
 
@@ -172,7 +172,7 @@ export async function saveChat({
   
   // Truncate very long titles
   if (title.length > 255) {
-    title = title.substring(0, 252) + '...';
+    title = `${title.substring(0, 252)}...`;
   }
   
   // Ensure visibility is valid

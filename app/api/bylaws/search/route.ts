@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     
     // Check cache first
     const cachedEntry = searchCache.get(cacheKey);
-    let results;
+    let results: Awaited<ReturnType<typeof searchBylaws>> = [];
     let fromCache = false;
     
     if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {

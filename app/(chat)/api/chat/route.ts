@@ -26,8 +26,8 @@ const USER_RATE_LIMITS: Record<string, RateLimitInfo> = {};
 const IP_RATE_LIMITS: Record<string, RateLimitInfo> = {};
 
 // Rate limit settings
-const RATE_LIMIT_REQUESTS = parseInt(process.env.RATE_LIMIT_REQUESTS || '10', 10); // Requests per window
-const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10); // 1 minute window
+const RATE_LIMIT_REQUESTS = Number.parseInt(process.env.RATE_LIMIT_REQUESTS || '10', 10); // Requests per window
+const RATE_LIMIT_WINDOW_MS = Number.parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10); // 1 minute window
 
 function isRateLimited(userId: string, ip: string): boolean {
   const now = Date.now();
@@ -73,11 +73,14 @@ export async function POST(request: Request) {
     console.log("Chat API: Request received");
   }
   
+  // Declare IP variable at the top level of the function
+  let ip = '';
+  
   try {
     // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown-ip';
+    ip = request.headers.get('x-forwarded-for') || 
+         request.headers.get('x-real-ip') || 
+         'unknown-ip';
     
     // Check API key at the beginning
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -122,9 +125,7 @@ export async function POST(request: Request) {
     
     // Apply rate limiting
     const userId = session.user.id;
-    const ip = request.headers.get('x-forwarded-for') || 
-              request.headers.get('x-real-ip') || 
-              'unknown-ip';
+    // IP was already captured at the beginning of the function
               
     if (isRateLimited(userId, ip)) {
       console.warn(`Rate limit exceeded for user ${userId} from IP ${ip}`);
