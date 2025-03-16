@@ -3,6 +3,7 @@ import NextAuth, { type User, type Session } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
+import type { User as DbUser } from '@/lib/db/schema';
 
 import { authConfig } from './auth.config';
 
@@ -31,18 +32,40 @@ export const {
   debug: process.env.NODE_ENV === 'development',
   providers: [
     Credentials({
-      credentials: {},
-      async authorize({ email, password }: { email: string; password: string }) {
-        const users = await getUser(email);
-        if (users.length === 0) return null;
-        // biome-ignore lint: Forbidden non-null assertion.
-        const passwordsMatch = await compare(password, users[0].password!);
-        if (!passwordsMatch) return null;
-        return {
-          id: users[0].id,
-          email: users[0].email,
-          name: users[0].name || undefined
-        };
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials, req) {
+        // Ensure credentials exist
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
+        
+        try {
+          const users = await getUser(email);
+          if (users.length === 0) return null;
+          
+          // Ensure password exists
+          if (!users[0].password) return null;
+          
+          const passwordsMatch = await compare(password, users[0].password);
+          if (!passwordsMatch) return null;
+          
+          // Return a user object that conforms to the User interface
+          return {
+            id: users[0].id,
+            email: users[0].email,
+            // Create a name field if needed by your app
+            name: email.split('@')[0] // Simple fallback using part of email
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],

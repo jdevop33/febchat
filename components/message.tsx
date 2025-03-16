@@ -52,6 +52,8 @@ const PurePreviewMessage = ({
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         data-role={message.role}
+        role="listitem"
+        aria-label={`${message.role} message`}
       >
         <div
           className={cn(
@@ -63,7 +65,10 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+            <div 
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border"
+              aria-hidden="true"
+            >
               <div className="translate-y-px">
                 <SparklesIcon size={14} />
               </div>
@@ -72,7 +77,10 @@ const PurePreviewMessage = ({
 
           <div className="flex w-full flex-col gap-4">
             {message.experimental_attachments && (
-              <div className="flex flex-row justify-end gap-2">
+              <div 
+                className="flex flex-row justify-end gap-2"
+                aria-label="Attached files"
+              >
                 {message.experimental_attachments.map((attachment) => (
                   <PreviewAttachment
                     key={attachment.url}

@@ -39,6 +39,8 @@ function PureMessages({
     <div
       ref={messagesContainerRef}
       className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-4"
+      role="list"
+      aria-label="Chat messages"
     >
       {messages.length === 0 && <Overview />}
 

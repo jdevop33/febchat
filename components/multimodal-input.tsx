@@ -241,6 +241,8 @@ function PureMultimodalInput({
         )}
         rows={2}
         autoFocus
+        aria-label="Message input area"
+        aria-describedby="message-input-instructions"
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -250,9 +252,19 @@ function PureMultimodalInput({
             } else {
               submitForm();
             }
+          } else if (event.key === 'Tab' && attachments.length > 0 && !event.shiftKey) {
+            // Allow tabbing to attachments
+            event.preventDefault();
+            const attachmentButton = document.querySelector('[data-attachment-button]');
+            if (attachmentButton) {
+              (attachmentButton as HTMLElement).focus();
+            }
           }
         }}
       />
+      <div className="sr-only" id="message-input-instructions">
+        Type your message and press Enter to send. Use Shift+Enter for a new line.
+      </div>
 
       <div className="absolute bottom-0 flex w-fit flex-row justify-start p-2">
         <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
@@ -299,6 +311,9 @@ function PureAttachmentsButton({
         fileInputRef.current?.click();
       }}
       disabled={isLoading}
+      data-attachment-button
+      aria-label="Attach files"
+      title="Attach files to your message"
       variant="ghost"
     >
       <PaperclipIcon size={14} />
@@ -323,8 +338,11 @@ function PureStopButton({
         stop();
         setMessages((messages) => sanitizeUIMessages(messages));
       }}
+      aria-label="Stop generating response"
+      title="Stop the AI from generating more text"
     >
-      <StopIcon size={14} />
+      <StopIcon size={14} aria-hidden="true" />
+      <span className="sr-only">Stop generating</span>
     </Button>
   );
 }
@@ -340,6 +358,13 @@ function PureSendButton({
   input: string;
   uploadQueue: Array<string>;
 }) {
+  const isDisabled = input.length === 0 || uploadQueue.length > 0;
+  const buttonLabel = isDisabled 
+    ? uploadQueue.length > 0 
+      ? 'Please wait for uploads to complete' 
+      : 'Enter a message to send' 
+    : 'Send message';
+    
   return (
     <Button
       className="h-fit rounded-full border p-1.5 dark:border-zinc-600"
@@ -347,9 +372,12 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
+      disabled={isDisabled}
+      aria-label={buttonLabel}
+      title={buttonLabel}
     >
-      <ArrowUpIcon size={14} />
+      <ArrowUpIcon size={14} aria-hidden="true" />
+      <span className="sr-only">Send</span>
     </Button>
   );
 }
