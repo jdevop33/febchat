@@ -38,7 +38,7 @@ export async function extractFromPDF(
     const filename = path.basename(filePath, '.pdf');
     
     // More comprehensive bylaw number extraction - try multiple patterns
-    let bylawNumber;
+    let bylawNumber: string | undefined;
     
     // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
     const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);

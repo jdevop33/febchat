@@ -251,7 +251,7 @@ export function PdfViewerModal({
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 disabled={loading}
               />
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-400" />
             </div>
             <Button 
               variant="outline" 
@@ -277,7 +277,7 @@ export function PdfViewerModal({
         <div className="size-full p-0 flex-1 bg-gray-100 dark:bg-gray-800">
           {loading ? (
             <div className="flex flex-col items-center justify-center h-full">
-              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground mb-2" />
+              <Loader2 className="size-10 animate-spin text-muted-foreground mb-2" />
               <p className="text-muted-foreground">Loading PDF...</p>
             </div>
           ) : (

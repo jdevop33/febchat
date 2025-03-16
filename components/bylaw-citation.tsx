@@ -123,6 +123,7 @@ export function BylawCitation({
                 'mt-2 border-l-2 border-blue-300 pl-3 text-sm dark:border-blue-700',
                 expanded ? '' : 'line-clamp-3',
               )}
+              aria-hidden="true"
               role="presentation"
               onClick={(e) => e.stopPropagation()}
             >
@@ -131,7 +132,12 @@ export function BylawCitation({
           )}
 
           {(relevance || financialImpact) && expanded && (
-            <div className="mt-3 space-y-2 text-sm" role="presentation" onClick={(e) => e.stopPropagation()}>
+            <div 
+              className="mt-3 space-y-2 text-sm" 
+              aria-hidden="true"
+              role="presentation" 
+              onClick={(e) => e.stopPropagation()}
+            >
               {relevance && (
                 <div className="rounded bg-blue-50 p-2 dark:bg-blue-900/20">
                   <span className="font-medium">Relevance:</span> {relevance}
@@ -147,7 +153,12 @@ export function BylawCitation({
             </div>
           )}
 
-          <div className="mt-3 flex items-center justify-between" role="presentation" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="mt-3 flex items-center justify-between" 
+            aria-hidden="true"
+            role="presentation" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <Button
               variant="ghost"
               size="sm"

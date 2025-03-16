@@ -76,7 +76,7 @@ async function processBylawFile(filePath: string) {
     const filename = path.basename(filePath, '.pdf');
     
     // More comprehensive bylaw number extraction - use multiple patterns
-    let bylawNumber;
+    let bylawNumber: string | undefined;
     
     // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
     const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);
