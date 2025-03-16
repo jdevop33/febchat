@@ -46,21 +46,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename properly handling both Blob and File types
+    // Get filename handling both Blob and File types safely
     let filename: string;
     
     if ('name' in file && typeof file.name === 'string') {
-      // It's a File object
+      // It's a File-like object with name property
       filename = file.name;
     } else {
-      // It's a Blob, get the name from form data or generate one
-      const formFile = formData.get('file');
-      if (formFile && 'name' in formFile && typeof formFile.name === 'string') {
-        filename = formFile.name;
-      } else {
-        // Generate a unique filename if we can't get one
-        filename = `upload-${Date.now()}.${file.type.split('/')[1] || 'bin'}`;
-      }
+      // It's a Blob without name, get content type for extension
+      const fileExtension = file.type ? file.type.split('/')[1] || 'bin' : 'bin';
+      // Generate a unique filename with timestamp and proper extension
+      filename = `upload-${Date.now()}.${fileExtension}`;
     }
     
     const fileBuffer = await file.arrayBuffer();

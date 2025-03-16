@@ -15,6 +15,46 @@ import {
   getMostRecentUserMessage,
 } from '@/lib/utils';
 
+// Simple in-memory rate limiter
+// In production, use a distributed solution like Redis
+interface RateLimitInfo {
+  count: number;
+  resetTime: number;
+}
+
+const USER_RATE_LIMITS: Record<string, RateLimitInfo> = {};
+const IP_RATE_LIMITS: Record<string, RateLimitInfo> = {};
+
+// Rate limit settings
+const RATE_LIMIT_REQUESTS = parseInt(process.env.RATE_LIMIT_REQUESTS || '10', 10); // Requests per window
+const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10); // 1 minute window
+
+function isRateLimited(userId: string, ip: string): boolean {
+  const now = Date.now();
+  
+  // Check user rate limit if logged in
+  if (userId) {
+    if (!USER_RATE_LIMITS[userId] || USER_RATE_LIMITS[userId].resetTime < now) {
+      USER_RATE_LIMITS[userId] = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    } else if (USER_RATE_LIMITS[userId].count >= RATE_LIMIT_REQUESTS) {
+      return true; // User is rate limited
+    } else {
+      USER_RATE_LIMITS[userId].count++;
+    }
+  }
+  
+  // Always also check IP rate limit (prevents abuse even with stolen credentials)
+  if (!IP_RATE_LIMITS[ip] || IP_RATE_LIMITS[ip].resetTime < now) {
+    IP_RATE_LIMITS[ip] = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+  } else if (IP_RATE_LIMITS[ip].count >= RATE_LIMIT_REQUESTS * 2) { // IP gets double the user limit
+    return true; // IP is rate limited
+  } else {
+    IP_RATE_LIMITS[ip].count++;
+  }
+  
+  return false;
+}
+
 import { generateTitleFromUserMessage } from '../../actions';
 
 export const maxDuration = 300; // 5 minutes max duration
@@ -28,38 +68,49 @@ const createErrorResponse = (message: string, details?: string, status = 500) =>
 };
 
 export async function POST(request: Request) {
-  console.log("Chat API: Request received");
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Chat API: Request received");
+  }
+  
   try {
+    // Get client IP for rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || 
+               'unknown-ip';
+    
     // Check API key at the beginning
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       console.error("Chat API: Missing Anthropic API key");
       return createErrorResponse(
-        'Server configuration error: Missing API key',
-        'The API key for the AI service is not configured. Please check ANTHROPIC_API_KEY.'
+        'Server configuration error',
+        process.env.NODE_ENV === 'development' ? 'Missing API key' : undefined
       );
     }
     
-    // Verify connection is possible to the API
-    console.log("Chat API: Using Claude 3.7 Sonnet");
-
     // Parse request
     let requestData: { id: string; messages: any[]; selectedChatModel: string };
     try {
       requestData = await request.json() as { id: string; messages: any[]; selectedChatModel: string };
-      console.log("Chat API: Request data parsed");
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Chat API: Request data parsed");
+      }
     } catch (parseError) {
-      console.error("Chat API: JSON parse error:", parseError);
-      return createErrorResponse('Invalid JSON in request', undefined, 400);
+      console.error("Chat API: JSON parse error");
+      return createErrorResponse('Invalid request format', undefined, 400);
     }
 
     const { id, messages, selectedChatModel } = requestData;
-    console.log(`Chat API: Processing request for chat ID: ${id}`);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Chat API: Processing request for chat ID: ${id}`);
+    }
 
     // Validate required fields
     if (!id || !messages || !Array.isArray(messages) || messages.length === 0) {
       console.error("Chat API: Missing required fields");
-      return createErrorResponse('Invalid request format', 'Missing required fields', 400);
+      return createErrorResponse('Invalid request format', undefined, 400);
     }
 
     // User authentication
@@ -67,6 +118,21 @@ export async function POST(request: Request) {
     if (!session?.user?.id) {
       console.error("Chat API: User not authenticated");
       return createErrorResponse('Unauthorized', undefined, 401);
+    }
+    
+    // Apply rate limiting
+    const userId = session.user.id;
+    const ip = request.headers.get('x-forwarded-for') || 
+              request.headers.get('x-real-ip') || 
+              'unknown-ip';
+              
+    if (isRateLimited(userId, ip)) {
+      console.warn(`Rate limit exceeded for user ${userId} from IP ${ip}`);
+      return createErrorResponse(
+        'Too many requests', 
+        'Please try again later', 
+        429
+      );
     }
 
     // Get user message
@@ -137,9 +203,20 @@ export async function POST(request: Request) {
         }
       });
       
-      // Set up the response stream
+      // Set up the response stream with security headers
       const responseStream = stream.toDataStreamResponse({
-        sendReasoning: true // Enable sending reasoning to the client
+        sendReasoning: true, // Enable sending reasoning to the client
+        headers: {
+          // Security headers
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store',
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'Content-Security-Policy': "default-src 'self'",
+          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
+        }
       });
       
       // Save a placeholder message in the database

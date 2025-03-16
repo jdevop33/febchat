@@ -6,8 +6,10 @@ import { getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 
-// For debugging auth issues
-console.log('Auth config loaded, initializing NextAuth...');
+// Log initialization only in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('Auth config loaded, initializing NextAuth...');
+}
 
 interface ExtendedSession extends Session {
   user: User;
@@ -20,16 +22,27 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  // Enable CSRF protection
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
   providers: [
     Credentials({
       credentials: {},
-      async authorize({ email, password }: any) {
+      async authorize({ email, password }: { email: string; password: string }) {
         const users = await getUser(email);
         if (users.length === 0) return null;
         // biome-ignore lint: Forbidden non-null assertion.
         const passwordsMatch = await compare(password, users[0].password!);
         if (!passwordsMatch) return null;
-        return users[0] as any;
+        return {
+          id: users[0].id,
+          email: users[0].email,
+          name: users[0].name || undefined
+        };
       },
     }),
   ],

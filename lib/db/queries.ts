@@ -63,15 +63,21 @@ try {
     // Don't log any part of the connection string for security
     console.log('Database connection string available and will be used')
     
-    // Create pooled client
+    // Create pooled client with configurable settings
     client = postgres(connectionString, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 30,
+      max: parseInt(env.DB_POOL_MAX || '10', 10),           // Maximum connections
+      idle_timeout: parseInt(env.DB_IDLE_TIMEOUT || '20', 10),   // Seconds to keep idle connections
+      connect_timeout: parseInt(env.DB_CONNECT_TIMEOUT || '30', 10),  // Seconds to wait for connection
       connection: {
         application_name: 'febchat-app',
       },
-      ssl: true,
+      ssl: env.DB_USE_SSL !== 'false', // Enable SSL by default but allow disabling
+      onnotice: (notice) => {
+        // Only log notices in development to prevent log spam in production
+        if (env.NODE_ENV === 'development') {
+          console.log('Database notice:', notice.message);
+        }
+      },
     });
     
     console.log('Database connection pool initialized');
@@ -137,7 +143,7 @@ export async function createUser(email: string, password: string) {
 }
 
 /**
- * Save a new chat to the database
+ * Save a new chat to the database with input validation
  */
 export async function saveChat({
   id,
@@ -150,6 +156,30 @@ export async function saveChat({
   title: string;
   visibility?: 'public' | 'private';
 }) {  
+  // Validate inputs
+  if (!id || typeof id !== 'string' || id.length > 100) {
+    throw new DbOperationError('saveChat', new Error('Invalid chat ID'));
+  }
+  
+  if (!userId || typeof userId !== 'string' || userId.length > 100) {
+    throw new DbOperationError('saveChat', new Error('Invalid user ID'));
+  }
+  
+  if (!title || typeof title !== 'string') {
+    // Ensure title is valid, but not empty
+    title = 'New Chat';
+  }
+  
+  // Truncate very long titles
+  if (title.length > 255) {
+    title = title.substring(0, 252) + '...';
+  }
+  
+  // Ensure visibility is valid
+  if (visibility !== 'public' && visibility !== 'private') {
+    visibility = 'private';
+  }
+  
   try {
     return await db.insert(chat).values({
       id,
@@ -505,4 +535,11 @@ export async function updateChatVisibilityById({
 }
 
 // Legacy function name with typo for backward compatibility
-export const updateChatVisiblityById = updateChatVisibilityById;
+// Mark as deprecated with a warning when used
+export const updateChatVisiblityById = (...args: Parameters<typeof updateChatVisibilityById>) => {
+  console.warn(
+    'DEPRECATED: updateChatVisiblityById is deprecated due to a typo. ' +
+    'Please use updateChatVisibilityById instead.'
+  );
+  return updateChatVisibilityById(...args);
+};
