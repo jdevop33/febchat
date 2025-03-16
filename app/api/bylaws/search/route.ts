@@ -103,7 +103,9 @@ export async function POST(request: Request) {
       if (searchCache.size >= MAX_CACHE_SIZE) {
         // Remove oldest entry if cache is full
         const oldestKey = searchCache.keys().next().value;
-        searchCache.delete(oldestKey);
+        if (oldestKey !== undefined) {
+          searchCache.delete(oldestKey);
+        }
       }
       
       searchCache.set(cacheKey, { 
