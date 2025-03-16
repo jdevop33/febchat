@@ -189,6 +189,12 @@ export async function POST(request: Request) {
     try {
       console.log(`Chat API: Using Claude 3.7 Sonnet (${MODEL_ID})`);
       
+      // Import tools configuration
+      const { getToolsForModel } = await import('@/lib/ai/tools-config');
+      
+      // Get appropriate tools for the selected model
+      const tools = getToolsForModel(selectedChatModel);
+      
       // Use AI SDK's streamText function with Claude 3.7 Sonnet
       const stream = await streamText({
         model: primaryModel,
@@ -196,6 +202,7 @@ export async function POST(request: Request) {
         system: systemPrompt({ selectedChatModel }),
         temperature: 0.5,
         maxTokens: 4000,
+        tools: tools, // Add the tools
         providerOptions: {
           anthropic: {
             // Enable extended thinking for complex queries

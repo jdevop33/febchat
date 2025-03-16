@@ -229,91 +229,227 @@ export async function searchBylaws(
 // Example mock data
 export const mockBylawData = [
   {
-    text: 'No person shall cut, remove or damage any protected tree without first obtaining a tree cutting permit.',
+    text: 'No person shall make or cause to be made any noise or sound within the geographical limits of The Corporation of the District of Oak Bay which is liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
     metadata: {
-      bylawNumber: '4620',
-      title: 'Tree Protection Bylaw',
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '3(1)',
+      sectionTitle: 'General Noise Prohibition',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'No owner, tenant or occupier of real property within the geographical limits of The Corporation of the District of Oak Bay shall allow that property to be used so that a noise or sound which originates from that property disturbs or tends to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '3(2)',
+      sectionTitle: 'Property Owner Responsibility',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'On Saturday, Sunday or a holiday, the operation of a leaf blower at a time outside the hours of 9:00 a.m. to 5:00 p.m. is prohibited.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '4(5)(a)',
+      sectionTitle: 'Leaf Blower Restrictions - Weekends and Holidays',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'From Monday through Friday, excluding holidays, the operation of a leaf blower at a time outside the hours of 8:00 a.m. to 8:00 p.m. is prohibited.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '4(5)(b)',
+      sectionTitle: 'Leaf Blower Restrictions - Weekdays',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '5(7)(a)',
+      sectionTitle: 'Construction Hours - Regular Permits',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '5(7)(b)',
+      sectionTitle: 'Construction Hours - Renewal Permits',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'Any person who violates any provision of this Bylaw is guilty of an offence and liable upon summary conviction to a fine of not more than One Thousand Dollars ($1,000.00). For the purpose of this clause an offence shall be deemed committed upon each day during or on which a violation occurs or continues.',
+    metadata: {
+      bylawNumber: '3210',
+      title: 'Anti-Noise Bylaw, 1977',
+      section: '7',
+      sectionTitle: 'Penalties',
+      dateEnacted: '1977-06-06',
+      category: 'noise',
+      lastUpdated: '2013-09-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'September 30, 2013'
+    },
+  },
+  {
+    text: 'The minimum lot area for a single family dwelling shall be 695 square metres (7,481 square feet).',
+    metadata: {
+      bylawNumber: '3531',
+      title: 'Zoning Bylaw',
+      section: '5.1',
+      sectionTitle: 'Minimum Lot Size',
+      dateEnacted: '1986-05-12',
+      category: 'zoning',
+      lastUpdated: '2024-08-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'August 30, 2024'
+    },
+  },
+  {
+    text: 'No building shall exceed a height of 7.32 metres (24 feet).',
+    metadata: {
+      bylawNumber: '3531',
+      title: 'Zoning Bylaw',
+      section: '6.5.1',
+      sectionTitle: 'Building Height',
+      dateEnacted: '1986-05-12',
+      category: 'zoning',
+      lastUpdated: '2024-08-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'August 30, 2024'
+    },
+  },
+  {
+    text: 'No more than one (1) secondary suite shall be permitted in any single family dwelling.',
+    metadata: {
+      bylawNumber: '3531',
+      title: 'Zoning Bylaw',
+      section: '5.7',
+      sectionTitle: 'Secondary Suite Regulations',
+      dateEnacted: '1986-05-12',
+      category: 'zoning',
+      lastUpdated: '2024-08-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'August 30, 2024'
+    },
+  },
+  {
+    text: 'No person shall permit a dog to be on any street or public place or in any public building unless the dog is kept on a leash not exceeding 6 feet in length and is under the immediate control of a competent person.',
+    metadata: {
+      bylawNumber: '4013',
+      title: 'Animal Control Bylaw, 1999',
+      section: '4',
+      sectionTitle: 'Dogs At Large',
+      dateEnacted: '1999-06-20',
+      category: 'animals',
+      lastUpdated: '2022-02-15T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'February 2022'
+    },
+  },
+  {
+    text: 'Every application for a licence shall be accompanied by a licence fee in the amount of $30.00 for each dog that is neutered or spayed, or $45.00 for each dog that is not neutered or spayed.',
+    metadata: {
+      bylawNumber: '4013',
+      title: 'Animal Control Bylaw, 1999',
+      section: '7',
+      sectionTitle: 'Dog Licence Fee',
+      dateEnacted: '1999-06-20',
+      category: 'animals',
+      lastUpdated: '2022-02-15T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'February 2022'
+    },
+  },
+  {
+    text: 'No person shall permit a dog to be on any public beach, whether on a leash or not, in the area between the westerly municipal boundary of The Corporation and the easterly boundary of Lot 1, Section 46, Plan 2193 (known as the "Oak Bay Marina") between May 1 and September 30 in any year.',
+    metadata: {
+      bylawNumber: '4013',
+      title: 'Animal Control Bylaw, 1999',
+      section: '9',
+      sectionTitle: 'Dog Beach Restrictions',
+      dateEnacted: '1999-06-20',
+      category: 'animals',
+      lastUpdated: '2022-02-15T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'February 2022'
+    },
+  },
+  {
+    text: 'Except as authorized by a Permit issued under this Bylaw, no person shall cut, remove or damage any Protected Tree.',
+    metadata: {
+      bylawNumber: '4742',
+      title: 'Tree Protection Bylaw, 2020',
       section: '3.1',
-      dateEnacted: '2021-05-15',
+      sectionTitle: 'Protected Tree Removal Prohibition',
+      dateEnacted: '2020-03-15',
       category: 'trees',
-      lastUpdated: '2023-01-10T00:00:00Z',
+      lastUpdated: '2020-12-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'December 2020'
     },
   },
   {
-    text: 'A protected tree means any tree with a diameter of 30 centimeters or more, measured at 1.4 meters above ground level.',
+    text: 'Protected Tree means any of the following: (a) any tree with a DBH of 60 cm or greater; (b) an Arbutus, Dogwood, Garry Oak, or Western White Pine tree with a DBH of 10 cm or greater; (c) a Western Red Cedar or Big Leaf Maple tree with a DBH of 30 cm or greater.',
     metadata: {
-      bylawNumber: '4620',
-      title: 'Tree Protection Bylaw',
-      section: '4.2',
-      dateEnacted: '2021-05-15',
-      category: 'trees',
-      lastUpdated: '2023-01-10T00:00:00Z',
-    },
-  },
-  {
-    text: 'Any person who contravenes this bylaw commits an offense and shall be liable to a fine not exceeding $10,000.',
-    metadata: {
-      bylawNumber: '4620',
-      title: 'Tree Protection Bylaw',
-      section: '7.3',
-      dateEnacted: '2021-05-15',
-      category: 'trees',
-      lastUpdated: '2023-01-10T00:00:00Z',
-    },
-  },
-  {
-    text: 'The minimum lot size for single family residential development shall be 695 square meters.',
-    metadata: {
-      bylawNumber: '4360',
-      title: 'Zoning Bylaw',
-      section: '5.2',
-      dateEnacted: '2020-09-22',
-      category: 'zoning',
-      lastUpdated: '2022-03-18T00:00:00Z',
-    },
-  },
-  {
-    text: 'Secondary suites are permitted within single family dwellings, subject to the regulations in this section.',
-    metadata: {
-      bylawNumber: '4360',
-      title: 'Zoning Bylaw',
-      section: '6.3.4',
-      dateEnacted: '2020-09-22',
-      category: 'zoning',
-      lastUpdated: '2022-03-18T00:00:00Z',
-    },
-  },
-  {
-    text: 'Every owner of a dog must ensure that the dog is not running at large within the Municipality.',
-    metadata: {
-      bylawNumber: '4733',
-      title: 'Animal Control Bylaw',
+      bylawNumber: '4742',
+      title: 'Tree Protection Bylaw, 2020',
       section: '2.1',
-      dateEnacted: '2022-01-10',
-      category: 'animals',
-      lastUpdated: '2022-01-10T00:00:00Z',
+      sectionTitle: 'Protected Tree Definition',
+      dateEnacted: '2020-03-15',
+      category: 'trees',
+      lastUpdated: '2020-12-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'December 2020'
     },
   },
   {
-    text: 'Dogs are not permitted on any beach between May 1 and September 30, except in designated areas.',
+    text: 'A person who violates any provision of this Bylaw commits an offence and upon conviction is liable to a fine not exceeding $10,000.',
     metadata: {
-      bylawNumber: '4733',
-      title: 'Animal Control Bylaw',
-      section: '3.5',
-      dateEnacted: '2022-01-10',
-      category: 'animals',
-      lastUpdated: '2022-01-10T00:00:00Z',
-    },
-  },
-  {
-    text: 'The annual license fee for each neutered male dog or spayed female dog shall be $30.00.',
-    metadata: {
-      bylawNumber: '4733',
-      title: 'Animal Control Bylaw',
-      section: '6.2',
-      dateEnacted: '2022-01-10',
-      category: 'animals',
-      lastUpdated: '2022-01-10T00:00:00Z',
+      bylawNumber: '4742',
+      title: 'Tree Protection Bylaw, 2020',
+      section: '10.1',
+      sectionTitle: 'Penalties',
+      dateEnacted: '2020-03-15',
+      category: 'trees',
+      lastUpdated: '2020-12-30T00:00:00Z',
+      isConsolidated: true,
+      consolidatedDate: 'December 2020'
     },
   },
 ];
