@@ -88,9 +88,11 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
   // Properly typed wrapped component with fixed JSX syntax
   const WrappedComponent = (props: React.ComponentProps<T>) => {
     return (
-      <React.Suspense fallback={fallback || <div className="h-10 w-full animate-pulse bg-muted rounded-md"></div>}>
-        <LazyComponent {...props} />
-      </React.Suspense>
+      React.createElement(
+        React.Suspense, 
+        { fallback: fallback || React.createElement("div", { className: "h-10 w-full animate-pulse bg-muted rounded-md" }) },
+        React.createElement(LazyComponent, props)
+      )
     );
   };
   

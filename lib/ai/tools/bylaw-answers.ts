@@ -122,6 +122,30 @@ export const bylawAnswersTool = tool({
       // Normalize topic for matching
       const normalizedTopic = topic.toLowerCase().trim();
       
+      // Special handling for Anti-Noise Bylaw (3210) which is often problematic
+      if (normalizedTopic.includes('3210') || normalizedTopic.includes('anti-noise') || normalizedTopic.includes('anti noise')) {
+        return {
+          bylawNumber: '3210',
+          title: 'Anti-Noise Bylaw, 1977',
+          citation: 'Various sections',
+          answer: `Oak Bay's Anti-Noise Bylaw (No. 3210) regulates noise in the municipality:
+
+1. General prohibition (Section 3(1)): No person shall make any noise liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.
+
+2. Construction hours:
+   - Regular permits: 7:00 a.m. to 7:00 p.m. Monday through Saturday (Section 5(7)(a))
+   - Renewal permits: 9:00 a.m. to 5:00 p.m. Monday through Saturday (Section 5(7)(b))
+   - No construction permitted on Sundays
+
+3. Leaf blower restrictions:
+   - Weekdays: 8:00 a.m. to 8:00 p.m. (Section 4(5)(b))
+   - Weekends/holidays: 9:00 a.m. to 5:00 p.m. (Section 4(5)(a))
+
+4. Penalties: Up to $1,000 fine for violations (Section 7)`,
+          source: 'Anti-Noise Bylaw, 1977 (No. 3210), Consolidated to September 30, 2013'
+        };
+      }
+      
       // Match topic to predefined answers
       if (normalizedTopic.includes('construction') || normalizedTopic.includes('build') || normalizedTopic.includes('renovation')) {
         return BYLAW_ANSWERS.constructionNoise;

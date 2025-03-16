@@ -8,7 +8,7 @@
 import { Tool } from 'ai';
 
 // Import all available tools
-import { searchBylawsTool, bylawAnswersTool, getWeatherTool } from './tools';
+import { searchBylawsTool, bylawAnswersTool } from './tools';
 
 // Define available tools for each model
 type ToolsConfig = {
@@ -21,19 +21,16 @@ export const toolsConfig: ToolsConfig = {
   'oak-bay-bylaws': [
     bylawAnswersTool, // Add this first for common bylaw questions
     searchBylawsTool, // More general search
-    getWeatherTool,   // Weather as a complement
   ],
   
   // Default tools for other models
   'chat-model-small': [
     bylawAnswersTool,
     searchBylawsTool,
-    getWeatherTool,
   ],
   'chat-model-large': [
     bylawAnswersTool,
     searchBylawsTool,
-    getWeatherTool,
   ],
 };
 

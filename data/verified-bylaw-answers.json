@@ -1,0 +1,50 @@
+{
+  "anti-noise-bylaw": {
+    "bylawNumber": "3210",
+    "title": "Anti-Noise Bylaw, 1977",
+    "sections": {
+      "construction": {
+        "regularPermits": {
+          "section": "5(7)(a)",
+          "hours": "7:00 a.m. to 7:00 p.m.",
+          "days": "Monday through Saturday (except Sunday)",
+          "exact": "The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005."
+        },
+        "renewalPermits": {
+          "section": "5(7)(b)",
+          "hours": "9:00 a.m. to 5:00 p.m.",
+          "days": "Monday through Saturday (except Sunday)",
+          "exact": "The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005."
+        }
+      },
+      "leafBlowers": {
+        "weekdays": {
+          "section": "4(5)(b)",
+          "hours": "8:00 a.m. to 8:00 p.m.",
+          "days": "Monday through Friday (excluding holidays)",
+          "exact": "From Monday through Friday, excluding holidays, the operation of a leaf blower at a time outside the hours of 8:00 a.m. to 8:00 p.m. is prohibited."
+        },
+        "weekends": {
+          "section": "4(5)(a)",
+          "hours": "9:00 a.m. to 5:00 p.m.",
+          "days": "Saturday, Sunday or a holiday",
+          "exact": "On Saturday, Sunday or a holiday, the operation of a leaf blower at a time outside the hours of 9:00 a.m. to 5:00 p.m. is prohibited."
+        }
+      },
+      "generalNoiseProhibition": {
+        "section": "3(1)",
+        "exact": "No person shall make or cause to be made any noise or sound within the geographical limits of The Corporation of the District of Oak Bay which is liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public."
+      },
+      "penalties": {
+        "section": "7",
+        "amount": "$1,000",
+        "exact": "Any person who violates any provision of this Bylaw is guilty of an offence and liable upon summary conviction to a fine of not more than One Thousand Dollars ($1,000.00). For the purpose of this clause an offence shall be deemed committed upon each day during or on which a violation occurs or continues."
+      }
+    },
+    "consolidationInfo": {
+      "isConsolidated": true,
+      "consolidatedDate": "September 30, 2013",
+      "amendments": ["3332", "3937", "4198", "4594"]
+    }
+  }
+}
