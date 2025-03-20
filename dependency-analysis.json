@@ -1,0 +1,341 @@
+{
+  "app/(auth)/actions.ts": [
+    "app/(auth)/auth.ts"
+  ],
+  "app/(auth)/auth-error/page.tsx": [],
+  "app/(auth)/auth.config.ts": [],
+  "app/(auth)/auth.ts": [
+    "app/(auth)/auth.config.ts"
+  ],
+  "app/(auth)/login/page.tsx": [
+    "app/(auth)/actions.ts"
+  ],
+  "app/(auth)/register/page.tsx": [
+    "app/(auth)/actions.ts"
+  ],
+  "app/(chat)/actions.ts": [],
+  "app/(chat)/api/chat/route.ts": [
+    "app/(chat)/actions.ts"
+  ],
+  "app/(chat)/api/document/route.ts": [],
+  "app/(chat)/api/files/upload/route.ts": [],
+  "app/(chat)/api/history/route.ts": [],
+  "app/(chat)/api/suggestions/route.ts": [],
+  "app/(chat)/api/vote/route.ts": [],
+  "app/(chat)/chat/[id]/page.tsx": [],
+  "app/(chat)/layout.tsx": [
+    "app/(auth)/auth.ts"
+  ],
+  "app/(chat)/page.tsx": [],
+  "app/api/bylaws/feedback/route.ts": [],
+  "app/api/bylaws/find-pdf/route.ts": [],
+  "app/api/bylaws/search/optimized-route.ts": [],
+  "app/api/bylaws/search/route.ts": [],
+  "app/api/bylaws/view-pdf/route.ts": [],
+  "app/api/dev/metrics/route.ts": [],
+  "app/globals.css": [],
+  "app/layout.tsx": [
+    "app/globals.css"
+  ],
+  "components/app-sidebar.tsx": [
+    "components/ui/tooltip.tsx"
+  ],
+  "components/artifact-actions.tsx": [
+    "components/artifact.tsx",
+    "components/create-artifact.tsx",
+    "components/ui/button.tsx",
+    "components/ui/tooltip.tsx"
+  ],
+  "components/artifact-close-button.tsx": [
+    "components/icons.tsx",
+    "components/ui/button.tsx"
+  ],
+  "components/artifact-messages.tsx": [
+    "components/artifact.tsx",
+    "components/message.tsx",
+    "components/use-scroll-to-bottom.ts"
+  ],
+  "components/artifact.tsx": [
+    "components/artifact-actions.tsx",
+    "components/artifact-close-button.tsx",
+    "components/artifact-messages.tsx",
+    "components/multimodal-input.tsx",
+    "components/toolbar.tsx",
+    "components/ui/sidebar.tsx",
+    "components/version-footer.tsx"
+  ],
+  "components/auth-form.tsx": [
+    "components/ui/input.tsx",
+    "components/ui/label.tsx"
+  ],
+  "components/bylaw/bylaw-citation.tsx": [],
+  "components/bylaw/bylaw-search-filters.tsx": [],
+  "components/bylaw/bylaw-welcome.tsx": [],
+  "components/chat.tsx": [
+    "components/messages.tsx",
+    "components/multimodal-input.tsx",
+    "components/visibility-selector.tsx"
+  ],
+  "components/chat/chat-header.tsx": [],
+  "components/chat/chat.tsx": [],
+  "components/citation-feedback.tsx": [],
+  "components/code-block.tsx": [],
+  "components/code-editor.tsx": [],
+  "components/console.tsx": [
+    "components/icons.tsx",
+    "components/ui/button.tsx"
+  ],
+  "components/create-artifact.tsx": [
+    "components/artifact.tsx",
+    "components/data-stream-handler.tsx"
+  ],
+  "components/data-stream-handler.tsx": [
+    "components/artifact.tsx"
+  ],
+  "components/diffview.tsx": [],
+  "components/document-preview.tsx": [
+    "components/artifact.tsx",
+    "components/code-editor.tsx",
+    "components/document-skeleton.tsx",
+    "components/document.tsx",
+    "components/icons.tsx",
+    "components/image-editor.tsx",
+    "components/sheet-editor.tsx",
+    "components/text-editor.tsx"
+  ],
+  "components/document-skeleton.tsx": [
+    "components/artifact.tsx"
+  ],
+  "components/document.tsx": [
+    "components/artifact.tsx",
+    "components/icons.tsx"
+  ],
+  "components/icons.tsx": [],
+  "components/image-editor.tsx": [
+    "components/icons.tsx"
+  ],
+  "components/markdown.tsx": [
+    "components/code-block.tsx"
+  ],
+  "components/message-actions.tsx": [
+    "components/icons.tsx",
+    "components/ui/button.tsx",
+    "components/ui/tooltip.tsx"
+  ],
+  "components/message-editor.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/textarea.tsx"
+  ],
+  "components/message-reasoning.tsx": [
+    "components/icons.tsx",
+    "components/markdown.tsx"
+  ],
+  "components/message.tsx": [
+    "components/bylaw/bylaw-citation.tsx",
+    "components/document-preview.tsx",
+    "components/document.tsx",
+    "components/icons.tsx",
+    "components/markdown.tsx",
+    "components/message-actions.tsx",
+    "components/message-editor.tsx",
+    "components/message-reasoning.tsx",
+    "components/preview-attachment.tsx",
+    "components/ui/button.tsx",
+    "components/ui/tooltip.tsx",
+    "components/weather.tsx"
+  ],
+  "components/messages.tsx": [
+    "components/message.tsx",
+    "components/overview.tsx",
+    "components/use-scroll-to-bottom.ts"
+  ],
+  "components/model-selector.tsx": [
+    "components/icons.tsx"
+  ],
+  "components/multimodal-input.tsx": [
+    "components/icons.tsx",
+    "components/preview-attachment.tsx",
+    "components/suggested-actions.tsx",
+    "components/ui/button.tsx",
+    "components/ui/textarea.tsx"
+  ],
+  "components/overview.tsx": [],
+  "components/pdf-viewer-modal.tsx": [],
+  "components/preview-attachment.tsx": [
+    "components/icons.tsx"
+  ],
+  "components/shared/icons.tsx": [],
+  "components/shared/theme-provider.tsx": [],
+  "components/sheet-editor.tsx": [],
+  "components/sidebar-history.tsx": [],
+  "components/sidebar-toggle.tsx": [
+    "components/icons.tsx",
+    "components/ui/button.tsx"
+  ],
+  "components/sidebar-user-nav.tsx": [],
+  "components/sign-out-form.tsx": [],
+  "components/submit-button.tsx": [
+    "components/ui/button.tsx"
+  ],
+  "components/suggested-actions.tsx": [
+    "components/ui/button.tsx"
+  ],
+  "components/suggestion.tsx": [
+    "components/artifact.tsx",
+    "components/icons.tsx",
+    "components/ui/button.tsx"
+  ],
+  "components/text-editor.tsx": [],
+  "components/toolbar.tsx": [
+    "components/artifact.tsx",
+    "components/create-artifact.tsx",
+    "components/icons.tsx"
+  ],
+  "components/ui/alert-dialog.tsx": [],
+  "components/ui/button.tsx": [],
+  "components/ui/card.tsx": [],
+  "components/ui/dropdown-menu.tsx": [],
+  "components/ui/input.tsx": [],
+  "components/ui/label.tsx": [],
+  "components/ui/select.tsx": [],
+  "components/ui/separator.tsx": [],
+  "components/ui/sheet.tsx": [],
+  "components/ui/sidebar.tsx": [],
+  "components/ui/skeleton.tsx": [],
+  "components/ui/textarea.tsx": [],
+  "components/ui/tooltip.tsx": [],
+  "components/use-scroll-to-bottom.ts": [],
+  "components/version-footer.tsx": [
+    "components/icons.tsx",
+    "components/ui/button.tsx"
+  ],
+  "components/visibility-selector.tsx": [
+    "components/icons.tsx"
+  ],
+  "components/weather.tsx": [],
+  "hooks/use-artifact.ts": [],
+  "hooks/use-chat-visibility.ts": [],
+  "hooks/use-mobile.tsx": [],
+  "lib/ai/fix-tools.ts": [],
+  "lib/ai/models.ts": [],
+  "lib/ai/prompts.ts": [],
+  "lib/ai/tools-config.ts": [
+    "lib/ai/tools/index.ts"
+  ],
+  "lib/ai/tools/bylaw-answers.ts": [],
+  "lib/ai/tools/create-document.ts": [],
+  "lib/ai/tools/get-weather.ts": [],
+  "lib/ai/tools/index.ts": [
+    "lib/ai/tools/bylaw-answers.ts",
+    "lib/ai/tools/get-weather.ts",
+    "lib/ai/tools/request-suggestions.ts",
+    "lib/ai/tools/search-bylaws.ts"
+  ],
+  "lib/ai/tools/request-suggestions.ts": [
+    "lib/ai/models.ts"
+  ],
+  "lib/ai/tools/search-bylaws.ts": [],
+  "lib/ai/tools/update-document.ts": [],
+  "lib/api/auth-api.ts": [],
+  "lib/api/bylaw-api.ts": [],
+  "lib/api/chat-api.ts": [],
+  "lib/api/index.ts": [
+    "lib/api/auth-api.ts",
+    "lib/api/bylaw-api.ts",
+    "lib/api/chat-api.ts"
+  ],
+  "lib/artifacts/server.ts": [
+    "lib/db/queries.ts",
+    "lib/db/schema.ts"
+  ],
+  "lib/bylaw-search/index.ts": [
+    "lib/bylaw-search/types.ts",
+    "lib/vector/pinecone-client.ts"
+  ],
+  "lib/bylaw-search/initialize.ts": [
+    "lib/bylaw-search/index.ts",
+    "lib/bylaw-search/types.ts",
+    "lib/vector/pinecone-client.ts"
+  ],
+  "lib/bylaw-search/types.ts": [],
+  "lib/bylaw/processing/chunking.ts": [
+    "lib/vector/types.ts"
+  ],
+  "lib/bylaw/processing/pdf-extractor.ts": [
+    "lib/vector/types.ts"
+  ],
+  "lib/components/ui/lazy-wrapper.tsx": [],
+  "lib/db/indexes.ts": [],
+  "lib/db/migrate.ts": [],
+  "lib/db/queries.ts": [
+    "lib/db/schema.ts"
+  ],
+  "lib/db/schema.ts": [],
+  "lib/editor/config.ts": [
+    "lib/editor/functions.tsx"
+  ],
+  "lib/editor/functions.tsx": [
+    "lib/editor/config.ts",
+    "lib/editor/suggestions.tsx"
+  ],
+  "lib/editor/react-renderer.tsx": [],
+  "lib/editor/suggestions.tsx": [],
+  "lib/hooks/use-optimized-api.ts": [],
+  "lib/hooks/use-scroll-to-bottom.ts": [],
+  "lib/monitoring/logger.ts": [],
+  "lib/openai/embeddings.ts": [],
+  "lib/optimization.ts": [
+    "lib/db/indexes.ts",
+    "lib/utils/profiler/index.ts"
+  ],
+  "lib/utils.ts": [],
+  "lib/utils/api-batching.ts": [
+    "lib/utils/profiler/index.ts"
+  ],
+  "lib/utils/bylaw-utils.ts": [],
+  "lib/utils/component-optimization.ts": [],
+  "lib/utils/debounce.ts": [],
+  "lib/utils/profiler/index.ts": [],
+  "lib/vector/api-batching.ts": [
+    "lib/utils/api-batching.ts",
+    "lib/utils/profiler/index.ts"
+  ],
+  "lib/vector/embedding-models.ts": [],
+  "lib/vector/enhanced-search.ts": [
+    "lib/vector/embedding-models.ts",
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/verification-database.ts"
+  ],
+  "lib/vector/fallback-search.ts": [
+    "lib/bylaw/processing/pdf-extractor.ts",
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/types.ts"
+  ],
+  "lib/vector/index.ts": [
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/types.ts"
+  ],
+  "lib/vector/initialize.ts": [
+    "lib/vector/index.ts",
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/types.ts"
+  ],
+  "lib/vector/optimized-search-service.ts": [
+    "lib/monitoring/logger.ts",
+    "lib/utils/profiler/index.ts",
+    "lib/vector/api-batching.ts",
+    "lib/vector/fallback-search.ts",
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/search-service.ts",
+    "lib/vector/types.ts"
+  ],
+  "lib/vector/pinecone-client.ts": [],
+  "lib/vector/search-service.ts": [
+    "lib/monitoring/logger.ts",
+    "lib/vector/fallback-search.ts",
+    "lib/vector/pinecone-client.ts",
+    "lib/vector/types.ts"
+  ],
+  "lib/vector/types.ts": [],
+  "lib/vector/verification-database.ts": []
+}

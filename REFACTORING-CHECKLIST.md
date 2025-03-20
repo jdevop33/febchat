@@ -2,6 +2,41 @@
 
 This document outlines the remaining tasks to complete the restructuring of the FebChat application according to the clean architecture pattern.
 
+## Critical Priority: Breaking Circular Dependencies
+
+The dependency analysis has identified several circular dependencies that have been addressed:
+
+- [x] **Artifact Component Cycle**:
+  - ✅ Created separate type definitions in `/types/artifacts/artifact-types.ts`
+  - ✅ Created separate type definitions in `/types/documents/document-types.ts`
+  - ✅ Created separate type definitions in `/types/messages/message-types.ts`
+  - ✅ Moved artifact components to `/components/artifacts/`
+  - ✅ Moved document components to `/components/documents/`
+  - ✅ Moved message components to `/components/messages/`
+  - ✅ Added compatibility exports for backward compatibility
+
+- [x] **Editor Configuration Cycle**:
+  - ✅ Created separate type definitions in `/lib/editor/types/`
+  - ✅ Moved constants to `/lib/editor/config/constants.ts`
+  - ✅ Moved functions to `/lib/editor/functions/editor-functions.tsx`
+  - ✅ Moved suggestions to `/lib/editor/functions/suggestions.tsx`
+  - ✅ Added compatibility exports for backward compatibility
+
+## High Complexity Modules to Refactor
+
+Progress:
+- [x] `components/message.tsx` moved to `components/messages/message.tsx` with proper type imports
+- [x] `components/document-preview.tsx` moved to `components/documents/document-preview.tsx` with proper type imports
+- [x] `components/artifact.tsx` moved to `components/artifacts/artifact.tsx` with proper type imports
+- [x] `lib/vector/optimized-search-service.ts` refactored into modular structure in `lib/vector/search/`:
+  - ✅ Created `lib/vector/search/types.ts` for shared types
+  - ✅ Created `lib/vector/search/embeddings.ts` for embedding functionality 
+  - ✅ Created `lib/vector/search/utils.ts` for search utilities
+  - ✅ Created `lib/vector/search/batch-processor.ts` for batch processing
+  - ✅ Created `lib/vector/search/search-service.ts` for main search functionality
+  - ✅ Created `lib/vector/search/index.ts` for unified exports
+  - ✅ Updated original file to re-export from new modules
+
 ## High Priority Tasks
 
 - [ ] Update import paths in all files to use the new structure
@@ -12,6 +47,10 @@ This document outlines the remaining tasks to complete the restructuring of the 
 
 ## Component Reorganization
 
+Progress:
+- [x] Move artifact-related components to `/components/artifacts`
+- [x] Move document-related components to `/components/documents`
+- [x] Move message-related components to `/components/messages`
 - [ ] Move UI component primitives to `/components/ui`
 - [ ] Move remaining bylaw-related components to `/components/bylaw`
 - [ ] Move remaining chat-related components to `/components/chat`

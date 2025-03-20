@@ -1,6 +1,6 @@
 # Migration Plan for Clean Architecture
 
-Based on the code audit and project analysis, here's a plan to refactor the codebase following a clean architecture pattern.
+Based on the code audit, dependency analysis, and project evaluation, here's a comprehensive plan to refactor the codebase following a clean architecture pattern.
 
 ## Implementation Progress
 
@@ -26,8 +26,15 @@ Based on the code audit and project analysis, here's a plan to refactor the code
 - Created `/lib/api/bylaw-api.ts` with bylaw API functionality
 - Created `/lib/api/auth-api.ts` with authentication functionality
 
+✅ Completed dependency analysis
+- Identified circular dependencies between components
+- Located high complexity modules
+- Found potentially unused modules
+- Created detailed refactoring checklist
+
 ✅ Created architecture documentation
 - Created `/ARCHITECTURE.md` explaining the new structure
+- Added recommendations for resolving circular dependencies
 
 ## Current Structure Analysis
 
@@ -108,18 +115,97 @@ Refactor these duplicated functions identified in the audit:
 
 After reorganizing, update all import paths throughout the codebase.
 
+## Breaking Circular Dependencies
+
+The dependency analysis revealed critical circular dependencies that must be addressed:
+
+### 1. Artifact Component Cycle (Critical)
+
+```
+components/artifact.tsx → components/artifact-messages.tsx → components/message.tsx → components/document-preview.tsx → components/document.tsx → components/artifact.tsx
+```
+
+Implementation steps:
+
+1. Create type files in `/types/artifacts` and `/types/documents`:
+   - `types/artifacts/artifact-types.ts` (shared interfaces for artifacts)
+   - `types/messages/message-types.ts` (shared interfaces for messages)
+   - `types/documents/document-types.ts` (shared interfaces for documents)
+
+2. Directory restructuring:
+   - Create `/components/artifacts/` directory
+   - Create `/components/documents/` directory 
+   - Create `/components/messages/` directory
+
+3. Component refactoring (in order):
+   - Move and refactor `components/document.tsx` → `components/documents/document.tsx`
+   - Move and refactor `components/document-preview.tsx` → `components/documents/document-preview.tsx`
+   - Move and refactor `components/message.tsx` → `components/messages/message.tsx`
+   - Move and refactor `components/artifact-messages.tsx` → `components/artifacts/artifact-messages.tsx`
+   - Move and refactor `components/artifact.tsx` → `components/artifacts/artifact.tsx`
+
+### 2. Editor Configuration Cycle
+
+```
+lib/editor/config.ts → lib/editor/functions.tsx → lib/editor/config.ts
+```
+
+Implementation steps:
+
+1. Create the directory structure:
+   - Create `/lib/editor/types/` directory
+   - Create `/lib/editor/config/` directory
+   - Create `/lib/editor/functions/` directory
+
+2. Extract common types to `/lib/editor/types/editor-types.ts`
+
+3. Split configuration file:
+   - Move constants to `/lib/editor/config/constants.ts`
+   - Move types to `/lib/editor/types/config-types.ts` 
+
+4. Refactor functions file:
+   - Move editor functions to `/lib/editor/functions/editor-functions.tsx`
+   - Import types from type files, not from config
+
 ## Implementation Strategy
 
-1. Make iterative changes, starting with moving files to their new locations
-2. Update imports for each batch of moved files
-3. Run the application after each significant change to verify functionality
-4. Address the identified duplicate functionality
-5. Run the code audit script again to verify improvements
+1. Address critical circular dependencies first (highest priority)
+2. Then focus on high complexity modules that need refactoring
+3. Continue with moving files to their final locations
+4. Update imports for each batch of moved files
+5. Run the application after each significant change to verify functionality
+6. Address the identified duplicate functionality
+7. Run the dependency analysis and code audit scripts again to verify improvements
+
+## Implementation Sequence
+
+1. **Phase 1: Breaking Circular Dependencies** (2-3 days)
+   - Extract shared types to dedicated files 
+   - Refactor artifact and document components
+   - Restructure editor configuration and functions
+
+2. **Phase 2: Component Reorganization** (2-3 days)
+   - Move components to appropriate directories
+   - Update import paths throughout the codebase
+   - Create index files for component directories
+
+3. **Phase 3: High Complexity Module Refactoring** (3-4 days)
+   - Split large components into smaller, focused ones
+   - Reduce dependencies in identified complex modules
+   - Create proper abstractions and interfaces
+
+4. **Phase 4: Final Clean-up** (1-2 days)
+   - Remove unused files and dead code
+   - Finalize documentation
+   - Run comprehensive tests
 
 ## Expected Benefits
 
+- Elimination of circular dependencies
 - Clearer separation of concerns
 - Better maintainability through organized code
+- Reduced complexity through component decomposition
 - Reduced duplication through refactoring
 - Easier onboarding for new developers
 - More straightforward testing and debugging
+- Improved performance through better architecture
