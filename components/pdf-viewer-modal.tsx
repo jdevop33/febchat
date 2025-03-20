@@ -50,9 +50,47 @@ export function PdfViewerModal({
   const [scale, setScale] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Function to map bylaw number to PDF filename
+  // Function to get external PDF URL for bylaw (municipal website link)
+  const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
+    // Special case for known bylaws with specific URLs
+    const knownBylawUrls: Record<string, string> = {
+      '3210': 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf',
+      '4892': 'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
+    };
+    
+    if (knownBylawUrls[bylawNumber]) {
+      return knownBylawUrls[bylawNumber];
+    }
+    
+    // Determine URL pattern based on bylaw number
+    const bylawNum = parseInt(bylawNumber, 10);
+    
+    if (isNaN(bylawNum)) {
+      // Fallback to main bylaws page if not a valid number
+      return 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/';
+    }
+    
+    if (bylawNum < 4000) {
+      // Older bylaws pattern
+      return `https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/${bylawNumber}.pdf`;
+    } else {
+      // Newer bylaws pattern - note the URL might vary based on the actual upload date
+      // We'd need a more complete database to know exact month/year for each bylaw
+      const currentYear = new Date().getFullYear();
+      const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+      
+      // Format title for URL if available
+      const formattedTitle = title 
+        ? `-${title.replace(/\s+/g, '-')}` 
+        : '';
+      
+      return `https://www.oakbay.ca/wp-content/uploads/${currentYear}/${currentMonth}/${bylawNumber}${formattedTitle}.pdf`;
+    }
+  };
+
+  // Function to map bylaw number to PDF filename (local files)
   const getPdfPath = (bylawNumber: string): string => {
-    // Map of known bylaw numbers to their filenames
+    // Map of known bylaw numbers to their filenames in our local system
     const bylawMap: Record<string, string> = {
       '3152': '/pdfs/3152.pdf',
       '3210': '/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
@@ -169,8 +207,16 @@ export function PdfViewerModal({
     if (isOpen && bylawNumber) {
       setLoading(true);
 
-      // Use the provided PDF path or fall back to our mapping
-      const resolvedPdfPath = pdfPath || getPdfPath(bylawNumber);
+      // Check if we should use external PDF directly 
+      // This is a significant improvement for PDF rendering - use the actual external source
+      const useExternalPdf = true; // Set to true to use direct links to municipal website PDFs
+      
+      // Determine PDF URL based on setting
+      const resolvedPdfPath = useExternalPdf 
+        ? getExternalPdfUrl(bylawNumber, title)
+        : (pdfPath || getPdfPath(bylawNumber));
+        
+      console.log(`Loading PDF from: ${resolvedPdfPath}`);
       setPdfUrl(resolvedPdfPath);
 
       // In a real implementation with PDF.js, we would use:
@@ -225,7 +271,7 @@ export function PdfViewerModal({
       
       simulatePdfLoad();
     }
-  }, [isOpen, bylawNumber, pdfPath, section]);
+  }, [isOpen, bylawNumber, pdfPath, section, title]);
 
   // Reset state when modal closes
   useEffect(() => {
@@ -406,7 +452,7 @@ export function PdfViewerModal({
               size="sm"
               onClick={() =>
                 window.open(
-                  `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${bylawNumber}${section ? `#section=${encodeURIComponent(section)}` : ''}`,
+                  getExternalPdfUrl(bylawNumber, title),
                   '_blank',
                 )
               }

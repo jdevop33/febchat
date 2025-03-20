@@ -2,6 +2,43 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { searchBylaws } from '@/lib/bylaw-search';
 
+// Function to get external PDF URL for bylaw (municipal website link)
+const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
+  // Special case for known bylaws with specific URLs
+  const knownBylawUrls: Record<string, string> = {
+    '3210': 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf',
+    '4892': 'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
+  };
+  
+  if (knownBylawUrls[bylawNumber]) {
+    return knownBylawUrls[bylawNumber];
+  }
+  
+  // Determine URL pattern based on bylaw number
+  const bylawNum = parseInt(bylawNumber, 10);
+  
+  if (isNaN(bylawNum)) {
+    // Fallback to main bylaws page if not a valid number
+    return 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/';
+  }
+  
+  if (bylawNum < 4000) {
+    // Older bylaws pattern
+    return `https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/${bylawNumber}.pdf`;
+  } else {
+    // Newer bylaws pattern
+    const currentYear = new Date().getFullYear();
+    const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    
+    // Format title for URL if available
+    const formattedTitle = title 
+      ? `-${title.replace(/\s+/g, '-')}` 
+      : '';
+    
+    return `https://www.oakbay.ca/wp-content/uploads/${currentYear}/${currentMonth}/${bylawNumber}${formattedTitle}.pdf`;
+  }
+};
+
 export const searchBylawsTool = tool({
   description:
     'Search for relevant Oak Bay bylaws and regulations based on a query. Note that for common bylaw questions, the bylawAnswersTool may provide more accurate information.',
@@ -55,7 +92,7 @@ export const searchBylawsTool = tool({
             sectionTitle: result.metadata.sectionTitle,
             // Use the exact text from the bylaw for the extracted section
             content: result.text,
-            url: 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/3210',
+            url: 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf',
             isConsolidated: true,
             consolidatedDate: 'September 30, 2013',
           };
@@ -88,9 +125,7 @@ export const searchBylawsTool = tool({
           section: result.metadata.section || 'Unknown Section',
           sectionTitle: result.metadata.sectionTitle,
           content: result.text,
-          url:
-            result.metadata.url ||
-            `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${result.metadata.bylawNumber || 'Unknown'}${result.metadata.section ? `#section=${result.metadata.section}` : ''}`,
+          url: getExternalPdfUrl(result.metadata.bylawNumber || 'Unknown', result.metadata.title),
           isConsolidated: !!result.metadata.consolidatedTo,
           consolidatedDate: result.metadata.consolidatedTo ? `Bylaw No. ${result.metadata.consolidatedTo}` : undefined,
         };

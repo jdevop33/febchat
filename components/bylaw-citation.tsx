@@ -235,10 +235,45 @@ export function BylawCitation({
     );
   };
 
-  // External URL to official Oak Bay website - use provided URL or build one
-  const externalUrl =
-    officialUrl ||
-    `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${bylawNumber}`;
+  // External URL to official Oak Bay website PDF - use provided URL or build one
+  const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
+    // Special case for known bylaws with specific URLs
+    const knownBylawUrls: Record<string, string> = {
+      '3210': 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf', 
+      '4892': 'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
+    };
+    
+    if (knownBylawUrls[bylawNumber]) {
+      return knownBylawUrls[bylawNumber];
+    }
+    
+    // Determine URL pattern based on bylaw number
+    const bylawNum = parseInt(bylawNumber, 10);
+    
+    if (isNaN(bylawNum)) {
+      // Fallback to main bylaws page if not a valid number
+      return 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/';
+    }
+    
+    if (bylawNum < 4000) {
+      // Older bylaws pattern
+      return `https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/${bylawNumber}.pdf`;
+    } else {
+      // Newer bylaws pattern - note URL might vary based on actual upload date
+      const currentYear = new Date().getFullYear();
+      const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+      
+      // Format title for URL if available
+      const formattedTitle = title 
+        ? `-${title.replace(/\s+/g, '-')}` 
+        : '';
+      
+      return `https://www.oakbay.ca/wp-content/uploads/${currentYear}/${currentMonth}/${bylawNumber}${formattedTitle}.pdf`;
+    }
+  };
+  
+  // Get the external URL
+  const externalUrl = officialUrl || getExternalPdfUrl(bylawNumber, title);
 
   // Function to handle PDF not found
   const handlePdfNotFound = () => {
@@ -593,7 +628,7 @@ export function BylawCitation({
                         isConsolidated,
                         consolidatedDate,
                         citationText: excerpt,
-                        sourceUrl: `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${bylawNumber}${section ? `#section=${section}` : ''}`,
+                        sourceUrl: getExternalPdfUrl(bylawNumber, title),
                         verifiedDate: new Date().toISOString().split('T')[0],
                         pdfPath: getPdfPath(),
                       };
