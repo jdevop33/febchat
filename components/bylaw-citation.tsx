@@ -235,10 +235,10 @@ export function BylawCitation({
     );
   };
 
-  // External URL to civicweb - use provided URL or build one
+  // External URL to official Oak Bay website - use provided URL or build one
   const externalUrl =
     officialUrl ||
-    `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`;
+    `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${bylawNumber}`;
 
   // Function to handle PDF not found
   const handlePdfNotFound = () => {
@@ -593,7 +593,7 @@ export function BylawCitation({
                         isConsolidated,
                         consolidatedDate,
                         citationText: excerpt,
-                        sourceUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}?section=${section}`,
+                        sourceUrl: `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${bylawNumber}${section ? `#section=${section}` : ''}`,
                         verifiedDate: new Date().toISOString().split('T')[0],
                         pdfPath: getPdfPath(),
                       };

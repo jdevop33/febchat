@@ -55,7 +55,7 @@ export const searchBylawsTool = tool({
             sectionTitle: result.metadata.sectionTitle,
             // Use the exact text from the bylaw for the extracted section
             content: result.text,
-            url: 'https://oakbay.civicweb.net/document/bylaw/3210',
+            url: 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/3210',
             isConsolidated: true,
             consolidatedDate: 'September 30, 2013',
           };
@@ -90,7 +90,7 @@ export const searchBylawsTool = tool({
           content: result.text,
           url:
             result.metadata.url ||
-            `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber || 'Unknown'}?section=${result.metadata.section || 'Unknown'}`,
+            `https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/${result.metadata.bylawNumber || 'Unknown'}${result.metadata.section ? `#section=${result.metadata.section}` : ''}`,
           isConsolidated: !!result.metadata.consolidatedTo,
           consolidatedDate: result.metadata.consolidatedTo ? `Bylaw No. ${result.metadata.consolidatedTo}` : undefined,
         };
