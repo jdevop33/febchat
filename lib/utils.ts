@@ -35,15 +35,17 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function getLocalStorage<T extends unknown[] = unknown[]>(key: string): T {
+export function getLocalStorage<T extends unknown[]>(key: string): T {
   if (typeof window !== 'undefined') {
     try {
       const item = localStorage.getItem(key);
       if (!item) return [] as unknown as T;
-      
+
       const parsed = JSON.parse(item);
       // Ensure we return an array if parsed JSON is not an array
-      return Array.isArray(parsed) ? parsed : [] as unknown as T;
+      return Array.isArray(parsed)
+        ? (parsed as unknown as T)
+        : ([] as unknown as T);
     } catch (error) {
       console.error(`Error parsing localStorage key '${key}':`, error);
       return [] as unknown as T;
@@ -103,57 +105,62 @@ export function convertToUIMessages(
   messages: Array<DBMessage>,
 ): Array<Message> {
   if (!messages || !messages.length) return [];
-  
+
   // Pre-allocate result array with expected size
   const result: Array<Message> = [];
-  
+
   // Process messages in a single pass
   for (let i = 0; i < messages.length; i++) {
     const message = messages[i];
-    
+
     // Handle tool messages
     if (message.role === 'tool') {
       // Find tool call message targets and update them
       const toolMessage = message as CoreToolMessage;
-      
+
       for (let j = 0; j < result.length; j++) {
         const chatMessage = result[j];
-        
-        if (chatMessage.toolInvocations && chatMessage.toolInvocations.length > 0) {
-          chatMessage.toolInvocations = chatMessage.toolInvocations.map(toolInvocation => {
-            // Find matching tool result
-            const toolResult = toolMessage.content.find(
-              tool => tool.toolCallId === toolInvocation.toolCallId
-            );
-            
-            if (toolResult) {
-              return {
-                ...toolInvocation,
-                state: 'result',
-                result: toolResult.result,
-              };
-            }
-            
-            return toolInvocation;
-          });
+
+        if (
+          chatMessage.toolInvocations &&
+          chatMessage.toolInvocations.length > 0
+        ) {
+          chatMessage.toolInvocations = chatMessage.toolInvocations.map(
+            (toolInvocation) => {
+              // Find matching tool result
+              const toolResult = toolMessage.content.find(
+                (tool) => tool.toolCallId === toolInvocation.toolCallId,
+              );
+
+              if (toolResult) {
+                return {
+                  ...toolInvocation,
+                  state: 'result',
+                  result: toolResult.result,
+                };
+              }
+
+              return toolInvocation;
+            },
+          );
         }
       }
-      
+
       continue; // Skip to next message
     }
-    
+
     // Handle non-tool messages
     let textContent = '';
     let reasoning: string | undefined = undefined;
     const toolInvocations: Array<ToolInvocation> = [];
-    
+
     // Process message content based on its type
     if (typeof message.content === 'string') {
       textContent = message.content;
     } else if (Array.isArray(message.content)) {
       // Use string builder pattern for better performance
       const textParts: string[] = [];
-      
+
       for (const content of message.content) {
         if (content.type === 'text') {
           textParts.push(content.text);
@@ -168,11 +175,11 @@ export function convertToUIMessages(
           reasoning = content.reasoning;
         }
       }
-      
+
       // Join once at the end for better performance than incrementally adding
       textContent = textParts.join('');
     }
-    
+
     // Add processed message to result
     result.push({
       id: message.id,
@@ -182,7 +189,7 @@ export function convertToUIMessages(
       toolInvocations: toolInvocations.length > 0 ? toolInvocations : undefined,
     });
   }
-  
+
   return result;
 }
 

@@ -8,28 +8,27 @@ import useSWR, { type SWRConfiguration } from 'swr';
 import { profiler } from '@/lib/utils/profiler';
 
 // Simple debounce implementation to avoid import errors
-function useDebounce<T extends (...args: any[]) => any>(
-  fn: T,
-  wait = 300
-): T {
+function useDebounce<T extends (...args: any[]) => any>(fn: T, wait = 300): T {
   const timeout = useRef<NodeJS.Timeout>();
   const fnRef = useRef(fn);
-  
+
   useEffect(() => {
     fnRef.current = fn;
   }, [fn]);
-  
+
   // Using an inline function as recommended by the lint rule
-  return useCallback(function debouncedFn(...args: Parameters<T>) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback(
+    function debouncedFn(...args: Parameters<T>) {
       if (timeout.current) {
         clearTimeout(timeout.current);
       }
-      
+
       timeout.current = setTimeout(() => {
         fnRef.current(...args);
       }, wait);
     } as unknown as T,
-    [wait]
+    [wait],
   );
 }
 
@@ -47,7 +46,8 @@ const defaultFetcher = async (url: string) => {
   }
 };
 
-interface UseApiOptions<T> extends SWRConfiguration<T> {
+interface UseApiOptions<T>
+  extends Omit<SWRConfiguration<T>, 'onSuccess' | 'onError'> {
   onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
   enabled?: boolean;
@@ -58,14 +58,9 @@ interface UseApiOptions<T> extends SWRConfiguration<T> {
  */
 export function useApi<T = any>(
   url: string | null,
-  options: UseApiOptions<T> = {}
+  options: UseApiOptions<T> = {},
 ) {
-  const {
-    onSuccess,
-    onError,
-    enabled = true,
-    ...swrOptions
-  } = options;
+  const { onSuccess, onError, enabled = true, ...swrOptions } = options;
 
   const { data, error, isLoading, isValidating, mutate } = useSWR<T>(
     enabled && url ? url : null,
@@ -74,7 +69,7 @@ export function useApi<T = any>(
       ...swrOptions,
       onSuccess,
       onError,
-    }
+    },
   );
 
   return {
@@ -96,7 +91,7 @@ export function useSearch<T = any>(
     debounceMs?: number;
     enabled?: boolean;
     swrOptions?: SWRConfiguration<T>;
-  } = {}
+  } = {},
 ) {
   const {
     defaultParams = {},
@@ -105,22 +100,25 @@ export function useSearch<T = any>(
     swrOptions = {},
   } = options;
 
-  const [searchParams, setSearchParams] = useState<Record<string, string>>(defaultParams);
-  const [debouncedParams, setDebouncedParams] = useState<Record<string, string>>(defaultParams);
+  const [searchParams, setSearchParams] =
+    useState<Record<string, string>>(defaultParams);
+  const [debouncedParams, setDebouncedParams] =
+    useState<Record<string, string>>(defaultParams);
 
   // Create the search URL with query parameters
   const searchUrl = useCallback(
     (params: Record<string, string>) => {
-      if (!enabled || !Object.keys(params).some(k => !!params[k])) return null;
-      
+      if (!enabled || !Object.keys(params).some((k) => !!params[k]))
+        return null;
+
       const url = new URL(baseUrl, window.location.origin);
       Object.entries(params).forEach(([key, value]) => {
         if (value) url.searchParams.append(key, value);
       });
-      
+
       return url.toString();
     },
-    [baseUrl, enabled]
+    [baseUrl, enabled],
   );
 
   // Apply debouncing to search params
@@ -131,20 +129,31 @@ export function useSearch<T = any>(
   // Update search parameters
   const updateSearch = useCallback(
     (params: Partial<Record<string, string>>) => {
-      const newParams = { ...searchParams, ...params };
+      // Ensure all params are strings (not undefined)
+      const safeParams: Record<string, string> = {};
+      for (const [key, value] of Object.entries(params)) {
+        safeParams[key] = value ?? '';
+      }
+
+      const newParams = { ...searchParams, ...safeParams };
       setSearchParams(newParams);
       debouncedSetParams(newParams);
     },
-    [searchParams, debouncedSetParams]
+    [searchParams, debouncedSetParams],
   );
 
   // Get search results with SWR
+  // Wrap SWR options to ensure compatibility
+  const adaptedOptions: UseApiOptions<T> = {
+    ...swrOptions,
+    enabled,
+    onSuccess: swrOptions.onSuccess as ((data: T) => void) | undefined,
+    onError: swrOptions.onError as ((error: Error) => void) | undefined,
+  };
+
   const { data, error, isLoading, isValidating } = useApi<T>(
     searchUrl(debouncedParams),
-    {
-      ...swrOptions,
-      enabled,
-    }
+    adaptedOptions,
   );
 
   return {

@@ -56,21 +56,25 @@ This checklist ensures the Oak Bay Municipal Bylaws Chatbot is properly configur
 ## Deployment Instructions
 
 1. Run the verification script to confirm configuration:
+
    ```
    pnpm tsx scripts/verify-pinecone.ts
    ```
 
 2. Run database migrations:
+
    ```
    pnpm db:migrate
    ```
 
 3. Build the application:
+
    ```
    pnpm build
    ```
 
 4. Run linting check:
+
    ```
    pnpm lint
    ```

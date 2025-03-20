@@ -23,9 +23,10 @@ export async function generateTitleFromUserMessage({
 }) {
   try {
     // Format the message in a way the AI can understand
-    const messageContent = typeof message.content === 'string' 
-      ? message.content 
-      : JSON.stringify(message.content);
+    const messageContent =
+      typeof message.content === 'string'
+        ? message.content
+        : JSON.stringify(message.content);
 
     const { text: title } = await generateText({
       model: myProvider.languageModel('title-model'),

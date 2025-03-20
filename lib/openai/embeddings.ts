@@ -38,7 +38,8 @@ export class PineconeEmbeddings {
 
       return response.data[0].embedding;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.error(`Error embedding query: ${errorMessage}`);
       throw error;
     }
@@ -54,28 +55,34 @@ export class PineconeEmbeddings {
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      
+
       try {
         // OpenAI can handle multiple inputs in a single request
         const response = await this.client.embeddings.create({
           model: this.model,
           input: batch,
         });
-        
+
         // Extract the embeddings
         const batchEmbeddings = response.data.map((item) => item.embedding);
         batches.push(batchEmbeddings);
-        
+
         // Add a small delay between batches to avoid rate limiting
         if (i + batchSize < texts.length) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(`Error embedding batch starting at index ${i}:`, errorMessage);
-        
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          `Error embedding batch starting at index ${i}:`,
+          errorMessage,
+        );
+
         // Fall back to individual queries if batch fails
-        console.log(`Falling back to individual queries for batch starting at index ${i}`);
+        console.log(
+          `Falling back to individual queries for batch starting at index ${i}`,
+        );
         const batchPromises = batch.map((text) => this.embedQuery(text));
         const batchResults = await Promise.all(batchPromises);
         batches.push(batchResults);

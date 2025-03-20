@@ -1,6 +1,6 @@
 /**
  * Bylaw Verification Database
- * 
+ *
  * This module provides a verification layer for bylaw citations
  * to ensure accuracy against official sources.
  */
@@ -8,6 +8,33 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'node:fs';
 import path from 'node:path';
+
+/**
+ * Interface for section information
+ */
+interface SectionInfo {
+  sectionNumber: string;
+  title?: string;
+  content: string;
+}
+
+/**
+ * Interface for verified bylaw data
+ */
+export interface VerifiedBylawData {
+  bylawNumber: string;
+  title: string;
+  pdfPath: string;
+  isConsolidated: boolean;
+  consolidatedDate: string | null;
+  officialUrl: string;
+  lastVerified: Date;
+  enactmentDate: string | null;
+  amendments: string | null;
+  // Optional fields
+  sections?: SectionInfo[];
+  amendedBylaw?: string[];
+}
 
 // Initialize Prisma client - use global instance to prevent too many connections
 // For Next.js hot reloading in development
@@ -17,55 +44,32 @@ export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
     // Log queries in development
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
   });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// Interface for verified bylaw data
-export interface VerifiedBylawData {
-  bylawNumber: string;
-  title: string;
-  isConsolidated: boolean;
-  pdfPath: string;
-  officialUrl: string;
-  lastVerified: Date;
-  consolidatedDate?: string;
-  enactmentDate?: string;
-  amendedBylaw?: string[];
-  sections?: {
-    sectionNumber: string;
-    title?: string;
-    content: string;
-  }[];
-}
-
 /**
  * Verify a bylaw against the database
  */
-export async function verifyBylaw(bylawNumber: string): Promise<VerifiedBylawData | null> {
+export async function verifyBylaw(
+  bylawNumber: string,
+): Promise<VerifiedBylawData | null> {
   try {
     // Check if bylaw exists in database
     const bylaw = await prisma.bylaw.findUnique({
       where: { bylawNumber },
-      include: { sections: true }
-    }).catch(err => {
-      console.warn(`Database error when verifying bylaw ${bylawNumber}:`, err);
-      return null;
+      include: { sections: true },
     });
 
     if (!bylaw) {
-      console.warn(`Bylaw ${bylawNumber} not found in verification database`);
-      return fallbackVerifyBylaw(bylawNumber);
+      return null;
     }
 
-    // Verify PDF exists
-    const pdfExists = fs.existsSync(path.join(process.cwd(), 'public', bylaw.pdfPath));
-    if (!pdfExists) {
-      console.warn(`PDF file for bylaw ${bylawNumber} not found at path ${bylaw.pdfPath}`);
-      return fallbackVerifyBylaw(bylawNumber);
-    }
-
+    // Return verified bylaw data
     return {
       bylawNumber: bylaw.bylawNumber,
       title: bylaw.title,
@@ -73,194 +77,100 @@ export async function verifyBylaw(bylawNumber: string): Promise<VerifiedBylawDat
       pdfPath: bylaw.pdfPath,
       officialUrl: bylaw.officialUrl,
       lastVerified: bylaw.lastVerified,
-      consolidatedDate: bylaw.consolidatedDate || undefined,
-      enactmentDate: bylaw.enactmentDate || undefined,
-      amendedBylaw: bylaw.amendments ? bylaw.amendments.split(',') : undefined,
-      sections: bylaw.sections.map(section => ({
+      consolidatedDate: bylaw.consolidatedDate,
+      enactmentDate: bylaw.enactmentDate,
+      amendments: bylaw.amendments,
+      sections: bylaw.sections.map((section) => ({
         sectionNumber: section.sectionNumber,
         title: section.title || undefined,
-        content: section.content
-      }))
+        content: section.content,
+      })),
+      amendedBylaw: bylaw.amendments ? bylaw.amendments.split(',') : undefined,
     };
   } catch (error) {
     console.error(`Error verifying bylaw ${bylawNumber}:`, error);
-    return fallbackVerifyBylaw(bylawNumber);
-  }
-}
-
-/**
- * Fallback verification using file mapping when database is unavailable
- */
-export function fallbackVerifyBylaw(bylawNumber: string): VerifiedBylawData | null {
-  try {
-    // Use the existing filename mapping
-    const filename = getFilenameForBylaw(bylawNumber);
-    if (!filename) return null;
-    
-    // Check if file exists
-    const pdfPath = `/pdfs/${filename}`;
-    const fullPath = path.join(process.cwd(), 'public', pdfPath);
-    const pdfExists = fs.existsSync(fullPath);
-    
-    if (!pdfExists) {
-      console.warn(`PDF file for bylaw ${bylawNumber} not found at path ${pdfPath}`);
-      return null;
-    }
-    
-    // Parse title from filename
-    let title = filename.replace(/\.pdf$/i, '');
-    title = title.replace(/^(\d{4})[-,\s]+/, ''); // Remove bylaw number prefix
-    
-    // Detect if consolidated
-    const isConsolidated = /consolidated|consolidation/i.test(filename);
-    
-    // Special handling for specific bylaws to ensure accuracy even in fallback mode
-    if (bylawNumber === '3210') {
-      // Anti-Noise Bylaw
-      return {
-        bylawNumber,
-        title: 'Anti-Noise Bylaw, 1977',
-        isConsolidated: true,
-        consolidatedDate: 'September 30, 2013',
-        pdfPath,
-        officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
-        lastVerified: new Date(),
-        amendedBylaw: ['3332', '3937', '4198', '4594'],
-        sections: [
-          {
-            sectionNumber: '3(1)',
-            title: 'General Noise Prohibition',
-            content: 'No person shall make or cause to be made any noise or sound within the geographical limits of The Corporation of the District of Oak Bay which is liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.'
-          },
-          {
-            sectionNumber: '5(7)(a)',
-            title: 'Construction Hours - Regular Permits',
-            content: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.'
-          },
-          {
-            sectionNumber: '5(7)(b)',
-            title: 'Construction Hours - Renewal Permits',
-            content: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.'
-          }
-        ]
-      };
-    }
-    
-    return {
-      bylawNumber,
-      title,
-      isConsolidated,
-      pdfPath,
-      officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
-      lastVerified: new Date(),
-      sections: [] // No sections in fallback mode for other bylaws
-    };
-  } catch (error) {
-    console.error(`Error in fallback verification for bylaw ${bylawNumber}:`, error);
     return null;
   }
 }
 
 /**
- * Add a new verified bylaw to the database
+ * Verify a specific section in a bylaw
  */
-export async function addVerifiedBylaw(data: VerifiedBylawData): Promise<boolean> {
+export async function verifyBylawSection(
+  bylawNumber: string,
+  sectionNumber: string,
+): Promise<{ text: string; title?: string } | null> {
   try {
-    await prisma.bylaw.create({
-      data: {
-        bylawNumber: data.bylawNumber,
-        title: data.title,
-        isConsolidated: data.isConsolidated,
-        pdfPath: data.pdfPath,
-        officialUrl: data.officialUrl,
-        lastVerified: data.lastVerified,
-        consolidatedDate: data.consolidatedDate,
-        enactmentDate: data.enactmentDate,
-        amendments: data.amendedBylaw?.join(','),
-        sections: {
-          create: data.sections?.map(section => ({
-            sectionNumber: section.sectionNumber,
-            title: section.title || null,
-            content: section.content
-          })) || []
-        }
-      }
+    // Check if section exists in database
+    const section = await prisma.bylawSection.findUnique({
+      where: {
+        bylawNumber_sectionNumber: {
+          bylawNumber,
+          sectionNumber,
+        },
+      },
     });
-    return true;
+
+    if (!section) {
+      return null;
+    }
+
+    // Return verified section data
+    return {
+      text: section.content,
+      title: section.title || undefined,
+    };
   } catch (error) {
-    console.error(`Error adding verified bylaw ${data.bylawNumber}:`, error);
-    return false;
+    console.error(
+      `Error verifying bylaw section ${bylawNumber}, ${sectionNumber}:`,
+      error,
+    );
+    return null;
   }
 }
 
 /**
- * Update an existing bylaw in the verification database
- */
-export async function updateVerifiedBylaw(data: VerifiedBylawData): Promise<boolean> {
-  try {
-    // First delete existing sections
-    await prisma.bylawSection.deleteMany({
-      where: { bylawNumber: data.bylawNumber }
-    });
-
-    // Then update bylaw and create new sections
-    await prisma.bylaw.update({
-      where: { bylawNumber: data.bylawNumber },
-      data: {
-        title: data.title,
-        isConsolidated: data.isConsolidated,
-        pdfPath: data.pdfPath,
-        officialUrl: data.officialUrl,
-        lastVerified: data.lastVerified,
-        consolidatedDate: data.consolidatedDate,
-        enactmentDate: data.enactmentDate,
-        amendments: data.amendedBylaw?.join(','),
-        sections: {
-          create: data.sections?.map(section => ({
-            sectionNumber: section.sectionNumber,
-            title: section.title || null,
-            content: section.content
-          })) || []
-        }
-      }
-    });
-    return true;
-  } catch (error) {
-    console.error(`Error updating verified bylaw ${data.bylawNumber}:`, error);
-    return false;
-  }
-}
-
-/**
- * Record user feedback about a citation
+ * Record citation feedback
  */
 export async function recordCitationFeedback(
   bylawNumber: string,
   section: string,
   feedback: 'accurate' | 'inaccurate' | 'incomplete' | 'outdated',
-  userComment?: string
+  userComment?: string,
 ): Promise<boolean> {
   try {
-    // Non-critical feature - can fail gracefully
-    await prisma.citationFeedback.create({
-      data: {
-        bylawNumber,
-        section,
-        feedback,
-        userComment,
-        timestamp: new Date()
-      }
-    }).catch(err => {
-      console.warn(`Citation feedback recording failed (non-critical) for bylaw ${bylawNumber}:`, err);
-      // Store feedback in application logs at minimum
-      console.info(`CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`);
-      return null;
-    });
+    // Record feedback in database
+    await prisma.citationFeedback
+      .create({
+        data: {
+          bylawNumber,
+          section,
+          feedback,
+          userComment,
+          timestamp: new Date(),
+        },
+      })
+      .catch((err) => {
+        console.warn(
+          `Citation feedback recording failed (non-critical) for bylaw ${bylawNumber}:`,
+          err,
+        );
+        // Store feedback in application logs at minimum
+        console.info(
+          `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`,
+        );
+        return null;
+      });
     return true;
   } catch (error) {
-    console.error(`Error recording citation feedback for bylaw ${bylawNumber}:`, error);
+    console.error(
+      `Error recording citation feedback for bylaw ${bylawNumber}:`,
+      error,
+    );
     // Store feedback in application logs at minimum
-    console.info(`CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`);
+    console.info(
+      `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`,
+    );
     return false;
   }
 }
@@ -270,37 +180,49 @@ export async function recordCitationFeedback(
  */
 export async function findSimilarBylaws(
   term: string,
-  limit = 5
+  limit = 5,
 ): Promise<VerifiedBylawData[]> {
   try {
     // Search for bylaws with similar titles
     const similarBylaws = await prisma.bylaw.findMany({
       where: {
         OR: [
-          { title: { contains: term, mode: 'insensitive' } },
-          { bylawNumber: { contains: term } }
-        ]
+          { title: { contains: term } }, // Removed mode parameter
+          { bylawNumber: { contains: term } },
+        ],
       },
       include: { sections: true },
-      take: limit
+      take: limit,
     });
 
-    return similarBylaws.map(bylaw => ({
-      bylawNumber: bylaw.bylawNumber,
-      title: bylaw.title,
-      isConsolidated: bylaw.isConsolidated,
-      pdfPath: bylaw.pdfPath,
-      officialUrl: bylaw.officialUrl,
-      lastVerified: bylaw.lastVerified,
-      consolidatedDate: bylaw.consolidatedDate || undefined,
-      enactmentDate: bylaw.enactmentDate || undefined,
-      amendedBylaw: bylaw.amendments ? bylaw.amendments.split(',') : undefined,
-      sections: bylaw.sections.map(section => ({
-        sectionNumber: section.sectionNumber,
-        title: section.title || undefined,
-        content: section.content
-      }))
-    }));
+    return similarBylaws.map((bylaw) => {
+      // Create the verified bylaw data object with optional sections
+      const result: VerifiedBylawData = {
+        bylawNumber: bylaw.bylawNumber,
+        title: bylaw.title,
+        isConsolidated: bylaw.isConsolidated,
+        pdfPath: bylaw.pdfPath,
+        officialUrl: bylaw.officialUrl,
+        lastVerified: bylaw.lastVerified,
+        consolidatedDate: bylaw.consolidatedDate,
+        enactmentDate: bylaw.enactmentDate,
+        amendments: bylaw.amendments,
+        amendedBylaw: bylaw.amendments
+          ? bylaw.amendments.split(',')
+          : undefined,
+      };
+
+      // Add sections if they exist
+      if (bylaw.sections && bylaw.sections.length > 0) {
+        result.sections = bylaw.sections.map((section) => ({
+          sectionNumber: section.sectionNumber,
+          title: section.title || undefined,
+          content: section.content,
+        }));
+      }
+
+      return result;
+    });
   } catch (error) {
     console.error(`Error finding similar bylaws for term "${term}":`, error);
     return [];
@@ -311,128 +233,160 @@ export async function findSimilarBylaws(
  * Get known bylaw PDF filename by bylaw number
  */
 export function getFilenameForBylaw(bylawNumber: string): string | null {
-  // Map of bylaw numbers to filenames
+  // Map of known bylaw numbers to PDF filenames
   const bylawMap: Record<string, string> = {
-    '3152': '3152.pdf',
-    '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf', // Anti-Noise Bylaw
-    '3370': '3370, Water Rate Bylaw, 1981 (CONSOLIDATED)_2.pdf',
-    '3416': '3416-Boulevard-Frontage-Tax-BL-1982-CONSOLIDATED-to-May-8-2023.pdf',
-    '3531': '3531_ZoningBylawConsolidation_Aug302024.pdf',
-    '3536': '3536.pdf',
-    '3540': '3540, Parking Facilities BL 1986 (CONSOLIDATED)_1.pdf',
-    '3545': '3545-Uplands-Bylaw-1987-(CONSOLIDATED-to-February-10-2020).pdf',
-    '3550': '3550, Driveway Access BL (CONSOLIDATED).pdf',
-    '3578': '3578_Subdivision-and-Development_CONSOLIDATED-to-September-2023.pdf',
-    '3603': '3603, Business Licence Bylaw 1988 - CONSOLIDATED FIN.pdf',
-    '3805': '3805.pdf',
-    '3827': '3827, Records Administration BL 94 (CONSOLIDATED 2).pdf',
-    '3829': '3829.pdf',
-    '3832': '3832.pdf',
-    '3891': '3891-Public-Sewer-Bylaw,-1996-CONSOLIDATED.pdf',
-    '3938': '3938.pdf',
-    '3946': '3946 Sign Bylaw 1997 (CONSOLIDATED) to Sept 11 2023_0.pdf',
-    '3952': '3952, Ticket Information Utilization BL 97 (CONSOLIDATED)_2.pdf',
-    '4008': '4008.pdf',
-    '4013': '4013, Animal Control Bylaw, 1999 (CONSOLIDATED)_1.pdf',
-    '4100': '4100-Streets-Traffic-Bylaw-2000.pdf',
-    '4144': '4144, Oil Burning Equipment and Fuel Tank Regulation Bylaw, 2002.pdf',
-    '4183': '4183_Board-of-Variance-Bylaw_CONSOLIDATED-to-Sept11-2023.pdf',
-    '4222': '4222.pdf',
-    '4239': '4239, Administrative Procedures Bylaw, 2004, (CONSOLIDATED).pdf',
-    '4247': '4247 Building and Plumbing Bylaw 2005 Consolidated to September 11 2023_0.pdf',
-    '4284': '4284, Elections and Voting (CONSOLIDATED).pdf',
-    '4371': '4371-Refuse-Collection-and-Disposal-Bylaw-2007-(CONSOLIDATED).pdf',
-    '4375': '4375.pdf',
-    '4392': '4392, Sewer User Charge Bylaw 2008 (CONSOLIDATED).pdf',
-    '4421': '4421.pdf',
-    '4518': '4518.pdf',
-    '4620': '4620, Oak Bay Official Community Plan Bylaw, 2014.pdf',
-    '4671': '4671, Sign Bylaw Amendment Bylaw No. 4671, 2017.pdf',
-    '4672': '4672-Parks-and-Beaches-Bylaw-2017-CONSOLIDATED.pdf',
-    '4719': '4719, Fire Prevention and Life Safety Bylaw, 2018.pdf',
-    '4720': '4720.pdf',
-    '4740': '4740 Council Procedure Bylaw CONSOLIDATED 4740.003.pdf',
-    '4742': '4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
-    '4747': '4747, Reserve Funds Bylaw, 2020 CONSOLIDATED.pdf',
-    '4770': '4770 Heritage Commission Bylaw CONSOLIDATED 4770.001.pdf',
-    '4771': '4771 Advisory Planning Commission Bylaw CONSOLIDATED 4771.001.pdf',
-    '4772': '4772 Advisory Planning Commission Bylaw CONSOLIDATED 4772.001.pdf',
-    '4777': '4777 PRC Fees and Charges Bylaw CONSOLIDATED.pdf',
-    '4822': '4822 Council Remuneration Bylaw - DRAFT.pdf',
-    '4844': '4844-Consolidated-up to-4858.pdf',
-    '4845': '4845-Planning-and-Development-Fees-and-Charges-CONSOLIDATED.pdf',
-    '4849': '4849-Property-Tax-Exemption-Bylaw-No-4849-2023.pdf',
-    '4861': 'Tax Rates Bylaw 2024, No. 4861.pdf',
-    '4866': 'Boulevard Frontage Tax Amendment Bylaw No. 4866, 2024.pdf',
-    '4879': '4879, Oak Bay Business Improvement Area Bylaw, 2024.pdf',
-    '4891': 'Development Cost Charge Bylaw No. 4891, 2024.pdf',
-    '4892': 'Amenity Cost Charge Bylaw No. 4892, 2024.pdf',
+    '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
+    '4842': 'Tree-Protection-Bylaw.pdf',
+    '4567': 'Zoning-Bylaw-Oak-Bay.pdf',
+    '4700': 'Official-Community-Plan-2020.pdf',
   };
-  
-  return bylawMap[bylawNumber] || null;
-}
 
-/**
- * Get the page number for a specific section in a bylaw
- * This would need to be populated from PDF analysis
- */
-export function getSectionPage(bylawNumber: string, section: string): number {
-  // This would come from a database in production
-  // For now, return 1 as a default
-  return 1;
-}
+  // If we know about this bylaw, return its filename
+  if (bylawMap[bylawNumber]) {
+    return bylawMap[bylawNumber];
+  }
 
-/**
- * Initialize the verification database with known bylaws
- */
-export async function initializeVerificationDatabase(): Promise<void> {
+  // Try to find a matching PDF by bylaw number in the public dir
+  const publicDir = path.resolve(process.cwd(), 'public/pdfs');
+  const dirExists = fs.existsSync(publicDir);
+
+  if (!dirExists) {
+    console.warn('Public PDFs directory not found');
+    return null;
+  }
+
   try {
-    // Get all PDF files in the public/pdfs directory
-    const pdfDir = path.join(process.cwd(), 'public', 'pdfs');
-    const files = fs.readdirSync(pdfDir);
-    
-    // Initialize count of processed bylaws
-    let processed = 0;
-    
-    // Process each PDF file
-    for (const file of files) {
-      // Skip non-PDF files
-      if (!file.toLowerCase().endsWith('.pdf')) continue;
-      
-      // Extract bylaw number from filename
-      const bylawNumberMatch = file.match(/^(?:bylaw[-\s])?(\d{4})|^(\d{4})[-,\s]/i);
-      if (!bylawNumberMatch) continue;
-      
-      const bylawNumber = bylawNumberMatch[1] || bylawNumberMatch[2];
-      
-      // Check if bylaw already exists in database
-      const existing = await prisma.bylaw.findUnique({ where: { bylawNumber } });
-      if (existing) continue;
-      
-      // Extract consolidated status
-      const isConsolidated = /consolidated|consolidation/i.test(file);
-      
-      // Extract title
-      let title = file.replace(/\.pdf$/i, '');
-      title = title.replace(/^(\d{4})[-,\s]+/, ''); // Remove bylaw number prefix
-      
-      // Create a new bylaw entry
-      await prisma.bylaw.create({
-        data: {
-          bylawNumber,
-          title,
-          isConsolidated,
-          pdfPath: `/pdfs/${file}`,
-          officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
-          lastVerified: new Date()
-        }
-      });
-      
-      processed++;
-    }
-    
-    console.log(`Initialized verification database with ${processed} bylaws`);
+    const files = fs.readdirSync(publicDir);
+
+    // First look for an exact match
+    const exactMatch = files.find(
+      (file) =>
+        file === `${bylawNumber}.pdf` ||
+        file.startsWith(`${bylawNumber} `) ||
+        file.startsWith(`${bylawNumber},`) ||
+        file.startsWith(`${bylawNumber}-`),
+    );
+
+    if (exactMatch) return exactMatch;
+
+    // If no exact match, look for any file containing the bylaw number
+    const fuzzyMatch = files.find(
+      (file) => file.includes(`${bylawNumber}`) && file.endsWith('.pdf'),
+    );
+
+    if (fuzzyMatch) return fuzzyMatch;
+
+    // No match found
+    return null;
   } catch (error) {
-    console.error('Error initializing verification database:', error);
+    console.error('Error searching for bylaw PDF:', error);
+    return null;
+  }
+}
+
+/**
+ * Get the most recent verified bylaw
+ */
+export async function getMostRecentVerifiedBylaw(): Promise<VerifiedBylawData | null> {
+  try {
+    const bylaw = await prisma.bylaw.findFirst({
+      orderBy: { lastVerified: 'desc' },
+      include: { sections: true },
+    });
+
+    if (!bylaw) {
+      return null;
+    }
+
+    return {
+      bylawNumber: bylaw.bylawNumber,
+      title: bylaw.title,
+      isConsolidated: bylaw.isConsolidated,
+      pdfPath: bylaw.pdfPath,
+      officialUrl: bylaw.officialUrl,
+      lastVerified: bylaw.lastVerified,
+      consolidatedDate: bylaw.consolidatedDate,
+      enactmentDate: bylaw.enactmentDate,
+      amendments: bylaw.amendments,
+      sections: bylaw.sections.map((section) => ({
+        sectionNumber: section.sectionNumber,
+        title: section.title || undefined,
+        content: section.content,
+      })),
+    };
+  } catch (error) {
+    console.error('Error getting most recent verified bylaw:', error);
+    return null;
+  }
+}
+
+/**
+ * Add or update a bylaw in the verification database
+ */
+export async function upsertBylaw(
+  bylawData: Omit<
+    VerifiedBylawData,
+    'lastVerified' | 'sections' | 'amendedBylaw'
+  > & {
+    sections?: { sectionNumber: string; title?: string; content: string }[];
+  },
+): Promise<VerifiedBylawData | null> {
+  try {
+    // Upsert the bylaw record
+    const bylaw = await prisma.bylaw.upsert({
+      where: { bylawNumber: bylawData.bylawNumber },
+      update: {
+        title: bylawData.title,
+        isConsolidated: bylawData.isConsolidated,
+        pdfPath: bylawData.pdfPath,
+        officialUrl: bylawData.officialUrl,
+        lastVerified: new Date(),
+        consolidatedDate: bylawData.consolidatedDate,
+        enactmentDate: bylawData.enactmentDate,
+        amendments: bylawData.amendments,
+      },
+      create: {
+        bylawNumber: bylawData.bylawNumber,
+        title: bylawData.title,
+        isConsolidated: bylawData.isConsolidated,
+        pdfPath: bylawData.pdfPath,
+        officialUrl: bylawData.officialUrl,
+        lastVerified: new Date(),
+        consolidatedDate: bylawData.consolidatedDate,
+        enactmentDate: bylawData.enactmentDate,
+        amendments: bylawData.amendments,
+      },
+      include: { sections: true },
+    });
+
+    // If sections were provided, upsert them
+    if (bylawData.sections && bylawData.sections.length > 0) {
+      for (const section of bylawData.sections) {
+        await prisma.bylawSection.upsert({
+          where: {
+            bylawNumber_sectionNumber: {
+              bylawNumber: bylawData.bylawNumber,
+              sectionNumber: section.sectionNumber,
+            },
+          },
+          update: {
+            title: section.title,
+            content: section.content,
+          },
+          create: {
+            bylawNumber: bylawData.bylawNumber,
+            sectionNumber: section.sectionNumber,
+            title: section.title,
+            content: section.content,
+          },
+        });
+      }
+    }
+
+    // Re-fetch the complete bylaw with sections
+    return await verifyBylaw(bylawData.bylawNumber);
+  } catch (error) {
+    console.error(`Error upserting bylaw ${bylawData.bylawNumber}:`, error);
+    return null;
   }
 }

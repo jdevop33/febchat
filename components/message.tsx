@@ -65,7 +65,7 @@ const PurePreviewMessage = ({
           )}
         >
           {message.role === 'assistant' && (
-            <div 
+            <div
               className="flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border"
               aria-hidden="true"
             >
@@ -77,7 +77,7 @@ const PurePreviewMessage = ({
 
           <div className="flex w-full flex-col gap-4">
             {message.experimental_attachments && (
-              <div 
+              <div
                 className="flex flex-row justify-end gap-2"
                 aria-label="Attached files"
               >
@@ -178,23 +178,21 @@ const PurePreviewMessage = ({
                                   Relevant Bylaw Information:
                                 </div>
                                 {result.results?.map(
-                                    (
-                                      bylawInfo: {
-                                        bylawNumber: string;
-                                        title?: string;
-                                        section: string;
-                                        content: string;
-                                      }
-                                    ) => (
-                                      <BylawCitation
-                                        key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
-                                        bylawNumber={bylawInfo.bylawNumber}
-                                        section={bylawInfo.section}
-                                        title={bylawInfo.title}
-                                        excerpt={bylawInfo.content}
-                                      />
-                                    ),
-                                  )}
+                                  (bylawInfo: {
+                                    bylawNumber: string;
+                                    title?: string;
+                                    section: string;
+                                    content: string;
+                                  }) => (
+                                    <BylawCitation
+                                      key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
+                                      bylawNumber={bylawInfo.bylawNumber}
+                                      section={bylawInfo.section}
+                                      title={bylawInfo.title}
+                                      excerpt={bylawInfo.content}
+                                    />
+                                  ),
+                                )}
                               </>
                             ) : (
                               <div className="text-sm italic text-muted-foreground">

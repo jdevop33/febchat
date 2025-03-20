@@ -12,48 +12,51 @@ export const authConfig = {
   ],
   session: {
     // Use JWT strategy with strong settings
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours instead of 30 days for better security
     updateAge: 60 * 60, // 1 hour - force session refresh
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      
+
       // Define protected and public paths more clearly
       const isPublicApi = nextUrl.pathname.startsWith('/api/public');
       const isApiRoute = nextUrl.pathname.startsWith('/api');
-      const isAuthRoute = nextUrl.pathname.startsWith('/login') || 
-                           nextUrl.pathname.startsWith('/register') ||
-                           nextUrl.pathname.startsWith('/auth-error');
-      const isStaticAsset = nextUrl.pathname.match(/\.(jpg|jpeg|png|gif|svg|css|js)$/);
+      const isAuthRoute =
+        nextUrl.pathname.startsWith('/login') ||
+        nextUrl.pathname.startsWith('/register') ||
+        nextUrl.pathname.startsWith('/auth-error');
+      const isStaticAsset = nextUrl.pathname.match(
+        /\.(jpg|jpeg|png|gif|svg|css|js)$/,
+      );
       const isProtectedRoute = !isAuthRoute && !isPublicApi && !isStaticAsset;
-      
+
       // Static assets and public API endpoints are always accessible
       if (isStaticAsset || isPublicApi) {
         return true;
       }
-      
+
       // Redirect authenticated users away from auth pages
       if (isLoggedIn && isAuthRoute) {
         return Response.redirect(new URL('/', nextUrl));
       }
-      
+
       // Allow access to auth routes for everyone
       if (isAuthRoute) {
         return true;
       }
-      
+
       // API routes require authentication unless marked as public
       if (isApiRoute) {
         return isLoggedIn;
       }
-      
+
       // All other routes require authentication
       if (isProtectedRoute) {
         return isLoggedIn;
       }
-      
+
       // Default to requiring authentication for safety
       return isLoggedIn;
     },

@@ -1,6 +1,6 @@
 /**
  * AI Tools Configuration
- * 
+ *
  * This file configures all AI tools used by the application.
  * It exports a function to configure tools for specific AI models.
  */
@@ -22,16 +22,10 @@ export const toolsConfig: ToolsConfig = {
     bylawAnswersTool, // Add this first for common bylaw questions
     searchBylawsTool, // More general search
   ],
-  
+
   // Default tools for other models
-  'chat-model-small': [
-    bylawAnswersTool,
-    searchBylawsTool,
-  ],
-  'chat-model-large': [
-    bylawAnswersTool,
-    searchBylawsTool,
-  ],
+  'chat-model-small': [bylawAnswersTool, searchBylawsTool],
+  'chat-model-large': [bylawAnswersTool, searchBylawsTool],
 };
 
 /**

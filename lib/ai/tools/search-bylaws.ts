@@ -62,28 +62,52 @@ export const searchBylawsTool = tool({
             isConsolidated: true,
             consolidatedDate: 'September 30, 2013',
           };
-          
+
           // For specific sections related to construction, ensure accuracy
-          if (result.metadata.section === '5(7)(a)' || result.metadata.section?.includes('construction')) {
-            antinoiseBylawInfo.sectionTitle = 'Construction Hours - Regular Permits';
-            antinoiseBylawInfo.content = 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.';
+          if (
+            result.metadata.section === '5(7)(a)' ||
+            result.metadata.section?.includes('construction')
+          ) {
+            antinoiseBylawInfo.sectionTitle =
+              'Construction Hours - Regular Permits';
+            antinoiseBylawInfo.content =
+              'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.';
           } else if (result.metadata.section === '5(7)(b)') {
-            antinoiseBylawInfo.sectionTitle = 'Construction Hours - Renewal Permits';
-            antinoiseBylawInfo.content = 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.';
-          } else if (result.metadata.section === '4(5)(a)' || result.metadata.section?.includes('leaf blower') && result.metadata.section?.includes('weekend')) {
-            antinoiseBylawInfo.sectionTitle = 'Leaf Blower Restrictions - Weekends and Holidays';
-            antinoiseBylawInfo.content = 'On Saturday, Sunday or a holiday, the operation of a leaf blower at a time outside the hours of 9:00 a.m. to 5:00 p.m. is prohibited.';
-          } else if (result.metadata.section === '4(5)(b)' || result.metadata.section?.includes('leaf blower') && result.metadata.section?.includes('weekday')) {
-            antinoiseBylawInfo.sectionTitle = 'Leaf Blower Restrictions - Weekdays';
-            antinoiseBylawInfo.content = 'From Monday through Friday, excluding holidays, the operation of a leaf blower at a time outside the hours of 8:00 a.m. to 8:00 p.m. is prohibited.';
-          } else if (result.metadata.section === '7' || result.metadata.section?.includes('penalty') || result.metadata.section?.includes('fine')) {
+            antinoiseBylawInfo.sectionTitle =
+              'Construction Hours - Renewal Permits';
+            antinoiseBylawInfo.content =
+              'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.';
+          } else if (
+            result.metadata.section === '4(5)(a)' ||
+            (result.metadata.section?.includes('leaf blower') &&
+              result.metadata.section?.includes('weekend'))
+          ) {
+            antinoiseBylawInfo.sectionTitle =
+              'Leaf Blower Restrictions - Weekends and Holidays';
+            antinoiseBylawInfo.content =
+              'On Saturday, Sunday or a holiday, the operation of a leaf blower at a time outside the hours of 9:00 a.m. to 5:00 p.m. is prohibited.';
+          } else if (
+            result.metadata.section === '4(5)(b)' ||
+            (result.metadata.section?.includes('leaf blower') &&
+              result.metadata.section?.includes('weekday'))
+          ) {
+            antinoiseBylawInfo.sectionTitle =
+              'Leaf Blower Restrictions - Weekdays';
+            antinoiseBylawInfo.content =
+              'From Monday through Friday, excluding holidays, the operation of a leaf blower at a time outside the hours of 8:00 a.m. to 8:00 p.m. is prohibited.';
+          } else if (
+            result.metadata.section === '7' ||
+            result.metadata.section?.includes('penalty') ||
+            result.metadata.section?.includes('fine')
+          ) {
             antinoiseBylawInfo.sectionTitle = 'Penalties';
-            antinoiseBylawInfo.content = 'Any person who violates any provision of this Bylaw is guilty of an offence and liable upon summary conviction to a fine of not more than One Thousand Dollars ($1,000.00). For the purpose of this clause an offence shall be deemed committed upon each day during or on which a violation occurs or continues.';
+            antinoiseBylawInfo.content =
+              'Any person who violates any provision of this Bylaw is guilty of an offence and liable upon summary conviction to a fine of not more than One Thousand Dollars ($1,000.00). For the purpose of this clause an offence shall be deemed committed upon each day during or on which a violation occurs or continues.';
           }
-          
+
           return antinoiseBylawInfo;
         }
-        
+
         // Default handling for other bylaws
         return {
           bylawNumber: result.metadata.bylawNumber || 'Unknown',
@@ -91,9 +115,14 @@ export const searchBylawsTool = tool({
           section: result.metadata.section || 'Unknown Section',
           sectionTitle: result.metadata.sectionTitle,
           content: result.text,
-          url: getExternalPdfUrl(result.metadata.bylawNumber || 'Unknown', result.metadata.title),
+          url: getExternalPdfUrl(
+            result.metadata.bylawNumber || 'Unknown',
+            result.metadata.title,
+          ),
           isConsolidated: !!result.metadata.consolidatedTo,
-          consolidatedDate: result.metadata.consolidatedTo ? `Bylaw No. ${result.metadata.consolidatedTo}` : undefined,
+          consolidatedDate: result.metadata.consolidatedTo
+            ? `Bylaw No. ${result.metadata.consolidatedTo}`
+            : undefined,
         };
       });
 

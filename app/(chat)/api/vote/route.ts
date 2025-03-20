@@ -10,10 +10,10 @@ export async function GET(request: Request) {
 
     if (!chatId) {
       console.log('Vote API: Missing chatId parameter');
-      return new Response(
-        JSON.stringify({ error: 'chatId is required' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'chatId is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const session = await auth();
@@ -21,10 +21,10 @@ export async function GET(request: Request) {
 
     if (!session || !session.user || !session.user.email) {
       console.log('Vote API: Unauthorized request');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Get votes with error handling built in
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Vote API: Unexpected error:', error);
     return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred' }), 
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'An unexpected error occurred' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 }
@@ -52,37 +52,39 @@ export async function PATCH(request: Request) {
     } catch (parseError) {
       console.error('Vote API: JSON parse error:', parseError);
       return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid JSON in request' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
-    
+
     const { chatId, messageId, type } = requestData;
-    console.log(`Vote API: Request to ${type}vote message ${messageId} in chat ${chatId}`);
+    console.log(
+      `Vote API: Request to ${type}vote message ${messageId} in chat ${chatId}`,
+    );
 
     // Validate request data
     if (!chatId || !messageId || !type) {
       console.log('Vote API: Missing required parameters');
       return new Response(
-        JSON.stringify({ error: 'chatId, messageId, and type are required' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'chatId, messageId, and type are required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
     // Validate chatId and messageId format to avoid database errors
     if (typeof chatId !== 'string' || !/^[0-9a-f-]+$/i.test(chatId)) {
       console.log(`Vote API: Invalid chatId format: ${chatId}`);
-      return new Response(
-        JSON.stringify({ error: 'Invalid chatId format' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid chatId format' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (typeof messageId !== 'string' || !/^[0-9a-f-]+$/i.test(messageId)) {
       console.log(`Vote API: Invalid messageId format: ${messageId}`);
       return new Response(
-        JSON.stringify({ error: 'Invalid messageId format' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Invalid messageId format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -90,8 +92,8 @@ export async function PATCH(request: Request) {
     if (type !== 'up' && type !== 'down') {
       console.log(`Vote API: Invalid type - ${type}`);
       return new Response(
-        JSON.stringify({ error: 'Type must be "up" or "down"' }), 
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Type must be "up" or "down"' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -101,10 +103,10 @@ export async function PATCH(request: Request) {
 
     if (!session || !session.user || !session.user.email) {
       console.log('Vote API: Unauthorized request');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }), 
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Process vote with improved error handling
@@ -116,38 +118,50 @@ export async function PATCH(request: Request) {
         type: type,
       });
       console.log('Vote API: Vote successful');
-      
-      return Response.json({ success: true, message: 'Vote recorded successfully' }, { status: 200 });
+
+      return Response.json(
+        { success: true, message: 'Vote recorded successfully' },
+        { status: 200 },
+      );
     } catch (voteError: any) {
       console.error('Vote API: Error recording vote:', voteError);
-      
+
       // Handle specific error types
       if (voteError?.message?.includes('not found')) {
         return Response.json(
-          { error: 'Message or chat not found', details: voteError.message }, 
-          { status: 404 }
+          { error: 'Message or chat not found', details: voteError.message },
+          { status: 404 },
         );
       }
-      
+
       // Handle database constraint errors
-      if (voteError?.message?.includes('constraint') || 
-          voteError?.message?.includes('foreign key')) {
+      if (
+        voteError?.message?.includes('constraint') ||
+        voteError?.message?.includes('foreign key')
+      ) {
         return Response.json(
-          { error: 'Database constraint violation', details: 'The message or chat may have been deleted' }, 
-          { status: 409 }
+          {
+            error: 'Database constraint violation',
+            details: 'The message or chat may have been deleted',
+          },
+          { status: 409 },
         );
       }
-      
+
       return Response.json(
-        { error: 'Failed to record vote', details: voteError instanceof Error ? voteError.message : 'Unknown error' }, 
-        { status: 500 }
+        {
+          error: 'Failed to record vote',
+          details:
+            voteError instanceof Error ? voteError.message : 'Unknown error',
+        },
+        { status: 500 },
       );
     }
   } catch (error) {
     console.error('Vote API: Unexpected error:', error);
     return Response.json(
-      { error: 'An unexpected error occurred' }, 
-      { status: 500 }
+      { error: 'An unexpected error occurred' },
+      { status: 500 },
     );
   }
 }

@@ -29,63 +29,72 @@ setInterval(() => {
   }
 }, 60 * 1000); // Clean up every minute
 
-async function rateLimit(request: NextRequest, maxRequests: number): Promise<boolean> {
-  const ip = request.ip || 'anonymous';
+async function rateLimit(
+  request: NextRequest,
+  maxRequests: number,
+): Promise<boolean> {
+  // Safely get IP address using headers (Next.js 14+ changed the IP access method)
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : 'anonymous';
   const key = `${ip}:${request.nextUrl.pathname}`;
   const now = Date.now();
-  
+
   // Get or initialize rate limit data
   const rateLimitData = rateLimitStore.get(key) || { count: 0, timestamp: now };
-  
+
   // Reset counter if the time window has passed
   if (now - rateLimitData.timestamp > RATE_LIMIT_DURATION) {
     rateLimitData.count = 0;
     rateLimitData.timestamp = now;
   }
-  
+
   // Increment request count
   rateLimitData.count++;
   rateLimitStore.set(key, rateLimitData);
-  
+
   // Check if rate limit is exceeded
   return rateLimitData.count <= maxRequests;
 }
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Apply rate limiting based on path
   let maxRequests = API_PATHS_MAX_REQUESTS;
-  
+
   // Stricter rate limiting for auth-related endpoints
-  if (pathname.startsWith('/login') || 
-      pathname.startsWith('/register') || 
-      pathname.startsWith('/api/auth')) {
+  if (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/api/auth')
+  ) {
     maxRequests = AUTH_PATHS_MAX_REQUESTS;
   }
-  
+
   // Check rate limit
   const isWithinLimit = await rateLimit(request, maxRequests);
-  
+
   if (!isWithinLimit) {
     // Return 429 Too Many Requests
     return new NextResponse(
       JSON.stringify({
         error: 'Too many requests',
-        message: 'Rate limit exceeded. Please try again later.'
+        message: 'Rate limit exceeded. Please try again later.',
       }),
-      { 
+      {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
-          'Retry-After': '60'
-        }
-      }
+          'Retry-After': '60',
+        },
+      },
     );
   }
-  
+
   // Continue with auth middleware
-  return auth(request);
+  // For NextAuth middleware in Next.js 14+, we'll use the provided API differently
+  // Cast to any to bypass the type error until it's fixed in the NextAuth types
+  return (auth as any)(request);
 }
 
 export const config = {

@@ -1,6 +1,6 @@
 /**
  * Production-grade monitoring and logging service for Oak Bay Municipal Bylaw System
- * 
+ *
  * This module provides structured logging and performance monitoring for production use.
  */
 
@@ -8,7 +8,7 @@
 const getTimestamp = () => new Date().toISOString();
 
 // Log event types for categorization and filtering
-type LogEventType = 
+type LogEventType =
   | 'search'
   | 'error'
   | 'api'
@@ -54,7 +54,7 @@ if (typeof setInterval !== 'undefined') {
  */
 function flushLogBuffer(): void {
   if (logBuffer.length === 0) return;
-  
+
   // In a production setup, this would send logs to a centralized logging service
   if (process.env.NODE_ENV === 'production' && process.env.LOG_ENDPOINT) {
     // This is where you'd send logs to your logging service
@@ -64,12 +64,12 @@ function flushLogBuffer(): void {
     //   body: JSON.stringify(logBuffer)
     // }).catch(err => console.error('Error sending logs:', err));
   }
-  
+
   // For development, just print to console
   if (process.env.NODE_ENV !== 'production') {
-    logBuffer.forEach(entry => {
+    logBuffer.forEach((entry) => {
       const message = `[${entry.timestamp}] [${entry.eventType}] ${entry.message}`;
-      
+
       switch (entry.severity) {
         case 'debug':
           console.debug(message, entry.data);
@@ -87,7 +87,7 @@ function flushLogBuffer(): void {
       }
     });
   }
-  
+
   // Clear the buffer
   logBuffer.length = 0;
 }
@@ -103,7 +103,7 @@ function writeLog(entry: LogEntry): void {
     if (entry.data) {
       // Remove passwords, tokens, etc.
       const sanitizedData = { ...entry.data };
-      ['password', 'token', 'secret', 'key', 'apiKey'].forEach(key => {
+      ['password', 'token', 'secret', 'key', 'apiKey'].forEach((key) => {
         if (key in sanitizedData) {
           sanitizedData[key] = '[REDACTED]';
         }
@@ -114,12 +114,12 @@ function writeLog(entry: LogEntry): void {
 
   // Add entry to buffer
   logBuffer.push(entry);
-  
+
   // If buffer is full or entry is critical, flush immediately
   if (logBuffer.length >= MAX_BUFFER_SIZE || entry.severity === 'critical') {
     flushLogBuffer();
   }
-  
+
   // For critical errors in production, also trigger immediate alerts
   if (entry.severity === 'critical' && process.env.NODE_ENV === 'production') {
     // This would integrate with an alerting system
@@ -131,17 +131,17 @@ function writeLog(entry: LogEntry): void {
  * Log a bylaw search event
  */
 export function logSearch(
-  query: string, 
-  resultCount: number, 
+  query: string,
+  resultCount: number,
   duration: number,
   options?: {
     userId?: string;
     filters?: Record<string, any>;
     error?: Error;
-  }
+  },
 ): void {
   const severity = options?.error ? 'error' : 'info';
-  
+
   writeLog({
     timestamp: getTimestamp(),
     eventType: 'search',
@@ -168,10 +168,10 @@ export function logBylawAccess(
   options?: {
     userId?: string;
     error?: Error;
-  }
+  },
 ): void {
   const severity = options?.error ? 'error' : 'info';
-  
+
   writeLog({
     timestamp: getTimestamp(),
     eventType: 'bylaw_access',
@@ -198,7 +198,7 @@ export function logApiPerformance(
     requestId?: string;
     statusCode?: number;
     method?: string;
-  }
+  },
 ): void {
   // Determine severity based on duration thresholds
   let severity: LogSeverity = 'info';
@@ -207,7 +207,7 @@ export function logApiPerformance(
   } else if (duration > 10000) {
     severity = 'error';
   }
-  
+
   writeLog({
     timestamp: getTimestamp(),
     eventType: 'performance',
@@ -237,7 +237,7 @@ export function logError(
     bylawNumber?: string;
     critical?: boolean;
     requestId?: string;
-  }
+  },
 ): void {
   writeLog({
     timestamp: getTimestamp(),
@@ -266,7 +266,7 @@ export function logFeedback(
   options?: {
     userId?: string;
     comment?: string;
-  }
+  },
 ): void {
   writeLog({
     timestamp: getTimestamp(),
@@ -291,11 +291,11 @@ export function createRequestLogger() {
     const startTime = Date.now();
     const requestId = Math.random().toString(36).substring(2, 15);
     const url = new URL(req.url).pathname;
-    
+
     try {
       // Call the next middleware/route handler
       const response = await next();
-      
+
       // Log API performance
       const duration = Date.now() - startTime;
       logApiPerformance(url, duration, {
@@ -303,14 +303,14 @@ export function createRequestLogger() {
         statusCode: response.status,
         method: req.method,
       });
-      
+
       return response;
     } catch (error) {
       // Log the error
       logError(error as Error, `API Request: ${url}`, {
         requestId,
       });
-      
+
       // Re-throw to let the error handler middleware deal with it
       throw error;
     }

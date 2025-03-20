@@ -16,7 +16,9 @@ console.log(`Using Claude 3.7 Sonnet for all functionality`);
 
 // In production, ensure API key is set
 if (isProduction && !env.ANTHROPIC_API_KEY) {
-  console.error('CRITICAL ERROR: ANTHROPIC_API_KEY environment variable is not set in production!');
+  console.error(
+    'CRITICAL ERROR: ANTHROPIC_API_KEY environment variable is not set in production!',
+  );
   throw new Error('Anthropic API key missing in production environment');
 }
 

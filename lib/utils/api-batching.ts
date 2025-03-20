@@ -3,7 +3,7 @@
  */
 
 import { cache } from 'react';
-import { Profiler } from './profiler';
+import { profiler } from './profiler';
 
 type BatchOptions = {
   maxBatchSize?: number;
@@ -31,9 +31,12 @@ export class APIBatcher<T, R> {
   private timer: NodeJS.Timeout | null = null;
   private options: BatchOptions;
   private batchProcessor: (inputs: T[]) => Promise<R[]>;
-  private profiler = new Profiler();
+  private profilerInstance = profiler;
 
-  constructor(batchProcessor: (inputs: T[]) => Promise<R[]>, options: BatchOptions = {}) {
+  constructor(
+    batchProcessor: (inputs: T[]) => Promise<R[]>,
+    options: BatchOptions = {},
+  ) {
     this.batchProcessor = batchProcessor;
     this.options = { ...defaultOptions, ...options };
   }
@@ -42,16 +45,16 @@ export class APIBatcher<T, R> {
    * Adds a request to the batch queue
    */
   public async add(input: T): Promise<R> {
-    this.profiler.start('batch-queue-time');
-    
+    this.profilerInstance.start('batch-queue-time');
+
     return new Promise<R>((resolve, reject) => {
       this.queue.push({ input, resolve, reject });
-      
+
       // If this is the first item, start the timer
       if (this.queue.length === 1) {
         this.startTimer();
       }
-      
+
       // If we've reached max batch size, process immediately
       if (this.queue.length >= (this.options.maxBatchSize || 5)) {
         this.processBatch();
@@ -66,7 +69,7 @@ export class APIBatcher<T, R> {
     if (this.timer) {
       clearTimeout(this.timer);
     }
-    
+
     this.timer = setTimeout(() => {
       this.processBatch();
     }, this.options.maxWaitTime);
@@ -80,32 +83,32 @@ export class APIBatcher<T, R> {
       clearTimeout(this.timer);
       this.timer = null;
     }
-    
+
     if (this.queue.length === 0) return;
-    
+
     const batch = [...this.queue];
     this.queue = [];
-    
-    const inputs = batch.map(item => item.input);
-    
-    this.profiler.start('batch-processing-time');
-    
+
+    const inputs = batch.map((item) => item.input);
+
+    this.profilerInstance.start('batch-processing-time');
+
     try {
       // Process the batch with retries
       const results = await this.processWithRetries(inputs);
-      
+
       // Resolve each promise with its corresponding result
       batch.forEach((item, index) => {
-        const queueTime = this.profiler.end('batch-queue-time');
-        this.profiler.start('batch-process-individual');
+        const queueTime = this.profilerInstance.end('batch-queue-time');
+        this.profilerInstance.start('batch-process-individual');
         item.resolve(results[index]);
-        this.profiler.end('batch-process-individual');
+        this.profilerInstance.end('batch-process-individual');
       });
     } catch (error) {
       // If batch processing fails, reject all promises
-      batch.forEach(item => item.reject(error));
+      batch.forEach((item) => item.reject(error));
     } finally {
-      this.profiler.end('batch-processing-time');
+      this.profilerInstance.end('batch-processing-time');
     }
   }
 
@@ -114,19 +117,22 @@ export class APIBatcher<T, R> {
    */
   private async processWithRetries(inputs: T[]): Promise<R[]> {
     let lastError: any;
-    
+
     for (let attempt = 0; attempt < (this.options.retryCount || 3); attempt++) {
       try {
         return await this.batchProcessor(inputs);
       } catch (error) {
         lastError = error;
-        
+
         // Exponential backoff with jitter
-        const delay = (this.options.retryDelay || 300) * Math.pow(2, attempt) * (0.5 + Math.random() * 0.5);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const delay =
+          (this.options.retryDelay || 300) *
+          Math.pow(2, attempt) *
+          (0.5 + Math.random() * 0.5);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    
+
     throw lastError;
   }
 }
@@ -136,7 +142,7 @@ export class APIBatcher<T, R> {
  */
 export function createCachedFunction<Args extends any[], Result>(
   fn: (...args: Args) => Promise<Result>,
-  keyFn?: (...args: Args) => string
+  keyFn?: (...args: Args) => string,
 ) {
   return cache(async (...args: Args): Promise<Result> => {
     const key = keyFn ? keyFn(...args) : JSON.stringify(args);

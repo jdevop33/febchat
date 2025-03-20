@@ -197,7 +197,8 @@ function PureMultimodalInput({
     <div className="relative flex w-full flex-col gap-4">
       {messages.length === 0 &&
         attachments.length === 0 &&
-        uploadQueue.length === 0 && input.length === 0 && (
+        uploadQueue.length === 0 &&
+        input.length === 0 && (
           <SuggestedActions append={append} chatId={chatId} />
         )}
 
@@ -252,10 +253,16 @@ function PureMultimodalInput({
             } else {
               submitForm();
             }
-          } else if (event.key === 'Tab' && attachments.length > 0 && !event.shiftKey) {
+          } else if (
+            event.key === 'Tab' &&
+            attachments.length > 0 &&
+            !event.shiftKey
+          ) {
             // Allow tabbing to attachments
             event.preventDefault();
-            const attachmentButton = document.querySelector('[data-attachment-button]');
+            const attachmentButton = document.querySelector(
+              '[data-attachment-button]',
+            );
             if (attachmentButton) {
               (attachmentButton as HTMLElement).focus();
             }
@@ -263,7 +270,8 @@ function PureMultimodalInput({
         }}
       />
       <div className="sr-only" id="message-input-instructions">
-        Type your message and press Enter to send. Use Shift+Enter for a new line.
+        Type your message and press Enter to send. Use Shift+Enter for a new
+        line.
       </div>
 
       <div className="absolute bottom-0 flex w-fit flex-row justify-start p-2">
@@ -359,12 +367,12 @@ function PureSendButton({
   uploadQueue: Array<string>;
 }) {
   const isDisabled = input.length === 0 || uploadQueue.length > 0;
-  const buttonLabel = isDisabled 
-    ? uploadQueue.length > 0 
-      ? 'Please wait for uploads to complete' 
-      : 'Enter a message to send' 
+  const buttonLabel = isDisabled
+    ? uploadQueue.length > 0
+      ? 'Please wait for uploads to complete'
+      : 'Enter a message to send'
     : 'Send message';
-    
+
   return (
     <Button
       className="h-fit rounded-full border p-1.5 dark:border-zinc-600"

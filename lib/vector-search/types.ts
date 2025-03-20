@@ -4,7 +4,7 @@
 
 /**
  * Metadata for a bylaw document chunk
- * 
+ *
  * IMPORTANT NOTES ON VECTOR DATABASE COMPATIBILITY:
  * - When storing in Pinecone, only primitive types and string arrays are supported
  * - Complex objects (metadataSource, _metadataSources) are stripped before storage
@@ -19,7 +19,7 @@ export interface BylawMetadata {
 
   /** The section number (e.g., "3.1") */
   section: string;
-  
+
   /** The title of the section, if available */
   sectionTitle?: string;
 
@@ -37,19 +37,19 @@ export interface BylawMetadata {
 
   /** Optional URL to the source bylaw document */
   url?: string;
-  
+
   /** Original filename of the PDF document (for debugging) */
   originalFilename?: string;
-  
+
   /** If this bylaw is consolidated with other bylaws */
   consolidatedTo?: string;
-  
+
   /**
    * For debugging - sources of metadata
    * NOTE: Not stored in vector database due to complex type
    */
   metadataSource?: Record<string, string>;
-  
+
   /**
    * For debugging - tracking metadata sources
    * NOTE: Not stored in vector database due to complex type
@@ -59,32 +59,32 @@ export interface BylawMetadata {
     fromFile?: string[];
     fromExplicit?: string[];
   };
-  
+
   /** Verified status - indicates if bylaw info has been manually verified */
   verified?: boolean;
-  
+
   /** Effective date - when the bylaw becomes enforceable (may differ from enactment) */
   effectiveDate?: string;
-  
+
   /** Expiration date - when the bylaw is no longer in effect (if applicable) */
   expirationDate?: string;
-  
-  /** 
+
+  /**
    * Amendment history - list of bylaw numbers that amended this bylaw
    * NOTE: Stored as string array in vector database
    */
   amendments?: string[];
-  
-  /** 
+
+  /**
    * Keywords - extracted or manually added keywords for improved search
    * NOTE: Stored as string array in vector database
    */
   keywords?: string[];
-  
+
   /** Status - whether the bylaw is active, repealed, superseded, etc. */
   status?: 'active' | 'repealed' | 'superseded' | 'draft';
-  
-  /** 
+
+  /**
    * Related bylaws - list of related bylaw numbers
    * NOTE: Stored as string array in vector database
    */
@@ -106,7 +106,7 @@ export interface BylawSearchResult {
 
   /** The similarity score (0-1) */
   score: number;
-  
+
   /** Optional keyword match score for internal use */
   keywordScore?: number;
 }
@@ -123,7 +123,7 @@ export interface BylawSearchOptions {
 
   /** Metadata filters to apply */
   filters?: Record<string, any>;
-  
+
   /** User ID for logging and analytics */
   userId?: string;
 }

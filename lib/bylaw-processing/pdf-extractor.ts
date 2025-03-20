@@ -36,16 +36,16 @@ export async function extractFromPDF(
 
     // Try to extract bylaw number and date from filename
     const filename = path.basename(filePath, '.pdf');
-    
+
     // More comprehensive bylaw number extraction - try multiple patterns
     let bylawNumber: string | undefined;
-    
+
     // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
     const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);
     if (explicitBylawMatch) {
       bylawNumber = explicitBylawMatch[1];
     }
-    
+
     // Pattern 2: Starting with number pattern like "4620 - Something"
     if (!bylawNumber) {
       const startingNumberMatch = filename.match(/^(\d+)(?:[,\s_-]|$)/i);
@@ -53,7 +53,7 @@ export async function extractFromPDF(
         bylawNumber = startingNumberMatch[1];
       }
     }
-    
+
     // Pattern 3: Number followed by comma or parentheses like "No. 4620," or "No. 4620 ("
     if (!bylawNumber) {
       const commaNumberMatch = filename.match(/No\.?\s+(\d+)[,\(\s]/i);
@@ -61,25 +61,33 @@ export async function extractFromPDF(
         bylawNumber = commaNumberMatch[1];
       }
     }
-    
+
     // Look for date patterns
     const dateMatch = filename.match(/(\d{4}[-_]?\d{2}[-_]?\d{2})/);
 
     // Track where metadata comes from for debugging
     const metadataSourceInfo: Record<string, string> = {
-      bylawNumber: bylawNumber ? 'filename' : (metadata.bylawNumber ? 'provided' : 'none'),
-      dateEnacted: dateMatch ? 'filename' : (metadata.dateEnacted ? 'provided' : 'none'),
+      bylawNumber: bylawNumber
+        ? 'filename'
+        : metadata.bylawNumber
+          ? 'provided'
+          : 'none',
+      dateEnacted: dateMatch
+        ? 'filename'
+        : metadata.dateEnacted
+          ? 'provided'
+          : 'none',
     };
-    
+
     console.log(`Extracted metadata from filename: ${filename}`);
-    console.log(`- Bylaw number: ${bylawNumber || 'Not found'} (source: ${metadataSourceInfo.bylawNumber})`);
-    
+    console.log(
+      `- Bylaw number: ${bylawNumber || 'Not found'} (source: ${metadataSourceInfo.bylawNumber})`,
+    );
+
     // Combine extracted metadata with provided metadata
     const combinedMetadata: Partial<BylawMetadata> = {
       ...metadata,
-      ...(bylawNumber && !metadata.bylawNumber
-        ? { bylawNumber }
-        : {}),
+      ...(bylawNumber && !metadata.bylawNumber ? { bylawNumber } : {}),
       ...(dateMatch && !metadata.dateEnacted
         ? { dateEnacted: dateMatch[1] }
         : {}),
@@ -127,7 +135,11 @@ export function cleanText(text: string): string {
 export function detectSections(
   text: string,
 ): { sectionNumber: string; text: string; sectionTitle?: string }[] {
-  const sections: { sectionNumber: string; text: string; sectionTitle?: string }[] = [];
+  const sections: {
+    sectionNumber: string;
+    text: string;
+    sectionTitle?: string;
+  }[] = [];
 
   // Enhanced pattern to match various section number formats:
   // 1. Standard decimal notation: "1.", "1.1", "1.1.1"
@@ -143,18 +155,20 @@ export function detectSections(
     const sectionNumber = match[1];
     let sectionText = match[2].trim();
     let sectionTitle: string | undefined;
-    
+
     // Try to extract section title if applicable
-    // Common patterns: 
+    // Common patterns:
     // - "Title. Rest of the text..."
     // - "TITLE. Rest of the text..."
     // - "Title - Rest of the text..."
-    const titleMatch = sectionText.match(/^([A-Z][^.:-]*(?:\s+[A-Z][^.:-]*)*)[.:-]\s+(.*)/);
+    const titleMatch = sectionText.match(
+      /^([A-Z][^.:-]*(?:\s+[A-Z][^.:-]*)*)[.:-]\s+(.*)/,
+    );
     if (titleMatch) {
       sectionTitle = titleMatch[1].trim();
       sectionText = titleMatch[2].trim();
     }
-    
+
     // Get the next match at the end of the loop
     match = sectionPattern.exec(text);
 
@@ -162,7 +176,7 @@ export function detectSections(
       sections.push({
         sectionNumber,
         text: sectionText,
-        sectionTitle
+        sectionTitle,
       });
     }
   }
@@ -171,19 +185,21 @@ export function detectSections(
   if (sections.length === 0) {
     // Fallback pattern for less structured documents
     // Look for numbered paragraphs or other patterns that might indicate sections
-    const fallbackPattern = /(?:^|\n)(?:\((\d+|[a-z])\)|(\d+)\.|([IVXLCDM]+)\.)\s+(.*?)(?=(?:\n(?:\(\d+|[a-z]\)|\d+\.|[IVXLCDM]+\.)\s+)|$)/gis;
-    
+    const fallbackPattern =
+      /(?:^|\n)(?:\((\d+|[a-z])\)|(\d+)\.|([IVXLCDM]+)\.)\s+(.*?)(?=(?:\n(?:\(\d+|[a-z]\)|\d+\.|[IVXLCDM]+\.)\s+)|$)/gis;
+
     let fallbackMatch: RegExpExecArray | null = fallbackPattern.exec(text);
     while (fallbackMatch !== null) {
-      const sectionNumber = fallbackMatch[1] || fallbackMatch[2] || fallbackMatch[3];
+      const sectionNumber =
+        fallbackMatch[1] || fallbackMatch[2] || fallbackMatch[3];
       const sectionText = fallbackMatch[4].trim();
-      
+
       fallbackMatch = fallbackPattern.exec(text);
-      
+
       if (sectionText.length > 0) {
         sections.push({
           sectionNumber,
-          text: sectionText
+          text: sectionText,
         });
       }
     }
@@ -206,16 +222,18 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
     metadata.bylawNumber = bylawNumberMatch1[1];
     metadataSource.bylawNumber = 'pattern1';
   }
-  
+
   // Pattern 2: "Corporation of Oak Bay Bylaw 1234"
   if (!metadata.bylawNumber) {
-    const bylawNumberMatch2 = text.match(/(?:Corporation|District|Municipality|Oak Bay)[\s\w]+Bylaw\s+(?:No\.?\s+)?(\d+)/i);
+    const bylawNumberMatch2 = text.match(
+      /(?:Corporation|District|Municipality|Oak Bay)[\s\w]+Bylaw\s+(?:No\.?\s+)?(\d+)/i,
+    );
     if (bylawNumberMatch2) {
       metadata.bylawNumber = bylawNumberMatch2[1];
       metadataSource.bylawNumber = 'pattern2';
     }
   }
-  
+
   // Pattern 3: "Bylaw 1234" at beginning of line
   if (!metadata.bylawNumber) {
     const bylawNumberMatch3 = text.match(/(?:^|\n)Bylaw\s+(?:No\.?\s+)?(\d+)/i);
@@ -224,9 +242,11 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
       metadataSource.bylawNumber = 'pattern3';
     }
   }
-  
+
   // Extract consolidated bylaw number if present (sometimes appears in the title)
-  const consolidatedMatch = text.match(/consolidated\s+to\s+(?:bylaw\s+)?(?:no\.?\s+)?(\d+)/i);
+  const consolidatedMatch = text.match(
+    /consolidated\s+to\s+(?:bylaw\s+)?(?:no\.?\s+)?(\d+)/i,
+  );
   if (consolidatedMatch) {
     metadata.consolidatedTo = consolidatedMatch[1];
     metadataSource.consolidatedTo = 'text';
@@ -241,7 +261,7 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
     metadata.title = titleMatch1[1].trim();
     metadataSource.title = 'pattern1';
   }
-  
+
   // Pattern 2: After "CITED AS" or similar
   if (!metadata.title) {
     const titleMatch2 = text.match(
@@ -252,11 +272,11 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
       metadataSource.title = 'pattern2';
     }
   }
-  
+
   // Fall back to using first capitalized phrase after "Bylaw"
   if (!metadata.title) {
     const titleMatch3 = text.match(
-      /Bylaw\s+(?:No\.?\s+)?\d+\s+[-–—]\s+(.+?)(?:\n|\.)/i
+      /Bylaw\s+(?:No\.?\s+)?\d+\s+[-–—]\s+(.+?)(?:\n|\.)/i,
     );
     if (titleMatch3) {
       metadata.title = titleMatch3[1].trim();
@@ -279,7 +299,7 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
       console.warn('Failed to parse date:', dateString);
     }
   }
-  
+
   // Pattern 2: "Month Day, Year"
   if (!metadata.dateEnacted) {
     const dateMatch2 = text.match(
@@ -296,7 +316,7 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
       }
     }
   }
-  
+
   // Pattern 3: ISO format or numeric dates
   if (!metadata.dateEnacted) {
     const dateMatch3 = text.match(
@@ -312,7 +332,7 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
       }
     }
   }
-  
+
   // Store the metadata source information for debugging
   metadata.metadataSource = metadataSource as Record<string, string>;
 

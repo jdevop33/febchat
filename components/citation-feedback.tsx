@@ -3,7 +3,11 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, MessageCircle, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -27,23 +31,29 @@ export function CitationFeedback({
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<'correct' | 'incorrect' | 'incomplete' | 'outdated' | null>(null);
+  const [feedbackType, setFeedbackType] = useState<
+    'correct' | 'incorrect' | 'incomplete' | 'outdated' | null
+  >(null);
   const [comment, setComment] = useState('');
 
-  const handleFeedback = async (type: 'correct' | 'incorrect' | 'incomplete' | 'outdated') => {
+  const handleFeedback = async (
+    type: 'correct' | 'incorrect' | 'incomplete' | 'outdated',
+  ) => {
     if (type !== 'correct') {
       setFeedbackType(type);
       setShowCommentBox(true);
       return;
     }
-    
+
     // For positive feedback, submit directly
     await submitFeedback(type);
   };
 
-  const submitFeedback = async (type: 'correct' | 'incorrect' | 'incomplete' | 'outdated') => {
+  const submitFeedback = async (
+    type: 'correct' | 'incorrect' | 'incomplete' | 'outdated',
+  ) => {
     setIsSubmitting(true);
-    
+
     try {
       const response = await fetch('/api/bylaws/feedback', {
         method: 'POST',
@@ -59,9 +69,9 @@ export function CitationFeedback({
           citationText,
         }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         toast.success('Thank you for your feedback!');
         setShowCommentBox(false);
@@ -85,16 +95,18 @@ export function CitationFeedback({
   };
 
   return (
-    <div className={cn("mt-1", className)}>
+    <div className={cn('mt-1', className)}>
       {!showCommentBox ? (
-        <div className="flex items-center gap-1 justify-end">
-          <span className="text-xs text-muted-foreground mr-1">Was this citation helpful?</span>
-          
+        <div className="flex items-center justify-end gap-1">
+          <span className="mr-1 text-xs text-muted-foreground">
+            Was this citation helpful?
+          </span>
+
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-6"
                 onClick={() => handleFeedback('correct')}
               >
@@ -103,12 +115,12 @@ export function CitationFeedback({
             </TooltipTrigger>
             <TooltipContent>This citation is correct</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-6"
                 onClick={() => handleFeedback('incorrect')}
               >
@@ -117,12 +129,12 @@ export function CitationFeedback({
             </TooltipTrigger>
             <TooltipContent>This citation is incorrect</TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-6"
                 onClick={() => handleFeedback('incomplete')}
               >
@@ -135,12 +147,14 @@ export function CitationFeedback({
       ) : (
         <div className="space-y-2">
           <div className="rounded-md border bg-muted/50 p-2">
-            <p className="text-xs text-muted-foreground mb-1">
-              {feedbackType === 'incorrect' && 'What is incorrect about this citation?'}
-              {feedbackType === 'incomplete' && 'What information is missing from this citation?'}
+            <p className="mb-1 text-xs text-muted-foreground">
+              {feedbackType === 'incorrect' &&
+                'What is incorrect about this citation?'}
+              {feedbackType === 'incomplete' &&
+                'What information is missing from this citation?'}
               {feedbackType === 'outdated' && 'How is this citation outdated?'}
             </p>
-            
+
             <Textarea
               placeholder="Please provide details to help us improve..."
               value={comment}
@@ -148,7 +162,7 @@ export function CitationFeedback({
               className="min-h-20 text-xs"
               disabled={isSubmitting}
             />
-            
+
             <div className="mt-2 flex justify-end gap-2">
               <Button
                 variant="ghost"
@@ -160,7 +174,7 @@ export function CitationFeedback({
                 <X size={12} className="mr-1" />
                 Cancel
               </Button>
-              
+
               <Button
                 variant="default"
                 size="sm"

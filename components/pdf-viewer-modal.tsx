@@ -21,11 +21,10 @@ import {
   Loader2,
   AlertTriangle,
 } from 'lucide-react';
-import { 
-  getExternalPdfUrl, 
-  getLocalPdfPath, 
-  getBestPdfUrl, 
-  findSectionPage, 
+import {
+  getExternalPdfUrl,
+  getBestPdfUrl,
+  findSectionPage,
   getEstimatedPageCount,
 } from '@/lib/utils/bylaw-utils';
 
@@ -57,9 +56,6 @@ export function PdfViewerModal({
   const [scale, setScale] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-
-  
-
   useEffect(() => {
     if (isOpen && bylawNumber) {
       setLoading(true);
@@ -68,7 +64,7 @@ export function PdfViewerModal({
       // In production, use direct links to municipal website PDFs
       // In development, use local PDF files if available
       const resolvedPdfPath = pdfPath || getBestPdfUrl(bylawNumber, title);
-        
+
       console.log(`Loading PDF from: ${resolvedPdfPath}`);
       setPdfUrl(resolvedPdfPath);
 
@@ -77,7 +73,7 @@ export function PdfViewerModal({
       //   setTotalPages(pdf.numPages);
       //   setLoading(false);
       // });
-      
+
       // For this implementation, using a simulated approach
       const simulatePdfLoad = async () => {
         try {
@@ -88,10 +84,10 @@ export function PdfViewerModal({
               setCurrentPage(sectionPage);
             }
           }
-          
+
           // Get estimated page count from utility function
           const pageCount = getEstimatedPageCount(bylawNumber);
-          
+
           setTotalPages(pageCount);
           setLoading(false);
         } catch (error) {
@@ -100,10 +96,10 @@ export function PdfViewerModal({
           setLoadError(true);
         }
       };
-      
+
       simulatePdfLoad();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, bylawNumber, pdfPath, section, title]);
 
   // Reset state when modal closes
@@ -284,10 +280,7 @@ export function PdfViewerModal({
               variant="outline"
               size="sm"
               onClick={() =>
-                window.open(
-                  getExternalPdfUrl(bylawNumber, title),
-                  '_blank',
-                )
+                window.open(getExternalPdfUrl(bylawNumber, title), '_blank')
               }
               disabled={loading}
             >
@@ -310,10 +303,7 @@ export function PdfViewerModal({
               <Button
                 variant="default"
                 onClick={() =>
-                  window.open(
-                    getExternalPdfUrl(bylawNumber, title),
-                    '_blank',
-                  )
+                  window.open(getExternalPdfUrl(bylawNumber, title), '_blank')
                 }
               >
                 <ExternalLink size={16} className="mr-2" />

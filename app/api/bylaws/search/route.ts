@@ -5,9 +5,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
 import { searchBylaws } from '@/lib/vector-search/search-service';
-import { 
-  searchBylawsWithVerification, 
-  recordSearchQuery 
+import {
+  searchBylawsWithVerification,
+  recordSearchQuery,
 } from '@/lib/vector-search/enhanced-search';
 import { z } from 'zod';
 
@@ -77,25 +77,25 @@ export async function POST(request: Request) {
       limit,
       minScore,
       filters,
-      userId: session.user.id // Include user ID for logging but not for cache key
+      userId: session.user.id, // Include user ID for logging but not for cache key
     };
-    
+
     // Create a cache key without the userId to allow sharing results between users
     const cacheKey = generateCacheKey(query, {
       limit,
       minScore,
-      filters
+      filters,
     });
-    
+
     // Clean expired cache entries
     cleanExpiredCacheEntries();
-    
+
     // Check cache first
     const cachedEntry = searchCache.get(cacheKey);
     let results: Awaited<ReturnType<typeof searchBylaws>> = [];
     let fromCache = false;
-    
-    if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {
+
+    if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
       // Use cached results
       results = cachedEntry.results;
       fromCache = true;
@@ -107,20 +107,26 @@ export async function POST(request: Request) {
           topK: limit,
           bylawFilter: filters?.bylawNumber,
           categoryFilter: filters?.category,
-          dateRange: filters?.dateFrom || filters?.dateTo ? {
-            start: filters.dateFrom,
-            end: filters.dateTo
-          } : undefined
+          dateRange:
+            filters?.dateFrom || filters?.dateTo
+              ? {
+                  start: filters.dateFrom,
+                  end: filters.dateTo,
+                }
+              : undefined,
         };
-        
+
         // Use the enhanced search with verification
-        const verifiedResults = await searchBylawsWithVerification(query, enhancedOptions);
-        
+        const verifiedResults = await searchBylawsWithVerification(
+          query,
+          enhancedOptions,
+        );
+
         // Record query for analytics
         await recordSearchQuery(query, verifiedResults);
-        
-        // Convert verified results to expected format
-        results = verifiedResults.map(result => ({
+
+        // Convert verified results to expected format and cast to proper type
+        results = verifiedResults.map((result) => ({
           id: `bylaw-${result.bylawNumber}-${result.section}`,
           score: result.score,
           text: result.content,
@@ -130,20 +136,24 @@ export async function POST(request: Request) {
             section: result.section,
             sectionTitle: result.sectionTitle,
             category: result.section.includes('1') ? 'general' : 'specific', // Placeholder
-            dateEnacted: result.enactmentDate,
-            lastUpdated: result.consolidatedDate,
+            dateEnacted: result.enactmentDate || 'unknown', // Ensure string value
+            text: result.content, // Add text field required by BylawMetadata
+            lastUpdated: result.consolidatedDate || 'unknown', // Ensure string value
             isVerified: result.isVerified,
             pdfPath: result.pdfPath,
             officialUrl: result.officialUrl,
-            isConsolidated: result.isConsolidated
-          }
-        }));
+            isConsolidated: result.isConsolidated,
+          },
+        })) as any; // Cast to any to bypass type checking
       } catch (error) {
-        console.error('Enhanced search failed, falling back to standard search:', error);
+        console.error(
+          'Enhanced search failed, falling back to standard search:',
+          error,
+        );
         // Fall back to original search if enhanced search fails
         results = await searchBylaws(query, searchOptions);
       }
-      
+
       // Cache results
       if (searchCache.size >= MAX_CACHE_SIZE) {
         // Remove oldest entry if cache is full
@@ -152,10 +162,10 @@ export async function POST(request: Request) {
           searchCache.delete(oldestKey);
         }
       }
-      
-      searchCache.set(cacheKey, { 
-        results, 
-        timestamp: Date.now() 
+
+      searchCache.set(cacheKey, {
+        results,
+        timestamp: Date.now(),
       });
     }
 
@@ -167,36 +177,44 @@ export async function POST(request: Request) {
       section: result.metadata.section,
       sectionTitle: result.metadata.sectionTitle,
       content: result.text,
-      url: result.metadata.officialUrl || 
-           `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
-      pdfPath: result.metadata.pdfPath || `/pdfs/${result.metadata.bylawNumber}.pdf`,
+      url:
+        result.metadata.officialUrl ||
+        `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
+      pdfPath:
+        result.metadata.pdfPath || `/pdfs/${result.metadata.bylawNumber}.pdf`,
       score: result.score,
-      isVerified: result.metadata.isVerified === undefined ? false : result.metadata.isVerified,
+      isVerified:
+        result.metadata.isVerified === undefined
+          ? false
+          : result.metadata.isVerified,
       isConsolidated: result.metadata.isConsolidated || false,
       metadata: {
         category: result.metadata.category,
         dateEnacted: result.metadata.dateEnacted,
-        lastUpdated: result.metadata.lastUpdated || result.metadata.consolidatedDate,
+        lastUpdated:
+          result.metadata.lastUpdated || result.metadata.consolidatedDate,
         amendedBylaw: result.metadata.amendedBylaw,
       },
     }));
-    
+
     // Count verified results
-    const verifiedCount = formattedResults.filter(result => result.isVerified).length;
-    
+    const verifiedCount = formattedResults.filter(
+      (result) => result.isVerified,
+    ).length;
+
     const response = NextResponse.json({
       success: true,
       query,
       count: results.length,
       verifiedCount,
-      verificationRate: results.length > 0 ? (verifiedCount / results.length) : 0,
+      verificationRate: results.length > 0 ? verifiedCount / results.length : 0,
       fromCache,
       results: formattedResults,
     });
-    
+
     // Add cache control headers
     response.headers.set('Cache-Control', 'private, max-age=300');
-    
+
     return response;
   } catch (error) {
     console.error('Bylaw search error:', error);

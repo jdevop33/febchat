@@ -37,9 +37,9 @@ The script will:
 If you prefer to migrate manually, follow these steps:
 
 1. **Update environment variables**:
-   
+
    Create or update your `.env.local` file with:
-   
+
    ```
    PINECONE_INDEX=oak-bay-bylaws-v2
    PINECONE_ENVIRONMENT=us-east-1
@@ -47,25 +47,25 @@ If you prefer to migrate manually, follow these steps:
    ```
 
 2. **Organize bylaw PDFs**:
-   
+
    ```bash
    pnpm tsx scripts/organize-bylaws.ts ./public/pdfs
    ```
 
 3. **Verify Pinecone connection**:
-   
+
    ```bash
    pnpm tsx scripts/verify-pinecone.ts
    ```
 
 4. **Index PDFs into the new Pinecone index**:
-   
+
    ```bash
    pnpm tsx scripts/index-bylaws.ts ./public/pdfs
    ```
 
 5. **Build and test**:
-   
+
    ```bash
    pnpm build
    pnpm dev
@@ -87,17 +87,17 @@ After migrating, test the system by:
 If you encounter issues with vector search:
 
 1. **Check Pinecone connection**:
-   
+
    ```bash
    pnpm tsx scripts/verify-pinecone.ts
    ```
 
 2. **Review API keys**:
-   
+
    Ensure your Pinecone API key is correct in `.env.local`
 
 3. **Fallback to direct search**:
-   
+
    The system includes robust fallback mechanisms and will automatically switch to text-based search if vector search fails.
 
 ### Build Errors
@@ -105,15 +105,15 @@ If you encounter issues with vector search:
 If you encounter TypeScript errors during build:
 
 1. **Check TypeScript version**:
-   
+
    ```bash
    pnpm tsc --version
    ```
-   
+
    Ensure you're using TypeScript 5.6.x or later.
 
 2. **Clear build cache**:
-   
+
    ```bash
    rm -rf .next
    pnpm build

@@ -12,10 +12,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Filter, X } from 'lucide-react';
-import { 
-  Card, 
-  CardContent 
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface BylawSearchFiltersProps {
   onApplyFilters: (filters: {
@@ -58,14 +55,20 @@ export function BylawSearchFilters({
   const handleApplyFilters = () => {
     // Collect active filters for badge display
     const newActiveFilters: string[] = [];
-    if (category) newActiveFilters.push(`Category: ${CATEGORIES.find(c => c.value === category)?.label || category}`);
+    if (category)
+      newActiveFilters.push(
+        `Category: ${CATEGORIES.find((c) => c.value === category)?.label || category}`,
+      );
     if (bylawNumber) newActiveFilters.push(`Bylaw: ${bylawNumber}`);
     if (dateFrom) newActiveFilters.push(`From: ${dateFrom}`);
     if (dateTo) newActiveFilters.push(`To: ${dateTo}`);
-    if (status) newActiveFilters.push(`Status: ${STATUS_OPTIONS.find(s => s.value === status)?.label || status}`);
-    
+    if (status)
+      newActiveFilters.push(
+        `Status: ${STATUS_OPTIONS.find((s) => s.value === status)?.label || status}`,
+      );
+
     setActiveFilters(newActiveFilters);
-    
+
     // Apply filters
     onApplyFilters({
       category: category || undefined,
@@ -74,7 +77,7 @@ export function BylawSearchFilters({
       dateTo: dateTo || undefined,
       status: status || undefined,
     });
-    
+
     // Collapse the filter panel after applying
     setIsExpanded(false);
   };
@@ -91,7 +94,7 @@ export function BylawSearchFilters({
 
   return (
     <div className="mb-4">
-      <div className="flex flex-wrap items-center justify-between mb-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between">
         <Button
           variant="outline"
           size="sm"
@@ -106,20 +109,20 @@ export function BylawSearchFilters({
             </span>
           )}
         </Button>
-        
+
         {activeFilters.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="mb-2 flex flex-wrap gap-2">
             {activeFilters.map((filter) => (
-              <span 
-                key={`filter-${filter}`} 
+              <span
+                key={`filter-${filter}`}
                 className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-200"
               >
                 {filter}
               </span>
             ))}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="h-6 px-2 text-xs"
               onClick={handleReset}
             >
@@ -129,7 +132,7 @@ export function BylawSearchFilters({
           </div>
         )}
       </div>
-      
+
       {isExpanded && (
         <Card className="mb-4">
           <CardContent className="p-4">
@@ -160,7 +163,7 @@ export function BylawSearchFilters({
                   onChange={(e) => setBylawNumber(e.target.value)}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="bylawStatus">Status</Label>
                 <Select value={status} onValueChange={setStatus}>
@@ -203,9 +206,7 @@ export function BylawSearchFilters({
               <Button variant="outline" onClick={handleReset}>
                 Reset Filters
               </Button>
-              <Button onClick={handleApplyFilters}>
-                Apply Filters
-              </Button>
+              <Button onClick={handleApplyFilters}>Apply Filters</Button>
             </div>
           </CardContent>
         </Card>

@@ -1,6 +1,6 @@
 /**
  * Embedding Models for Vector Search
- * 
+ *
  * This module provides access to various embedding models that can be used
  * for generating embeddings for the vector search functionality.
  */
@@ -23,7 +23,7 @@ interface EmbeddingModelOptions {
  */
 export enum EmbeddingProvider {
   OPENAI = 'openai',
-  LLAMAINDEX = 'llamaindex'
+  LLAMAINDEX = 'llamaindex',
 }
 
 // Default model configurations
@@ -35,7 +35,7 @@ const DEFAULT_LLAMA_MODEL = 'llama-text-embed-v2';
  */
 export function getEmbeddingsModel(
   provider: EmbeddingProvider = EmbeddingProvider.LLAMAINDEX,
-  options: EmbeddingModelOptions = {}
+  options: EmbeddingModelOptions = {},
 ): Embeddings {
   switch (provider) {
     case EmbeddingProvider.OPENAI:
@@ -70,9 +70,9 @@ class CustomLlamaEmbeddings implements Embeddings {
   constructor(options: { modelName?: string; apiKey?: string }) {
     this.modelName = options.modelName || DEFAULT_LLAMA_MODEL;
     this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || '';
-    
+
     if (!this.apiKey) {
-      throw new Error("API key is required for Llama embeddings");
+      throw new Error('API key is required for Llama embeddings');
     }
   }
 
@@ -81,14 +81,14 @@ class CustomLlamaEmbeddings implements Embeddings {
    */
   async embedDocuments(texts: string[]): Promise<number[][]> {
     if (texts.length === 0) return [];
-    
+
     try {
       // For now, process each embedding individually for simplicity
       // In a production system, you would use a batched API endpoint
       const embeddings = await Promise.all(
-        texts.map(text => this.embedQuery(text))
+        texts.map((text) => this.embedQuery(text)),
       );
-      
+
       return embeddings;
     } catch (error) {
       console.error('Error embedding documents with Llama model:', error);
@@ -102,10 +102,13 @@ class CustomLlamaEmbeddings implements Embeddings {
   async embedQuery(text: string): Promise<number[]> {
     // For local development/testing, we create a deterministic embedding based on the text
     // This allows testing vector search without actual API calls
-    if (process.env.NODE_ENV === 'development' && process.env.MOCK_VECTOR_SEARCH === 'true') {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      process.env.MOCK_VECTOR_SEARCH === 'true'
+    ) {
       return this.getMockEmbedding(text);
     }
-    
+
     try {
       // Generate a deterministic embedding using the text hash
       // In a real application, this would be replaced with an API call to a Llama embeddings endpoint
@@ -115,33 +118,35 @@ class CustomLlamaEmbeddings implements Embeddings {
         // Generate values between -1 and 1 based on the text hash and index
         return Math.sin(hash * (i + 1) * 0.1) * 0.5;
       });
-      
+
       // Normalize the embedding vector to unit length
-      const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-      return embedding.map(val => val / norm);
+      const norm = Math.sqrt(
+        embedding.reduce((sum, val) => sum + val * val, 0),
+      );
+      return embedding.map((val) => val / norm);
     } catch (error) {
       console.error('Error embedding query with Llama model:', error);
       throw new Error(`Failed to embed query: ${error}`);
     }
   }
-  
+
   /**
    * For mock/testing purposes only: Create a deterministic embedding from text
    */
   private getMockEmbedding(text: string): number[] {
     const hash = this.simpleHash(text);
-    
+
     // Create a deterministic vector based on the hash
     const embedding = new Array(this.dimensions).fill(0).map((_, i) => {
       // Generate values between -1 and 1 based on the text hash and index
       return Math.sin(hash * (i + 1) * 0.1) * 0.5;
     });
-    
+
     // Normalize the embedding vector to unit length
     const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => val / norm);
+    return embedding.map((val) => val / norm);
   }
-  
+
   /**
    * Simple string hash function for deterministic mock embeddings
    */
@@ -149,7 +154,7 @@ class CustomLlamaEmbeddings implements Embeddings {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     return hash;

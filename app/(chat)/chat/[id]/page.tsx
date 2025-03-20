@@ -1,4 +1,3 @@
-
 import { notFound } from 'next/navigation';
 
 import { auth } from '@/app/(auth)/auth';

@@ -18,11 +18,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { toast } from 'sonner';
 import { PdfViewerModal } from './pdf-viewer-modal';
 import { CitationFeedback } from './citation-feedback';
-import { 
-  getExternalPdfUrl, 
-  getLocalPdfPath, 
-  getBestPdfUrl, 
-  VALIDATED_BYLAWS as VALIDATED_BYLAWS_LIST 
+import {
+  getExternalPdfUrl,
+  getLocalPdfPath,
+  getBestPdfUrl,
+  VALIDATED_BYLAWS as VALIDATED_BYLAWS_LIST,
 } from '@/lib/utils/bylaw-utils';
 
 interface BylawCitationProps {
@@ -204,7 +204,7 @@ export function BylawCitation({
     if (pdfPath) {
       return pdfPath;
     }
-    
+
     return getLocalPdfPath(bylawNumber);
   };
 
@@ -411,7 +411,7 @@ export function BylawCitation({
                       e.stopPropagation();
                       // For local PDF file display, use centralized getBestPdfUrl utility
                       const pdfPath = getBestPdfUrl(bylawNumber, title);
-                      
+
                       // Open in new tab
                       window.open(pdfPath, '_blank', 'noopener,noreferrer');
                     }}

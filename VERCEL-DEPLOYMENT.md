@@ -11,19 +11,20 @@ Follow these steps to deploy the Oak Bay Bylaws Assistant to Vercel:
 
 Set the following environment variables in your Vercel project settings:
 
-| Variable             | Value                     | Description                            |
-|----------------------|---------------------------|----------------------------------------|
-| PINECONE_API_KEY     | Your Pinecone API key     | API key for Pinecone access            |
-| PINECONE_INDEX       | oak-bay-bylaws-v2        | The new Pinecone index name            |
-| PINECONE_ENVIRONMENT | us-east-1                | AWS region where your index is hosted  |
-| EMBEDDING_PROVIDER   | llamaindex               | Set to use llama-text-embed-v2 model   |
-| OPENAI_API_KEY       | Your OpenAI API key       | Required for fallback embeddings       |
-| ANTHROPIC_API_KEY    | Your Anthropic API key    | Required for Claude model access       |
-| AUTH_SECRET          | Generate a random string  | Secret for NextAuth authentication     |
+| Variable             | Value                    | Description                           |
+| -------------------- | ------------------------ | ------------------------------------- |
+| PINECONE_API_KEY     | Your Pinecone API key    | API key for Pinecone access           |
+| PINECONE_INDEX       | oak-bay-bylaws-v2        | The new Pinecone index name           |
+| PINECONE_ENVIRONMENT | us-east-1                | AWS region where your index is hosted |
+| EMBEDDING_PROVIDER   | llamaindex               | Set to use llama-text-embed-v2 model  |
+| OPENAI_API_KEY       | Your OpenAI API key      | Required for fallback embeddings      |
+| ANTHROPIC_API_KEY    | Your Anthropic API key   | Required for Claude model access      |
+| AUTH_SECRET          | Generate a random string | Secret for NextAuth authentication    |
 
 ## Deployment Steps
 
 1. **Push your changes to your GitHub repository**:
+
    ```bash
    git add .
    git commit -m "Updated to use new Pinecone index with llama-text-embed-v2"
@@ -31,6 +32,7 @@ Set the following environment variables in your Vercel project settings:
    ```
 
 2. **Create a new Vercel project** (if you don't have one already):
+
    - Go to [Vercel Dashboard](https://vercel.com/dashboard)
    - Click "Add New" > "Project"
    - Import your GitHub repository
@@ -57,15 +59,18 @@ This project has been configured to successfully build on Vercel by:
 If you encounter deployment issues:
 
 1. **Check the build logs**:
+
    - Go to your project in the Vercel Dashboard
    - Click on the failed deployment
    - Check the logs for specific errors
 
 2. **Verify environment variables**:
+
    - Ensure all required environment variables are set correctly
    - Double-check the Pinecone API key and index name
 
 3. **Test locally before deploying**:
+
    - Run `pnpm build` locally to verify the build succeeds
    - Fix any errors that appear in local build
 

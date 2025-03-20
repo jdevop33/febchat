@@ -75,21 +75,21 @@ async function processBylawFile(filePath: string) {
       `Using Pinecone index: ${process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'}`,
     );
     console.log(
-      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`
+      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`,
     );
 
     // Extract bylaw number from filename if possible
     const filename = path.basename(filePath, '.pdf');
-    
+
     // More comprehensive bylaw number extraction - use multiple patterns
     let bylawNumber: string | undefined;
-    
+
     // Pattern 1: Explicit bylaw number pattern like "bylaw-4620"
     const explicitBylawMatch = filename.match(/bylaw[-_\s]?(\d+)/i);
     if (explicitBylawMatch) {
       bylawNumber = explicitBylawMatch[1];
     }
-    
+
     // Pattern 2: Starting with number pattern like "4620 - Something"
     if (!bylawNumber) {
       const startingNumberMatch = filename.match(/^(\d+)(?:[,\s_-]|$)/i);
@@ -97,7 +97,7 @@ async function processBylawFile(filePath: string) {
         bylawNumber = startingNumberMatch[1];
       }
     }
-    
+
     // Pattern 3: Number followed by comma or parentheses like "No. 4620," or "No. 4620 ("
     if (!bylawNumber) {
       const commaNumberMatch = filename.match(/No\.?\s+(\d+)[,\(\s]/i);
@@ -105,14 +105,16 @@ async function processBylawFile(filePath: string) {
         bylawNumber = commaNumberMatch[1];
       }
     }
-    
+
     console.log(`Processing file: ${filename}`);
-    console.log(`Extracted bylaw number from filename: ${bylawNumber || 'None'}`);
+    console.log(
+      `Extracted bylaw number from filename: ${bylawNumber || 'None'}`,
+    );
 
     // Process the file with extracted metadata
     const chunkIds = await processBylawPDF(filePath, {
       bylawNumber: bylawNumber,
-      originalFilename: filename // Store the original filename for reference
+      originalFilename: filename, // Store the original filename for reference
     });
 
     console.log(`Successfully processed file with ${chunkIds.length} chunks.`);
@@ -161,7 +163,7 @@ async function processBylawDirectory(dir: string) {
       `Using Pinecone index: ${process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'}`,
     );
     console.log(
-      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`
+      `Using embedding model: ${process.env.EMBEDDING_PROVIDER === 'openai' ? 'OpenAI text-embedding-3-small' : 'llama-text-embed-v2'}`,
     );
 
     // Get list of PDF files

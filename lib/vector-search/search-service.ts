@@ -19,18 +19,25 @@ import type {
 function getEmbeddingsModel() {
   try {
     // Import the embedding models module
-    const { getEmbeddingsModel, EmbeddingProvider } = require('./embedding-models');
-    
+    const {
+      getEmbeddingsModel,
+      EmbeddingProvider,
+    } = require('./embedding-models');
+
     // Determine which provider to use based on environment variables
-    const provider = process.env.EMBEDDING_PROVIDER === 'openai' 
-      ? EmbeddingProvider.OPENAI 
-      : EmbeddingProvider.LLAMAINDEX;
-    
+    const provider =
+      process.env.EMBEDDING_PROVIDER === 'openai'
+        ? EmbeddingProvider.OPENAI
+        : EmbeddingProvider.LLAMAINDEX;
+
     // Get the configured embeddings model
     return getEmbeddingsModel(provider);
   } catch (error) {
-    console.error('Error loading embedding model, falling back to OpenAI:', error);
-    
+    console.error(
+      'Error loading embedding model, falling back to OpenAI:',
+      error,
+    );
+
     // Fallback to OpenAI if there's an error with the custom embeddings
     return new OpenAIEmbeddings({
       modelName: 'text-embedding-3-small',
@@ -47,13 +54,13 @@ export async function searchBylaws(
   options: BylawSearchOptions = {},
 ): Promise<BylawSearchResult[]> {
   const startTime = Date.now();
-  
+
   try {
-    logger.search(query, 0, 0, { 
+    logger.search(query, 0, 0, {
       filters: options.filters,
-      userId: options.userId 
+      userId: options.userId,
     });
-    
+
     // Get embeddings model
     const embeddings = getEmbeddingsModel();
 
@@ -70,7 +77,7 @@ export async function searchBylaws(
 
     // Extract keywords for keyword boosting
     const keywords = extractKeywords(query);
-    
+
     // Search Pinecone
     const searchResults = await index.query({
       vector: queryEmbedding,
@@ -97,27 +104,28 @@ export async function searchBylaws(
     }));
 
     // Calculate keyword score for each result
-    formattedResults = formattedResults.map(result => {
+    formattedResults = formattedResults.map((result) => {
       // Calculate keyword matches
-      const keywordHits = keywords.filter(keyword => 
-        result.text.toLowerCase().includes(keyword.toLowerCase())
+      const keywordHits = keywords.filter((keyword) =>
+        result.text.toLowerCase().includes(keyword.toLowerCase()),
       ).length;
-      
+
       // Keyword score is the percentage of keywords found (0-1 range)
-      const keywordScore = keywords.length > 0 ? keywordHits / keywords.length : 0;
-      
+      const keywordScore =
+        keywords.length > 0 ? keywordHits / keywords.length : 0;
+
       // Return result with keyword score
       return {
         ...result,
-        keywordScore
+        keywordScore,
       };
     });
 
     // Hybrid re-ranking: combine vector and keyword scores
-    const hybridResults = formattedResults.map(result => ({
+    const hybridResults = formattedResults.map((result) => ({
       ...result,
       // Combined score: 70% vector similarity, 30% keyword matching
-      score: (result.score * 0.7) + (result.keywordScore * 0.3)
+      score: result.score * 0.7 + result.keywordScore * 0.3,
     }));
 
     // Sort by combined score and limit to requested number
@@ -128,35 +136,35 @@ export async function searchBylaws(
 
     // Log successful search with duration and result count
     const duration = Date.now() - startTime;
-    logger.search(query, finalResults.length, duration, { 
+    logger.search(query, finalResults.length, duration, {
       filters: options.filters,
-      userId: options.userId 
+      userId: options.userId,
     });
-    
+
     return finalResults;
   } catch (error) {
     // Log the error
     logger.error(error as Error, 'Bylaw vector search', {
       userId: options.userId as string,
-      critical: false
+      critical: false,
     });
-    
+
     // Attempt fallback to simple search if available
     try {
-      logger.search(query, 0, Date.now() - startTime, { 
+      logger.search(query, 0, Date.now() - startTime, {
         filters: options.filters,
         userId: options.userId,
-        error: error as Error
+        error: error as Error,
       });
-      
+
       return (await import('./fallback-search')).fallbackSearch(query, options);
     } catch (fallbackError) {
       // Log the fallback error (this is more serious)
       logger.error(fallbackError as Error, 'Bylaw fallback search', {
         userId: options.userId as string,
-        critical: true
+        critical: true,
       });
-      
+
       throw new Error('Failed to search bylaws');
     }
   }
@@ -164,11 +172,48 @@ export async function searchBylaws(
 
 // Define stop words once at module level rather than recreating each time
 const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'in', 'on', 'at', 'of', 'for', 'to', 'with', 'by',
-  'and', 'or', 'but', 'if', 'then', 'else', 'when', 'up', 'down', 'is',
-  'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
-  'do', 'does', 'did', 'shall', 'will', 'should', 'would', 'may', 'might',
-  'must', 'can', 'could'
+  'a',
+  'an',
+  'the',
+  'in',
+  'on',
+  'at',
+  'of',
+  'for',
+  'to',
+  'with',
+  'by',
+  'and',
+  'or',
+  'but',
+  'if',
+  'then',
+  'else',
+  'when',
+  'up',
+  'down',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'been',
+  'being',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'shall',
+  'will',
+  'should',
+  'would',
+  'may',
+  'might',
+  'must',
+  'can',
+  'could',
 ]);
 
 /**
@@ -176,23 +221,24 @@ const STOP_WORDS = new Set([
  */
 function extractKeywords(query: string): string[] {
   if (!query) return [];
-  
+
   // Clean and normalize the query
-  const cleanedQuery = query.toLowerCase()
+  const cleanedQuery = query
+    .toLowerCase()
     .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
-    .replace(/\s+/g, ' ')     // Replace multiple spaces with a single space
+    .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
     .trim();
-  
+
   // Split into words and filter out stop words and short words
   // Using Set to prevent returning duplicate keywords
   const keywordSet = new Set<string>();
-  
+
   for (const word of cleanedQuery.split(' ')) {
     if (word.length > 2 && !STOP_WORDS.has(word)) {
       keywordSet.add(word);
     }
   }
-  
+
   return Array.from(keywordSet);
 }
 
@@ -205,18 +251,18 @@ async function performSimpleKeywordSearch(
   options: BylawSearchOptions = {},
 ): Promise<BylawSearchResult[]> {
   console.log('Using production fallback search');
-  
+
   try {
     // Extract keywords for searching
     const keywords = extractKeywords(query);
-    
+
     // Use Pinecone metadata filtering as a fallback mechanism
     // This is more robust than relying on mock data
     const index = getPineconeIndex();
-    
+
     // Build a metadata-only query using the keywords
     const filter: Record<string, any> = {};
-    
+
     // Apply any provided filters
     if (options.filters) {
       Object.entries(options.filters).forEach(([key, value]) => {
@@ -225,33 +271,35 @@ async function performSimpleKeywordSearch(
         }
       });
     }
-    
+
     // Get most recent docs (sort by lastUpdated)
+    // For Pinecone v5+ we need to provide either vector or id
     const results = await index.query({
       topK: options.limit || 10,
       filter: Object.keys(filter).length > 0 ? { $and: [filter] } : undefined,
       includeMetadata: true,
+      vector: new Array(1536).fill(0), // Dummy vector for query when we're just filtering
     });
-    
+
     // If we still have no results, log this for monitoring
     if (!results.matches || results.matches.length === 0) {
       console.error('No results from backup search method.');
-      
+
       // Return empty results rather than trying to use mock data
       return [];
     }
-    
+
     // Format and return the results
     return results.matches.map((match) => ({
       id: match.id,
-      text: match.metadata?.text as string || '',
+      text: (match.metadata?.text as string) || '',
       metadata: match.metadata as any,
       // Since we didn't use a vector, we'll calculate a simple score based on recency
       score: 0.5, // Default score for fallback results
     }));
   } catch (error) {
     console.error('Error in fallback search:', error);
-    
+
     // In production, return empty results rather than using mock data
     console.log('Returning empty results for failed search');
     return [];

@@ -127,7 +127,7 @@ export async function searchBylaws(
         score: 0.85,
       }));
   }
-  
+
   // Try to use Pinecone for real production environment
   try {
     // Import here to avoid circular dependencies
@@ -139,7 +139,7 @@ export async function searchBylaws(
     // Check if we have Pinecone credentials
     if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
       console.log('Using Pinecone for vector search');
-      
+
       try {
         // Get Pinecone index
         const index = getPineconeIndex();
@@ -172,7 +172,9 @@ export async function searchBylaws(
           filter: pineconeFilter ? { $and: [pineconeFilter] } : undefined,
         });
 
-        console.log(`Pinecone returned ${results.matches?.length || 0} results`);
+        console.log(
+          `Pinecone returned ${results.matches?.length || 0} results`,
+        );
 
         // Format results
         return (results.matches || []).map((match) => ({
@@ -239,7 +241,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -253,7 +255,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -267,7 +269,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -281,7 +283,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -295,7 +297,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -309,7 +311,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -323,7 +325,7 @@ export const mockBylawData = [
       category: 'noise',
       lastUpdated: '2013-09-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'September 30, 2013'
+      consolidatedDate: 'September 30, 2013',
     },
   },
   {
@@ -337,7 +339,7 @@ export const mockBylawData = [
       category: 'zoning',
       lastUpdated: '2024-08-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'August 30, 2024'
+      consolidatedDate: 'August 30, 2024',
     },
   },
   {
@@ -351,7 +353,7 @@ export const mockBylawData = [
       category: 'zoning',
       lastUpdated: '2024-08-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'August 30, 2024'
+      consolidatedDate: 'August 30, 2024',
     },
   },
   {
@@ -365,7 +367,7 @@ export const mockBylawData = [
       category: 'zoning',
       lastUpdated: '2024-08-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'August 30, 2024'
+      consolidatedDate: 'August 30, 2024',
     },
   },
   {
@@ -379,7 +381,7 @@ export const mockBylawData = [
       category: 'animals',
       lastUpdated: '2022-02-15T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'February 2022'
+      consolidatedDate: 'February 2022',
     },
   },
   {
@@ -393,7 +395,7 @@ export const mockBylawData = [
       category: 'animals',
       lastUpdated: '2022-02-15T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'February 2022'
+      consolidatedDate: 'February 2022',
     },
   },
   {
@@ -407,7 +409,7 @@ export const mockBylawData = [
       category: 'animals',
       lastUpdated: '2022-02-15T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'February 2022'
+      consolidatedDate: 'February 2022',
     },
   },
   {
@@ -421,7 +423,7 @@ export const mockBylawData = [
       category: 'trees',
       lastUpdated: '2020-12-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'December 2020'
+      consolidatedDate: 'December 2020',
     },
   },
   {
@@ -435,7 +437,7 @@ export const mockBylawData = [
       category: 'trees',
       lastUpdated: '2020-12-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'December 2020'
+      consolidatedDate: 'December 2020',
     },
   },
   {
@@ -449,7 +451,7 @@ export const mockBylawData = [
       category: 'trees',
       lastUpdated: '2020-12-30T00:00:00Z',
       isConsolidated: true,
-      consolidatedDate: 'December 2020'
+      consolidatedDate: 'December 2020',
     },
   },
 ];

@@ -4,16 +4,18 @@ import postgres from 'postgres';
 
 const runMigrate = async () => {
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-  
+
   if (!connectionString) {
-    console.log('⚠️ Database connection URL is not defined, skipping migrations');
+    console.log(
+      '⚠️ Database connection URL is not defined, skipping migrations',
+    );
     return;
   }
 
   try {
-    const connection = postgres(connectionString, { 
+    const connection = postgres(connectionString, {
       max: 1,
-      ssl: true
+      ssl: true,
     });
     const db = drizzle(connection);
 
@@ -46,11 +48,13 @@ const runMigrate = async () => {
   }
 };
 
-runMigrate().then(() => {
-  console.log('✅ Migration process completed');
-  process.exit(0);
-}).catch((err) => {
-  console.error('❌ Migration failed');
-  console.error(err);
-  process.exit(1);
-});
+runMigrate()
+  .then(() => {
+    console.log('✅ Migration process completed');
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('❌ Migration failed');
+    console.error(err);
+    process.exit(1);
+  });

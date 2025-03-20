@@ -39,17 +39,17 @@ class LRUCache<K, V> {
 
   get(key: K): V | undefined {
     if (!this.cache.has(key)) return undefined;
-    
+
     const now = Date.now();
     const expiry = this.expiryTimes.get(key) || 0;
-    
+
     // Check if entry is expired
     if (now > expiry) {
       this.cache.delete(key);
       this.expiryTimes.delete(key);
       return undefined;
     }
-    
+
     // Move accessed item to the end (most recently used)
     const value = this.cache.get(key);
     this.cache.delete(key);
@@ -63,14 +63,16 @@ class LRUCache<K, V> {
       this.cache.delete(key);
       this.expiryTimes.delete(key);
     }
-    
+
     // If at capacity, remove oldest (first) item
     if (this.cache.size >= this.capacity) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
-      this.expiryTimes.delete(oldestKey);
+      if (oldestKey !== undefined) {
+        this.cache.delete(oldestKey);
+        this.expiryTimes.delete(oldestKey);
+      }
     }
-    
+
     // Add new item and set expiry time
     this.cache.set(key, value);
     this.expiryTimes.set(key, Date.now() + this.ttl);
@@ -119,27 +121,28 @@ export async function POST(request: Request) {
 
       // Parse and validate request body
       const body = await request.json();
-      const { query, filters, limit, minScore, useOptimized } = searchSchema.parse(body);
+      const { query, filters, limit, minScore, useOptimized } =
+        searchSchema.parse(body);
 
       // Search options
       const searchOptions = {
         limit,
         minScore,
         filters,
-        userId: session.user.id
+        userId: session.user.id,
       };
-      
+
       // Create a cache key without the userId to allow sharing results between users
       const cacheKey = generateCacheKey(query, {
         limit,
         minScore,
         filters,
-        optimized: useOptimized
+        optimized: useOptimized,
       });
-      
+
       // Check cache first
       const cachedEntry = searchCache.get(cacheKey);
-      
+
       if (cachedEntry) {
         // Use cached results
         return NextResponse.json({
@@ -150,14 +153,14 @@ export async function POST(request: Request) {
           results: cachedEntry.results,
         });
       }
-      
+
       // Perform search with the optimized service
-      const searchFunction = useOptimized 
+      const searchFunction = useOptimized
         ? searchBylawsOptimized
         : (await import('@/lib/vector-search/search-service')).searchBylaws;
-      
+
       const results = await searchFunction(query, searchOptions);
-      
+
       // Format results
       const formattedResults = results.map((result: any) => ({
         id: result.id,
@@ -175,13 +178,13 @@ export async function POST(request: Request) {
           lastUpdated: result.metadata.lastUpdated,
         },
       }));
-      
+
       // Cache results
-      searchCache.set(cacheKey, { 
-        results: formattedResults, 
-        timestamp: Date.now() 
+      searchCache.set(cacheKey, {
+        results: formattedResults,
+        timestamp: Date.now(),
       });
-      
+
       // Return response with cache control headers
       const response = NextResponse.json({
         success: true,
@@ -190,9 +193,9 @@ export async function POST(request: Request) {
         fromCache: false,
         results: formattedResults,
       });
-      
+
       response.headers.set('Cache-Control', 'private, max-age=300');
-      
+
       return response;
     } catch (error) {
       console.error('Bylaw search error:', error);

@@ -62,21 +62,25 @@ export async function POST(request: Request) {
       // Not a valid file object at all
       return NextResponse.json(
         { error: 'Invalid file format' },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     const fileBuffer = await file.arrayBuffer();
 
     try {
       // Use authenticated user's ID to create a scoped upload path
       const userId = session.user?.id || 'anonymous';
       const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-      
-      const data = await put(`users/${userId}/${sanitizedFilename}`, fileBuffer, {
-        access: 'public', // Using public access as required by Vercel Blob
-        contentType: file.type,
-      });
+
+      const data = await put(
+        `users/${userId}/${sanitizedFilename}`,
+        fileBuffer,
+        {
+          access: 'public', // Using public access as required by Vercel Blob
+          contentType: file.type,
+        },
+      );
 
       return NextResponse.json(data);
     } catch (error) {

@@ -1,6 +1,7 @@
 /**
  * Simple profiling utility for measuring performance
  */
+import * as React from 'react';
 
 type ProfilerOptions = {
   enabled?: boolean;
@@ -17,7 +18,10 @@ const defaultOptions: ProfilerOptions = {
 export class Profiler {
   private static instance: Profiler;
   private timers: Map<string, number> = new Map();
-  private metrics: Map<string, { count: number; totalTime: number; min: number; max: number }> = new Map();
+  private metrics: Map<
+    string,
+    { count: number; totalTime: number; min: number; max: number }
+  > = new Map();
   private options: ProfilerOptions;
 
   private constructor(options: ProfilerOptions = {}) {
@@ -44,17 +48,19 @@ export class Profiler {
    */
   public end(label: string): number {
     if (!this.options.enabled) return 0;
-    
+
     const startTime = this.timers.get(label);
     if (startTime === undefined) {
-      console.warn(`Profiler: No timer found for "${label}". Did you forget to call start()?`);
+      console.warn(
+        `Profiler: No timer found for "${label}". Did you forget to call start()?`,
+      );
       return 0;
     }
-    
+
     const endTime = performance.now();
     const duration = endTime - startTime;
     this.timers.delete(label);
-    
+
     // Update metrics
     const existing = this.metrics.get(label);
     if (existing) {
@@ -70,12 +76,12 @@ export class Profiler {
         max: duration,
       });
     }
-    
+
     // Log to console if enabled
     if (this.options.logToConsole) {
       console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`);
     }
-    
+
     return duration;
   }
 
@@ -113,8 +119,11 @@ export class Profiler {
    * Get all collected metrics
    */
   public getMetrics() {
-    const result: Record<string, { count: number; avgTime: number; minTime: number; maxTime: number }> = {};
-    
+    const result: Record<
+      string,
+      { count: number; avgTime: number; minTime: number; maxTime: number }
+    > = {};
+
     this.metrics.forEach((value, key) => {
       result[key] = {
         count: value.count,
@@ -123,7 +132,7 @@ export class Profiler {
         maxTime: value.max,
       };
     });
-    
+
     return result;
   }
 
@@ -142,21 +151,25 @@ export const profiler = Profiler.getInstance();
 /**
  * HOC to profile React components
  */
-export function withProfiling<T extends object>(Component: React.ComponentType<T>, label?: string) {
+export function withProfiling<T extends object>(
+  Component: React.ComponentType<T>,
+  label?: string,
+) {
   if (!defaultOptions.enabled) {
     return Component;
   }
-  
+
   const displayName = Component.displayName || Component.name || 'Component';
   const profilingLabel = label || `Render(${displayName})`;
-  
+
   const ProfiledComponent = (props: T) => {
     profiler.start(profilingLabel);
-    const result = Component(props);
+    // Use createElement to ensure it works with both function and class components
+    const result = React.createElement(Component, props);
     profiler.end(profilingLabel);
     return result;
   };
-  
+
   ProfiledComponent.displayName = `Profiled(${displayName})`;
   return ProfiledComponent;
 }

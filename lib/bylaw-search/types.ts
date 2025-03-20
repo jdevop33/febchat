@@ -15,20 +15,38 @@ export interface ChunkMetadata {
   /** The section number, e.g. "3.1" */
   section: string;
 
+  /** The section title when available */
+  sectionTitle?: string;
+
   /** The date the bylaw was enacted, ISO format */
-  dateEnacted: string;
+  dateEnacted: string | undefined;
 
   /** The category of the bylaw, e.g. "zoning", "trees", "noise" */
   category: string;
 
   /** The date the bylaw was last updated, ISO format */
-  lastUpdated: string;
+  lastUpdated: string | undefined;
 
   /** Optional URL to the official bylaw */
   url?: string;
 
+  /** Path to local PDF file */
+  pdfPath?: string;
+
+  /** URL to official bylaw PDF on municipal website */
+  officialUrl?: string;
+
+  /** Indicates if the bylaw is a consolidated version */
+  isConsolidated?: boolean;
+
+  /** Date of consolidation if applicable */
+  consolidatedDate?: string;
+
+  /** Indicates if the bylaw citation has been verified */
+  isVerified?: boolean;
+
   /** Additional metadata fields */
-  [key: string]: string | undefined;
+  [key: string]: string | boolean | undefined;
 }
 
 /**
@@ -43,6 +61,14 @@ export interface BylawChunk {
 }
 
 /**
+ * Extended metadata for search results
+ */
+export interface BylawMetadata extends ChunkMetadata {
+  /** The extracted text content for verification */
+  text?: string;
+}
+
+/**
  * Result from a bylaw search
  */
 export interface BylawSearchResult {
@@ -50,10 +76,13 @@ export interface BylawSearchResult {
   text: string;
 
   /** Metadata for the matching chunk */
-  metadata: ChunkMetadata;
+  metadata: BylawMetadata;
 
   /** The relevance score of the match, 0-1 */
   score: number;
+
+  /** Optional unique ID for the result */
+  id?: string;
 }
 
 /**

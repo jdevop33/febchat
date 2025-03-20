@@ -37,6 +37,7 @@ If you're experiencing database connection issues, you can use the mock database
 3. The application will now use an in-memory database instead of PostgreSQL
 
 This is useful for:
+
 - Testing when you don't have access to the production database
 - Verifying if database connection issues are causing other problems
 - Development without setting up a local PostgreSQL instance
@@ -86,6 +87,7 @@ This tests the connection to Pinecone vector database and the bylaw search funct
 **Cause:** The ANTHROPIC_API_KEY environment variable is missing or not loading correctly.
 
 **Fix:**
+
 - Check if ANTHROPIC_API_KEY is in `.env.local`
 - Run `node test-anthropic.js` to verify API key
 - Ensure the API key starts with `sk-ant-`
@@ -95,6 +97,7 @@ This tests the connection to Pinecone vector database and the bylaw search funct
 **Cause:** Incorrect POSTGRES_URL or database access issues.
 
 **Fix:**
+
 - Run `node test-db.js` to see detailed diagnostics
 - Check if your IP is allowed to access the database
 - Verify the database connection string format
@@ -104,6 +107,7 @@ This tests the connection to Pinecone vector database and the bylaw search funct
 **Cause:** Issues with Pinecone vector database or OpenAI embeddings.
 
 **Fix:**
+
 - Run `node test-bylaw-search.js` to diagnose the issue
 - Check PINECONE_API_KEY and PINECONE_INDEX environment variables
 - Verify OPENAI_API_KEY is valid
@@ -113,6 +117,7 @@ This tests the connection to Pinecone vector database and the bylaw search funct
 **Cause:** Multiple potential issues, typically related to API keys, database, or streaming implementation.
 
 **Fix:**
+
 - Check server logs for the exact error message
 - Verify all environment variables are set correctly
 - Run each test script to isolate the failing component

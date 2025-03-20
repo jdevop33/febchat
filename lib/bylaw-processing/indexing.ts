@@ -36,26 +36,24 @@ export async function processBylawPDF(
 
     // Step 4: Combine all metadata with proper precedence
     // Explicitly extract and prioritize bylaw numbers to avoid override confusion
-    const bylawNumber = 
+    const bylawNumber =
       // First priority: explicitly provided metadata (most reliable)
-      metadata.bylawNumber || 
+      metadata.bylawNumber ||
       // Second priority: filename-based extraction (fairly reliable)
-      extractedMetadata.bylawNumber || 
+      extractedMetadata.bylawNumber ||
       // Third priority: content-based extraction (least reliable)
       textMetadata.bylawNumber;
-    
+
     console.log('Bylaw number sources:');
     console.log(`- Explicitly provided: ${metadata.bylawNumber || 'None'}`);
     console.log(`- From filename: ${extractedMetadata.bylawNumber || 'None'}`);
     console.log(`- From content: ${textMetadata.bylawNumber || 'None'}`);
     console.log(`- Final choice: ${bylawNumber || 'None'}`);
-    
+
     // Do the same for title
-    const title = 
-      metadata.title || 
-      textMetadata.title || 
-      extractedMetadata.title;
-    
+    const title =
+      metadata.title || textMetadata.title || extractedMetadata.title;
+
     // Combine all metadata
     const combinedMetadata: Partial<BylawMetadata> = {
       // Start with content-based metadata (lowest priority)
@@ -69,13 +67,13 @@ export async function processBylawPDF(
       title: title || undefined,
       // Add timestamp
       lastUpdated: new Date().toISOString(),
-      
+
       // For debugging: record the sources
       _metadataSources: {
         fromContent: Object.keys(textMetadata),
         fromFile: Object.keys(extractedMetadata),
-        fromExplicit: Object.keys(metadata)
-      } as BylawMetadata['_metadataSources']
+        fromExplicit: Object.keys(metadata),
+      } as BylawMetadata['_metadataSources'],
     };
 
     // Step 5: Chunk the text
@@ -101,18 +99,25 @@ export async function indexBylawChunks(
     let embeddings: any;
     try {
       // Import the embedding models module
-      const { getEmbeddingsModel, EmbeddingProvider } = require('../vector-search/embedding-models');
-      
+      const {
+        getEmbeddingsModel,
+        EmbeddingProvider,
+      } = require('../vector-search/embedding-models');
+
       // Determine which provider to use based on environment variables
-      const provider = process.env.EMBEDDING_PROVIDER === 'openai' 
-        ? EmbeddingProvider.OPENAI 
-        : EmbeddingProvider.LLAMAINDEX;
-      
+      const provider =
+        process.env.EMBEDDING_PROVIDER === 'openai'
+          ? EmbeddingProvider.OPENAI
+          : EmbeddingProvider.LLAMAINDEX;
+
       // Get the configured embeddings model
       embeddings = getEmbeddingsModel(provider);
     } catch (error) {
-      console.error('Error loading embedding model, falling back to OpenAI:', error);
-      
+      console.error(
+        'Error loading embedding model, falling back to OpenAI:',
+        error,
+      );
+
       // Fallback to OpenAI if there's an error with the custom embeddings
       embeddings = new OpenAIEmbeddings({
         modelName: 'text-embedding-3-small',
@@ -138,22 +143,29 @@ export async function indexBylawChunks(
     const vectors = chunks.map((chunk, i) => {
       // Pinecone only supports simple metadata types (strings, numbers, booleans)
       // We need to sanitize complex types like objects and arrays
-      const sanitizedMetadata: Record<string, string | number | boolean | string[]> = {};
-      
+      const sanitizedMetadata: Record<
+        string,
+        string | number | boolean | string[]
+      > = {};
+
       // Extract only simple metadata fields
       Object.entries(chunk.metadata).forEach(([key, value]) => {
         // Skip complex objects that Pinecone doesn't support
-        if (key === 'metadataSource' || key === '_metadataSources' || typeof value === 'object') {
+        if (
+          key === 'metadataSource' ||
+          key === '_metadataSources' ||
+          typeof value === 'object'
+        ) {
           return;
         }
-        
+
         // Keep primitive values and string arrays
         sanitizedMetadata[key] = value;
       });
-      
+
       // Add text field
       sanitizedMetadata.text = chunk.text;
-      
+
       return {
         id: chunkIds[i],
         values: embeddingsResults[i],

@@ -17,16 +17,18 @@ export async function initializeOptimizations() {
   try {
     // Initialize database indexes
     await createDatabaseIndexes();
-    
+
     // Additional initialization can be added here
-    
+
     console.log(`✅ Optimizations initialized in ${Date.now() - start}ms`);
-    
+
     // Log system info in development
     if (process.env.NODE_ENV !== 'production') {
       console.log('📊 System information:');
       console.log(`  Node.js: ${process.version}`);
-      console.log(`  Memory: ${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB RSS`);
+      console.log(
+        `  Memory: ${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB RSS`,
+      );
       console.log(`  Environment: ${process.env.NODE_ENV}`);
     }
   } catch (error) {
@@ -54,7 +56,7 @@ export function resetPerformanceMetrics() {
  */
 export async function measurePerformance<T>(
   label: string,
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
 ): Promise<{ result: T; duration: number }> {
   const start = performance.now();
   try {

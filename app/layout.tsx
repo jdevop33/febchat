@@ -59,7 +59,10 @@ const THEME_COLOR_SCRIPT = `\
 import { initializeOptimizations } from '@/lib/optimization';
 
 // This initializes optimizations only in production or when explicitly enabled
-if (process.env.NODE_ENV === 'production' || process.env.ENABLE_OPTIMIZATIONS === 'true') {
+if (
+  process.env.NODE_ENV === 'production' ||
+  process.env.ENABLE_OPTIMIZATIONS === 'true'
+) {
   initializeOptimizations().catch(console.error);
 }
 

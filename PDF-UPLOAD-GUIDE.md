@@ -7,6 +7,7 @@ This guide explains how to upload and index PDF bylaw documents to the new Pinec
 Before running any of the scripts, make sure your environment is properly configured:
 
 1. Ensure your `.env.local` file contains the required variables:
+
    ```
    PINECONE_API_KEY=your-pinecone-api-key
    PINECONE_INDEX=oak-bay-bylaws-v2
@@ -56,6 +57,7 @@ pnpm tsx scripts/pinecone-namespace-upload.ts <namespace> [pdf-file]
 ```
 
 Example:
+
 ```bash
 # Upload all PDFs to the "zoning" namespace
 pnpm tsx scripts/pinecone-namespace-upload.ts zoning
@@ -111,15 +113,18 @@ Example implementation (pseudo-code):
 
 ```typescript
 async function getLlamaEmbeddings(texts: string[]): Promise<number[][]> {
-  const response = await fetch('https://your-llama-api-endpoint.com/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.LLAMA_API_KEY}`
+  const response = await fetch(
+    'https://your-llama-api-endpoint.com/embeddings',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.LLAMA_API_KEY}`,
+      },
+      body: JSON.stringify({ texts, model: 'llama-text-embed-v2' }),
     },
-    body: JSON.stringify({ texts, model: 'llama-text-embed-v2' })
-  });
-  
+  );
+
   const data = await response.json();
   return data.embeddings;
 }

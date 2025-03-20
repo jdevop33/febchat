@@ -4,7 +4,12 @@
 
 'use client';
 
-import React, { Suspense, lazy, type LazyExoticComponent, type ComponentType } from 'react';
+import React, {
+  Suspense,
+  lazy,
+  type LazyExoticComponent,
+  type ComponentType,
+} from 'react';
 import { cn } from '@/lib/utils';
 
 type LazyWrapperProps = {
@@ -15,8 +20,8 @@ type LazyWrapperProps = {
 };
 
 const defaultLoadingFallback = (
-  <div className="flex items-center justify-center w-full h-full min-h-[100px]">
-    <div className="h-10 w-full max-w-md animate-pulse bg-muted rounded-md" />
+  <div className="flex h-full min-h-[100px] w-full items-center justify-center">
+    <div className="h-10 w-full max-w-md animate-pulse rounded-md bg-muted" />
   </div>
 );
 
@@ -38,7 +43,9 @@ export function LazyWrapper({
 /**
  * Helper to create lazy-loaded components
  */
-export function createLazyComponent<T extends object>(importFn: () => Promise<{ default: ComponentType<T> }>) {
+export function createLazyComponent<T extends object>(
+  importFn: () => Promise<{ default: ComponentType<T> }>,
+) {
   return lazy(importFn);
 }
 

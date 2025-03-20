@@ -82,10 +82,10 @@ const batcher = new APIBatcher(
     // Process all inputs in one batch
     return results; // Array of results matching inputs order
   },
-  { 
+  {
     maxBatchSize: 5,
-    maxWaitTime: 50 // ms
-  }
+    maxWaitTime: 50, // ms
+  },
 );
 
 // Add requests to the batch - they'll be automatically processed in batches
@@ -102,16 +102,13 @@ import { useApi, useSearch } from '@/lib/hooks/use-optimized-api';
 const { data, error, isLoading } = useApi('/api/some-endpoint');
 
 // Search with automatic debouncing
-const { 
-  data, 
-  error, 
-  isLoading, 
-  searchParams, 
-  updateSearch 
-} = useSearch('/api/search', {
-  defaultParams: { query: '' },
-  debounceMs: 300
-});
+const { data, error, isLoading, searchParams, updateSearch } = useSearch(
+  '/api/search',
+  {
+    defaultParams: { query: '' },
+    debounceMs: 300,
+  },
+);
 
 // Update search parameters (automatically debounced)
 updateSearch({ query: 'new search term' });
@@ -122,11 +119,13 @@ updateSearch({ query: 'new search term' });
 To view performance metrics in development:
 
 1. Start the development server with optimizations enabled:
+
    ```
    ENABLE_OPTIMIZATIONS=true pnpm dev
    ```
 
 2. Access the metrics API endpoint:
+
    ```
    GET /api/dev/metrics
    ```

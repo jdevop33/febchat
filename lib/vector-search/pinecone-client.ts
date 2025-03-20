@@ -3,7 +3,7 @@
  *
  * This module provides a connection to the Pinecone vector database,
  * which is used to store and search embeddings of bylaw documents.
- * 
+ *
  * Updated for Pinecone SDK v5.0.2+
  */
 
@@ -28,12 +28,12 @@ export function getPineconeClient(): Pinecone {
 
   // Create Pinecone client using v5.0+ SDK
   const config: any = { apiKey };
-  
+
   // Add environment if specified (optional in newer SDK versions)
   if (process.env.PINECONE_ENVIRONMENT) {
     config.environment = process.env.PINECONE_ENVIRONMENT;
   }
-  
+
   pineconeInstance = new Pinecone(config);
 
   return pineconeInstance;
@@ -45,13 +45,15 @@ export function getPineconeClient(): Pinecone {
 export function getPineconeIndex() {
   const pinecone = getPineconeClient();
   const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
-  
+
   try {
     // In v5+, direct connection to an index using the host URL
     console.log(`Connecting to Pinecone index: ${indexName}`);
     return pinecone.index(indexName);
   } catch (error) {
     console.error(`Error connecting to Pinecone index ${indexName}:`, error);
-    throw new Error(`Failed to connect to Pinecone index: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to connect to Pinecone index: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }

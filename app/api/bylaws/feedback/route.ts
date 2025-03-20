@@ -44,8 +44,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Log the feedback for monitoring
-    console.log(`Bylaw feedback received: ${data.feedback} for bylaw ${data.bylawNumber}`);
-    
+    console.log(
+      `Bylaw feedback received: ${data.feedback} for bylaw ${data.bylawNumber}`,
+    );
+
     return NextResponse.json({
       success: true,
       message: 'Feedback recorded successfully',
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error saving bylaw feedback:', error);
-    
+
     // Handle validation errors specifically
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -63,17 +65,17 @@ export async function POST(request: NextRequest) {
           error: 'Invalid feedback data',
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // General error handling
     return NextResponse.json(
       {
         success: false,
         error: 'Failed to save feedback',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

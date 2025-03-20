@@ -47,7 +47,7 @@ export function MessageReasoning({
             type="button"
             className="cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
-            aria-label={isExpanded ? "Collapse reasoning" : "Expand reasoning"}
+            aria-label={isExpanded ? 'Collapse reasoning' : 'Expand reasoning'}
           >
             <ChevronDownIcon />
           </button>

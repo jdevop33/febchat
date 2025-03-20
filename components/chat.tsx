@@ -51,15 +51,15 @@ export function Chat({
     },
     onError: handleChatError,
   });
-  
+
   // Extracted error handling function for better readability
   function handleChatError(error: unknown) {
     console.error('Chat request error:', error);
-    
+
     // Default error messages
     let errorMessage = 'An error occurred, please try again!';
     let errorDescription = 'The system is experiencing technical difficulties.';
-    
+
     // Parse structured error from server if available
     if (typeof error === 'string') {
       try {
@@ -75,11 +75,11 @@ export function Chat({
     } else if (error instanceof Error) {
       errorMessage = error.message || errorMessage;
     }
-    
+
     // Display error to user
     toast.error(errorMessage, {
       duration: 8000,
-      description: errorDescription
+      description: errorDescription,
     });
   }
 
