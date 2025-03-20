@@ -478,7 +478,7 @@ export function PdfViewerModal({
                 variant="default"
                 onClick={() =>
                   window.open(
-                    `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
+                    getExternalPdfUrl(bylawNumber, title),
                     '_blank',
                   )
                 }

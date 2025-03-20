@@ -567,8 +567,11 @@ export function BylawCitation({
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Get the appropriate PDF path
-                      const pdfPath = getPdfPath();
+                      // For local PDF file display, use a mix of local and external sources
+                      const pdfPath = process.env.NODE_ENV === 'production' 
+                        ? getExternalPdfUrl(bylawNumber, title)
+                        : getPdfPath();
+                      
                       // Open in new tab
                       window.open(pdfPath, '_blank', 'noopener,noreferrer');
                     }}
