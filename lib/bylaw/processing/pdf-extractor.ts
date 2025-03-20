@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pdf from 'pdf-parse';
-import type { BylawMetadata } from '../vector-search/types';
+import type { BylawMetadata } from '../../vector/types';
 
 /**
  * Extract text and metadata from a PDF file

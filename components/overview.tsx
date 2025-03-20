@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BylawWelcome } from './bylaw-welcome';
+import { BylawWelcome } from '@/components/bylaw/bylaw-welcome';
 
 export const Overview = () => {
   return (

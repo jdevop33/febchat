@@ -8,9 +8,9 @@ import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat/chat-header';
 import type { Vote } from '@/lib/db/schema';
 import { fetcher, generateUUID } from '@/lib/utils';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import type { VisibilityType } from './visibility-selector';
+import { MultimodalInput } from '@/components/multimodal-input';
+import { Messages } from '@/components/messages';
+import type { VisibilityType } from '@/components/visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 

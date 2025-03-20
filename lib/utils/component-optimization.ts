@@ -5,6 +5,7 @@
 import * as React from 'react';
 import { memo, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
+import { useDebounce } from '@/lib/utils/debounce';
 
 /**
  * Enhanced memo HOC with deep equality check for props
@@ -58,34 +59,8 @@ export function useStableCallback<T extends (...args: any[]) => any>(
   return useCallback((...args: any[]) => callbackRef.current(...args), []) as T;
 }
 
-/**
- * Creates a function that will be debounced by the specified wait time
- */
-export function useDebounce<T extends (...args: any[]) => any>(
-  fn: T,
-  wait = 300,
-): T {
-  const timeout = React.useRef<NodeJS.Timeout>();
-  const fnRef = React.useRef(fn);
-
-  React.useEffect(() => {
-    fnRef.current = fn;
-  }, [fn]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useCallback(
-    function debouncedFn(...args: Parameters<T>) {
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-
-      timeout.current = setTimeout(() => {
-        fnRef.current(...args);
-      }, wait);
-    } as unknown as T,
-    [wait],
-  );
-}
+// Export useDebounce for backward compatibility
+export { useDebounce };
 
 /**
  * Lazy loads a component with Suspense

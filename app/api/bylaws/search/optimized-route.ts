@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { searchBylawsOptimized } from '@/lib/vector-search/optimized-search-service';
+import { searchBylawsOptimized } from '@/lib/vector/optimized-search-service';
 import { profiler } from '@/lib/utils/profiler';
 import { z } from 'zod';
 
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
       // Perform search with the optimized service
       const searchFunction = useOptimized
         ? searchBylawsOptimized
-        : (await import('@/lib/vector-search/search-service')).searchBylaws;
+        : (await import('@/lib/vector/search-service')).searchBylaws;
 
       const results = await searchFunction(query, searchOptions);
 

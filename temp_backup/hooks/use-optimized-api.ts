@@ -3,10 +3,34 @@
  * Combines SWR caching with batched API calls
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import useSWR, { type SWRConfiguration } from 'swr';
 import { profiler } from '@/lib/utils/profiler';
-import { useDebounce } from '@/lib/utils/debounce';
+
+// Simple debounce implementation to avoid import errors
+function useDebounce<T extends (...args: any[]) => any>(fn: T, wait = 300): T {
+  const timeout = useRef<NodeJS.Timeout>();
+  const fnRef = useRef(fn);
+
+  useEffect(() => {
+    fnRef.current = fn;
+  }, [fn]);
+
+  // Using an inline function as recommended by the lint rule
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback(
+    function debouncedFn(...args: Parameters<T>) {
+      if (timeout.current) {
+        clearTimeout(timeout.current);
+      }
+
+      timeout.current = setTimeout(() => {
+        fnRef.current(...args);
+      }, wait);
+    } as unknown as T,
+    [wait],
+  );
+}
 
 // Shared fetcher for SWR
 const defaultFetcher = async (url: string) => {

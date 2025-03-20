@@ -5,7 +5,7 @@
  * appropriate segments for embedding and retrieval.
  */
 
-import type { BylawMetadata } from '../vector-search/types';
+import type { BylawMetadata } from '../../vector/types';
 
 /**
  * A document chunk with text and metadata

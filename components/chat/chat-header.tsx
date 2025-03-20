@@ -6,10 +6,10 @@ import { useWindowSize } from 'usehooks-ts';
 
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { FileTextIcon, PlusIcon } from './icons';
-import { useSidebar } from './ui/sidebar';
+import { FileTextIcon, PlusIcon } from '@/components/icons';
+import { useSidebar } from '@/components/ui/sidebar';
 import { memo } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 function PureChatHeader({ chatId }: { chatId: string }) {
   const router = useRouter();

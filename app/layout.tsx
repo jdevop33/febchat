@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
-import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeProvider } from '@/components/shared/theme-provider';
 
 import './globals.css';
 

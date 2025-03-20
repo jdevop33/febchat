@@ -1,6 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { searchBylaws } from '@/lib/bylaw-search';
+import { searchBylaws } from '@/lib/vector/search-service';
 
 // Import utility function from centralized location
 import { getExternalPdfUrl } from '@/lib/utils/bylaw-utils';

@@ -132,7 +132,7 @@ export async function searchBylaws(
   try {
     // Import here to avoid circular dependencies
     const { getPineconeIndex } = await import(
-      '../vector/pinecone-client'
+      './pinecone-client'
     );
     const { OpenAIEmbeddings } = await import('@langchain/openai');
 

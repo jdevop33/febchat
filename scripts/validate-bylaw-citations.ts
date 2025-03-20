@@ -13,7 +13,7 @@ import path from 'node:path';
 import pdfParse from 'pdf-parse';
 import { PrismaClient } from '@prisma/client';
 import { mockBylawData } from '../lib/bylaw-search';
-import * as VerificationDB from '../lib/vector-search/verification-database';
+import * as VerificationDB from '../lib/vector/verification-database';
 
 // Initialize Prisma client
 const prisma = new PrismaClient();

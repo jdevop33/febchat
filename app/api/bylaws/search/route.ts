@@ -4,11 +4,11 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { searchBylaws } from '@/lib/vector-search/search-service';
+import { searchBylaws } from '@/lib/vector/search-service';
 import {
   searchBylawsWithVerification,
   recordSearchQuery,
-} from '@/lib/vector-search/enhanced-search';
+} from '@/lib/vector/enhanced-search';
 import { z } from 'zod';
 
 // Schema for search request validation
