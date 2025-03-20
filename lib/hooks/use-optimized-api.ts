@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import useSWR, { SWRConfiguration } from 'swr';
+import useSWR, { type SWRConfiguration } from 'swr';
 import { profiler } from '@/lib/utils/profiler';
 
 // Simple debounce implementation to avoid import errors
@@ -19,8 +19,8 @@ function useDebounce<T extends (...args: any[]) => any>(
     fnRef.current = fn;
   }, [fn]);
   
-  return useCallback(
-    ((...args: Parameters<T>) => {
+  // Using an inline function as recommended by the lint rule
+  return useCallback(function debouncedFn(...args: Parameters<T>) {
       if (timeout.current) {
         clearTimeout(timeout.current);
       }
@@ -28,7 +28,7 @@ function useDebounce<T extends (...args: any[]) => any>(
       timeout.current = setTimeout(() => {
         fnRef.current(...args);
       }, wait);
-    }) as T,
+    } as unknown as T,
     [wait]
   );
 }

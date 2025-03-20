@@ -98,7 +98,7 @@ export async function indexBylawChunks(
 ): Promise<string[]> {
   try {
     // Get the appropriate embeddings model based on configuration
-    let embeddings;
+    let embeddings: any;
     try {
       // Import the embedding models module
       const { getEmbeddingsModel, EmbeddingProvider } = require('../vector-search/embedding-models');

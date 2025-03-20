@@ -14,7 +14,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import dotenv from 'dotenv';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -44,7 +44,7 @@ async function getLlamaEmbeddings(texts: string[]): Promise<number[][]> {
       
       // Create an array of 1024 dimensions (llama-text-embed-v2 dimension size)
       return Array.from({ length: EMBEDDING_DIMENSIONS }, (_, i) => {
-        const value = parseInt(hash.substring(i % hash.length, (i % hash.length) + 2), 16);
+        const value = Number.parseInt(hash.substring(i % hash.length, (i % hash.length) + 2), 16);
         // Convert to a value between -1 and 1
         return (value / 255) * 2 - 1;
       });

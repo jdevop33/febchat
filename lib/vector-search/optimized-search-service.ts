@@ -7,11 +7,10 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { getPineconeIndex } from './pinecone-client';
 import { logger } from '../monitoring/logger';
 import { profiler } from '../utils/profiler';
-import { SearchQuery, SearchResult, getBatchedVectorSearch } from './api-batching';
+import { type SearchQuery, type SearchResult, getBatchedVectorSearch } from './api-batching';
 import type {
   BylawSearchOptions,
   BylawSearchResult,
-  BylawSearchFilters,
 } from './types';
 
 // Cached embeddings model

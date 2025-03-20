@@ -23,9 +23,12 @@ export function memoWithDeepEqual<T extends object>(
  * Utility for conditional class names with memoization
  */
 export function useMemoizedClassName(baseClass: string, conditionalClasses: Record<string, boolean>) {
+  // Extract dependency for the linter to track properly
+  const conditionalClassesString = Object.entries(conditionalClasses).toString();
+  
   return useMemo(() => {
     return cn(baseClass, conditionalClasses);
-  }, [baseClass, Object.entries(conditionalClasses).toString()]);
+  }, [baseClass, conditionalClassesString, conditionalClasses]);
 }
 
 /**

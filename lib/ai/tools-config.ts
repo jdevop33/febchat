@@ -5,7 +5,7 @@
  * It exports a function to configure tools for specific AI models.
  */
 
-import { Tool } from 'ai';
+import type { Tool } from 'ai';
 
 // Import all available tools
 import { searchBylawsTool, bylawAnswersTool } from './tools';

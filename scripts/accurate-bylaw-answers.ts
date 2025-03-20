@@ -6,8 +6,8 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Initialize Prisma client
 const prisma = new PrismaClient();

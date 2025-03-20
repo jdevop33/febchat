@@ -228,7 +228,7 @@ function chunkText(text: string, chunkSize: number, chunkOverlap: number): { pag
       const words = currentChunk.split(/\s+/);
       const overlapWords = words.slice(-Math.floor(chunkOverlap / 7)); // Approximate words in overlap
       
-      currentChunk = overlapWords.join(' ') + '\n\n' + paragraph;
+      currentChunk = `${overlapWords.join(' ')}\n\n${paragraph}`;
     } else {
       // Add paragraph to current chunk
       if (currentChunk.length > 0) {

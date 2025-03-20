@@ -65,7 +65,7 @@ export function getEmbeddingsModel(
 class CustomLlamaEmbeddings implements Embeddings {
   private apiKey: string;
   private modelName: string;
-  private dimensions: number = 1024; // llama-text-embed-v2 has 1024 dimensions
+  private dimensions = 1024; // llama-text-embed-v2 has 1024 dimensions
 
   constructor(options: { modelName?: string; apiKey?: string }) {
     this.modelName = options.modelName || DEFAULT_LLAMA_MODEL;

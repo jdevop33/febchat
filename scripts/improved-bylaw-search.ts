@@ -149,7 +149,7 @@ async function searchBylaws() {
         console.log(`   Score: ${result.score.toFixed(6)} (${result.matches} matches)`);
         
         if (result.isConsolidated) {
-          console.log(`   Status: Consolidated${result.consolidatedDate ? ' to ' + result.consolidatedDate : ''}${result.amendedBylaw ? ' (Amended by Bylaw ' + result.amendedBylaw + ')' : ''}`);
+          console.log(`   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ''}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ''}`);
         }
         
         // Sort snippets by score and show the top ones
@@ -159,7 +159,7 @@ async function searchBylaws() {
         
         console.log(`\n   Top relevant sections:`);
         sortedSnippets.forEach((snippet, i) => {
-          console.log(`   ${i + 1}. Section ${snippet.section}${snippet.sectionTitle ? ': ' + snippet.sectionTitle : ''}`);
+          console.log(`   ${i + 1}. Section ${snippet.section}${snippet.sectionTitle ? `: ${snippet.sectionTitle}` : ''}`);
           console.log(`      "${snippet.text}"`);
           console.log(`      Score: ${snippet.score.toFixed(6)}`);
         });
@@ -182,7 +182,7 @@ function extractRelevantText(text: string, query: string): string {
   
   if (queryWords.length === 0) {
     // If no significant query words, return the first part of the text
-    return text.substring(0, 150) + '...';
+    return `${text.substring(0, 150)}...`;
   }
   
   // Create a regex pattern for matching query words
@@ -229,14 +229,14 @@ function extractRelevantText(text: string, query: string): string {
     
     // Limit length and add ellipsis
     if (highlightedSnippet.length > 300) {
-      return highlightedSnippet.substring(0, 300) + '...';
+      return `${highlightedSnippet.substring(0, 300)}...`;
     }
     
     return highlightedSnippet;
   }
   
   // Fallback to first part of text
-  return text.substring(0, 150) + '...';
+  return `${text.substring(0, 150)}...`;
 }
 
 // Run search

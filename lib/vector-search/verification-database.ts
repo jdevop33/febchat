@@ -270,7 +270,7 @@ export async function recordCitationFeedback(
  */
 export async function findSimilarBylaws(
   term: string,
-  limit: number = 5
+  limit = 5
 ): Promise<VerifiedBylawData[]> {
   try {
     // Search for bylaws with similar titles

@@ -91,7 +91,7 @@ export const searchBylawsTool = tool({
           url:
             result.metadata.url ||
             `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber || 'Unknown'}?section=${result.metadata.section || 'Unknown'}`,
-          isConsolidated: result.metadata.consolidatedTo ? true : false,
+          isConsolidated: !!result.metadata.consolidatedTo,
           consolidatedDate: result.metadata.consolidatedTo ? `Bylaw No. ${result.metadata.consolidatedTo}` : undefined,
         };
       });

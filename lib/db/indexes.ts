@@ -4,7 +4,6 @@
  */
 
 import { sql } from 'drizzle-orm';
-import { users, messages, chats } from './schema';
 
 // Mock database object for build time
 const db = {

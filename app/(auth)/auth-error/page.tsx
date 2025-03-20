@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,7 +88,7 @@ export default function AuthErrorPage() {
         <Card className="border-red-200 dark:border-red-900">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center pb-2">
-              <ShieldX className="h-12 w-12 text-red-500" />
+              <ShieldX className="size-12 text-red-500" />
             </div>
             <CardTitle className="text-2xl font-semibold text-red-600 dark:text-red-400">
               {errorInfo.title}
@@ -100,7 +99,7 @@ export default function AuthErrorPage() {
           </CardHeader>
           <CardContent className="text-center space-y-2">
             <div className="flex items-center justify-center space-x-2 rounded-lg bg-red-50 p-3 dark:bg-red-950/50">
-              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <AlertTriangle className="size-5 text-red-600 dark:text-red-400" />
               <p className="text-sm text-red-600 dark:text-red-400">
                 {errorType === 'CredentialsSignin' 
                   ? 'Please check your email and password and try again.' 
@@ -120,7 +119,7 @@ export default function AuthErrorPage() {
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800" asChild>
               <Link href="/login" className="flex items-center gap-1">
-                <RefreshCcw className="h-4 w-4" />
+                <RefreshCcw className="size-4" />
                 Try Again
               </Link>
             </Button>

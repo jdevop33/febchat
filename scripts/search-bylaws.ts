@@ -90,7 +90,7 @@ async function searchBylaws() {
         if (text) {
           // Find the most relevant part of the text
           const lines = text.split('\n');
-          const shortSnippet = lines.slice(0, 3).join(' ').substring(0, 150) + '...';
+          const shortSnippet = `${lines.slice(0, 3).join(' ').substring(0, 150)}...`;
           entry.snippets.push(shortSnippet);
         }
         
@@ -108,7 +108,7 @@ async function searchBylaws() {
         console.log(`   Score: ${result.score.toFixed(6)} (${result.matches} matches)`);
         
         if (result.isConsolidated) {
-          console.log(`   Status: Consolidated${result.consolidatedDate ? ' to ' + result.consolidatedDate : ''}${result.amendedBylaw ? ' (Amended by Bylaw ' + result.amendedBylaw + ')' : ''}`);
+          console.log(`   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ''}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ''}`);
         }
         
         // Show up to 2 snippets

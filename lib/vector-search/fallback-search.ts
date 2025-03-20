@@ -5,7 +5,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { BylawSearchOptions, BylawSearchResult } from './types';
+import type { BylawSearchOptions, BylawSearchResult } from './types';
 import { getPineconeIndex } from './pinecone-client';
 import { extractFromPDF } from '../bylaw-processing/pdf-extractor';
 

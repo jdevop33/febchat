@@ -160,7 +160,7 @@ async function extractBylawContent() {
       exemptionSections.push(section5Match[0].trim());
     } else {
       // Fallback to looking for individual exemptions
-      let exemptionRegex = /[^.]*?(?:provisions of this Bylaw shall not apply|exempted from)[^.]*?\.(?:[^\(]*?\.){0,5}/gis;
+      const exemptionRegex = /[^.]*?(?:provisions of this Bylaw shall not apply|exempted from)[^.]*?\.(?:[^\(]*?\.){0,5}/gis;
       while ((match = exemptionRegex.exec(text)) !== null) {
         exemptionSections.push(match[0].trim());
       }

@@ -217,7 +217,7 @@ async function updateMockSearchData() {
       return;
     }
     
-    let fileContent = fs.readFileSync(filePath, 'utf8');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
     
     // Target section to replace
     const startMarker = '// Example mock data';

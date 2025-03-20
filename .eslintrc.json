@@ -12,8 +12,7 @@
     "tailwindcss/classnames-order": "off",
     "tailwindcss/enforces-shorthand": "warn",
     "react-hooks/exhaustive-deps": "warn",
-    "import/no-unresolved": "warn",
-    "@typescript-eslint/no-explicit-any": "warn"
+    "import/no-unresolved": "warn"
   },
   "settings": {
     "import/resolver": {

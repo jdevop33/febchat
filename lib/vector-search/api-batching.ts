@@ -50,5 +50,9 @@ export function getBatchedVectorSearch(namespace: string, searchFn: (queries: Se
   if (!batcherInstances.has(namespace)) {
     batcherInstances.set(namespace, new BatchedVectorSearch(searchFn));
   }
-  return batcherInstances.get(namespace)!;
+  const batcher = batcherInstances.get(namespace);
+  if (!batcher) {
+    throw new Error(`Batcher for namespace ${namespace} not found`);
+  }
+  return batcher;
 }
