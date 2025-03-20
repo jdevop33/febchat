@@ -137,10 +137,13 @@ function extractAmendmentReferences(text: string): {
   
   // Look for amendment references like "amended by Bylaw No. 4XXX"
   const amendmentRegex = /amended\s+by\s+(?:Bylaw|bylaw)(?:\s+No\.?)?(?:\s+#?)?\s+(\d+)/gi;
-  let match;
+  let match: RegExpExecArray | null;
+  let amendmentResult: RegExpExecArray | null = amendmentRegex.exec(text);
   
-  while ((match = amendmentRegex.exec(text)) !== null) {
+  while (amendmentResult !== null) {
+    match = amendmentResult;
     result.amendedBylaws.push(match[1]);
+    amendmentResult = amendmentRegex.exec(text);
   }
   
   // Extract enactment date

@@ -54,7 +54,7 @@ async function verifyPineconeConnection() {
     console.log('\nTesting search functionality...');
     
     // Get the appropriate embeddings model based on configuration
-    let embeddings;
+    let embeddings: any;
     try {
       // Import the embedding models module
       const { getEmbeddingsModel, EmbeddingProvider } = require('../lib/vector-search/embedding-models');

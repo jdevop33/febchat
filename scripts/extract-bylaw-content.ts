@@ -99,21 +99,27 @@ async function extractBylawContent() {
     // Try an alternative approach by looking for specific subsections
     console.log("\nConstruction-related regulations:");
     const constructionRegex = /\([0-9]\)[^\(]*?(?:construction|demolition|erection)[^(]*/gi;
-    let constructionMatch;
+    let constructionMatch: RegExpExecArray | null;
     let i = 1;
-    while ((constructionMatch = constructionRegex.exec(text)) !== null) {
+    let constructionResult: RegExpExecArray | null = constructionRegex.exec(text);
+    while (constructionResult !== null) {
+      constructionMatch = constructionResult;
       console.log(`Regulation ${i}:\n${constructionMatch[0].trim()}\n`);
       i++;
+      constructionResult = constructionRegex.exec(text);
     }
     
     // Look specifically for hours restrictions
     console.log("\nHours restrictions:");
     const hoursRegex = /(?:between|before|after)[^(]*?(?:\d+:\d+|\d+) (?:a\.m\.|p\.m\.|AM|PM)[^(]*?(?:Sunday|Saturday|holiday)/gi;
-    let hoursMatch;
+    let hoursMatch: RegExpExecArray | null;
     i = 1;
-    while ((hoursMatch = hoursRegex.exec(text)) !== null) {
+    let hoursResult: RegExpExecArray | null = hoursRegex.exec(text);
+    while (hoursResult !== null) {
+      hoursMatch = hoursResult;
       console.log(`Restriction ${i}:\n${hoursMatch[0].trim()}\n`);
       i++;
+      hoursResult = hoursRegex.exec(text);
     }
     }
     
@@ -133,9 +139,12 @@ async function extractBylawContent() {
     
     // Find regulations
     const leafRegex = /\([0-9]\)[^\(]*?leaf blower[^(]*/gi;
-    let leafMatch;
-    while ((leafMatch = leafRegex.exec(text)) !== null) {
+    let leafMatch: RegExpExecArray | null;
+    let leafResult: RegExpExecArray | null = leafRegex.exec(text);
+    while (leafResult !== null) {
+      leafMatch = leafResult;
       leafSections.push(leafMatch[0].trim());
+      leafResult = leafRegex.exec(text);
     }
     
     if (leafSections.length > 0) {
@@ -161,8 +170,12 @@ async function extractBylawContent() {
     } else {
       // Fallback to looking for individual exemptions
       const exemptionRegex = /[^.]*?(?:provisions of this Bylaw shall not apply|exempted from)[^.]*?\.(?:[^\(]*?\.){0,5}/gis;
-      while ((match = exemptionRegex.exec(text)) !== null) {
+      let match: RegExpExecArray | null;
+      let exemptionResult: RegExpExecArray | null = exemptionRegex.exec(text);
+      while (exemptionResult !== null) {
+        match = exemptionResult;
         exemptionSections.push(match[0].trim());
+        exemptionResult = exemptionRegex.exec(text);
       }
     }
     
