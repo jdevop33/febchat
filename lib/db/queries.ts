@@ -25,10 +25,16 @@ const isProduction = env.NODE_ENV === 'production';
 console.log(`Environment: ${env.NODE_ENV || 'development'}`);
 console.log(`Database mode: REAL (PostgreSQL)`);
 
-// Ensure database URL exists
+// Ensure database URL exists - but only throw error during runtime, not during build
 if (!env.POSTGRES_URL && !env.DATABASE_URL) {
   console.error('CRITICAL ERROR: Neither POSTGRES_URL nor DATABASE_URL environment variable is set!');
-  throw new Error('Database connection configuration missing');
+  
+  // Don't throw error during build phase - allow build to complete with mock DB
+  if (env.NEXT_PHASE !== 'build') {
+    throw new Error('Database connection configuration missing');
+  } else {
+    console.log('Build phase detected - continuing with mock database settings');
+  }
 }
 
 // DB client and ORM initialization
@@ -38,6 +44,43 @@ import type { PgDatabase } from 'drizzle-orm/pg-core';
 
 let client: ReturnType<typeof postgres> | undefined;
 let db: PostgresJsDatabase<{user: typeof user, chat: typeof chat, message: typeof message, vote: typeof vote, document: typeof document, suggestion: typeof suggestion}> | PgDatabase<{user: typeof user, chat: typeof chat, message: typeof message, vote: typeof vote, document: typeof document, suggestion: typeof suggestion}>;
+
+// During build, provide a mock DB that doesn't actually connect
+// This allows the build to complete without database connection errors
+if (env.NEXT_PHASE === 'build') {
+  // Create a mock DB implementation that doesn't perform actual database operations
+  console.log('Setting up mock database for build process only');
+  db = {
+    // Basic mock implementations that return empty results
+    select: () => ({ from: () => Promise.resolve([]) }),
+    insert: () => ({ values: () => ({ returning: () => Promise.resolve([]) }) }),
+    update: () => ({ set: () => ({ where: () => ({ returning: () => Promise.resolve([]) }) }) }),
+    delete: () => ({ where: () => ({ returning: () => Promise.resolve([]) }) }),
+  } as any;
+} else {
+  // Real application runtime - use the actual database connection
+  try {
+    // Use Vercel Postgres if available, otherwise use direct Postgres connection
+    if (env.POSTGRES_URL) {
+      // Use Vercel's built-in connection
+      console.log('Using Vercel Postgres');
+      db = vercelDrizzle({
+        schema: { user, chat, message, vote, document, suggestion },
+      });
+    } else {
+      // Use direct connection with connection string
+      const connectionString = env.DATABASE_URL!;
+      console.log('Using direct Postgres connection');
+      client = postgres(connectionString, { max: 3 });
+      db = drizzle(client, {
+        schema: { user, chat, message, vote, document, suggestion },
+      });
+    }
+  } catch (err) {
+    console.error('Failed to initialize database:', err);
+    throw new Error('Database initialization failed');
+  }
+}
 
 try {
   if (isProduction) {

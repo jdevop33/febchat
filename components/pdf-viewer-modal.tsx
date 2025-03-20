@@ -21,6 +21,13 @@ import {
   Loader2,
   AlertTriangle,
 } from 'lucide-react';
+import { 
+  getExternalPdfUrl, 
+  getLocalPdfPath, 
+  getBestPdfUrl, 
+  findSectionPage, 
+  getEstimatedPageCount,
+} from '@/lib/utils/bylaw-utils';
 
 interface PdfViewerModalProps {
   isOpen: boolean;
@@ -50,171 +57,17 @@ export function PdfViewerModal({
   const [scale, setScale] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Function to get external PDF URL for bylaw (municipal website link)
-  const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
-    // Special case for known bylaws with specific URLs
-    const knownBylawUrls: Record<string, string> = {
-      '3210': 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf',
-      '4892': 'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
-    };
-    
-    if (knownBylawUrls[bylawNumber]) {
-      return knownBylawUrls[bylawNumber];
-    }
-    
-    // Determine URL pattern based on bylaw number
-    const bylawNum = parseInt(bylawNumber, 10);
-    
-    if (isNaN(bylawNum)) {
-      // Fallback to main bylaws page if not a valid number
-      return 'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws/';
-    }
-    
-    if (bylawNum < 4000) {
-      // Older bylaws pattern
-      return `https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/${bylawNumber}.pdf`;
-    } else {
-      // Newer bylaws pattern - note the URL might vary based on the actual upload date
-      // We'd need a more complete database to know exact month/year for each bylaw
-      const currentYear = new Date().getFullYear();
-      const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-      
-      // Format title for URL if available
-      const formattedTitle = title 
-        ? `-${title.replace(/\s+/g, '-')}` 
-        : '';
-      
-      return `https://www.oakbay.ca/wp-content/uploads/${currentYear}/${currentMonth}/${bylawNumber}${formattedTitle}.pdf`;
-    }
-  };
 
-  // Function to map bylaw number to PDF filename (local files)
-  const getPdfPath = (bylawNumber: string): string => {
-    // Map of known bylaw numbers to their filenames in our local system
-    const bylawMap: Record<string, string> = {
-      '3152': '/pdfs/3152.pdf',
-      '3210': '/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
-      '3370': '/pdfs/3370, Water Rate Bylaw, 1981 (CONSOLIDATED)_2.pdf',
-      '3416':
-        '/pdfs/3416-Boulevard-Frontage-Tax-BL-1982-CONSOLIDATED-to-May-8-2023.pdf',
-      '3531': '/pdfs/3531_ZoningBylawConsolidation_Aug302024.pdf',
-      '3536': '/pdfs/3536.pdf',
-      '3540': '/pdfs/3540, Parking Facilities BL 1986 (CONSOLIDATED)_1.pdf',
-      '3545':
-        '/pdfs/3545-Uplands-Bylaw-1987-(CONSOLIDATED-to-February-10-2020).pdf',
-      '3550': '/pdfs/3550, Driveway Access BL (CONSOLIDATED).pdf',
-      '3578':
-        '/pdfs/3578_Subdivision-and-Development_CONSOLIDATED-to-September-2023.pdf',
-      '3603': '/pdfs/3603, Business Licence Bylaw 1988 - CONSOLIDATED FIN.pdf',
-      '3805': '/pdfs/3805.pdf',
-      '3827': '/pdfs/3827, Records Administration BL 94 (CONSOLIDATED 2).pdf',
-      '3829': '/pdfs/3829.pdf',
-      '3832': '/pdfs/3832.pdf',
-      '3891': '/pdfs/3891-Public-Sewer-Bylaw,-1996-CONSOLIDATED.pdf',
-      '3938': '/pdfs/3938.pdf',
-      '3946': '/pdfs/3946 Sign Bylaw 1997 (CONSOLIDATED) to Sept 11 2023_0.pdf',
-      '3952':
-        '/pdfs/3952, Ticket Information Utilization BL 97 (CONSOLIDATED)_2.pdf',
-      '4008': '/pdfs/4008.pdf',
-      '4013': '/pdfs/4013, Animal Control Bylaw, 1999 (CONSOLIDATED)_1.pdf',
-      '4100': '/pdfs/4100-Streets-Traffic-Bylaw-2000.pdf',
-      '4144':
-        '/pdfs/4144, Oil Burning Equipment and Fuel Tank Regulation Bylaw, 2002.pdf',
-      '4183':
-        '/pdfs/4183_Board-of-Variance-Bylaw_CONSOLIDATED-to-Sept11-2023.pdf',
-      '4222': '/pdfs/4222.pdf',
-      '4239': '/pdfs/4239, Administrative Procedures Bylaw, 2004, (CONSOLIDATED).pdf',
-      '4247':
-        '/pdfs/4247 Building and Plumbing Bylaw 2005 Consolidated to September 11 2023_0.pdf',
-      '4284': '/pdfs/4284, Elections and Voting (CONSOLIDATED).pdf',
-      '4371':
-        '/pdfs/4371-Refuse-Collection-and-Disposal-Bylaw-2007-(CONSOLIDATED).pdf',
-      '4375': '/pdfs/4375.pdf',
-      '4392': '/pdfs/4392, Sewer User Charge Bylaw 2008 (CONSOLIDATED).pdf',
-      '4421': '/pdfs/4421.pdf',
-      '4518': '/pdfs/4518.pdf',
-      '4620': '/pdfs/4620, Oak Bay Official Community Plan Bylaw, 2014.pdf',
-      '4671': '/pdfs/4671, Sign Bylaw Amendment Bylaw No. 4671, 2017.pdf',
-      '4672': '/pdfs/4672-Parks-and-Beaches-Bylaw-2017-CONSOLIDATED.pdf',
-      '4719': '/pdfs/4719, Fire Prevention and Life Safety Bylaw, 2018.pdf',
-      '4720': '/pdfs/4720.pdf',
-      '4740': '/pdfs/4740 Council Procedure Bylaw CONSOLIDATED 4740.003.pdf',
-      '4742': '/pdfs/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
-      '4747': '/pdfs/4747, Reserve Funds Bylaw, 2020 CONSOLIDATED.pdf',
-      '4770': '/pdfs/4770 Heritage Commission Bylaw CONSOLIDATED 4770.001.pdf',
-      '4771':
-        '/pdfs/4771 Advisory Planning Commission Bylaw CONSOLIDATED 4771.001.pdf',
-      '4772':
-        '/pdfs/4772 Advisory Planning Commission Bylaw CONSOLIDATED 4772.001.pdf',
-      '4777': '/pdfs/4777 PRC Fees and Charges Bylaw CONSOLIDATED.pdf',
-      '4822': '/pdfs/4822 Council Remuneration Bylaw - DRAFT.pdf',
-      '4844': '/pdfs/4844-Consolidated-up to-4858.pdf',
-      '4845':
-        '/pdfs/4845-Planning-and-Development-Fees-and-Charges-CONSOLIDATED.pdf',
-      '4849': '/pdfs/4849-Property-Tax-Exemption-Bylaw-No-4849-2023.pdf',
-      '4879': '/pdfs/4879, Oak Bay Business Improvement Area Bylaw, 2024.pdf',
-      '4892': '/pdfs/Amenity Cost Charge Bylaw No. 4892, 2024.pdf',
-      '4866': '/pdfs/Boulevard Frontage Tax Amendment Bylaw No. 4866, 2024.pdf',
-      '4891': '/pdfs/Development Cost Charge Bylaw No. 4891, 2024.pdf',
-      '4861': '/pdfs/Tax Rates Bylaw 2024, No. 4861.pdf',
-      // Add more mappings as needed
-    };
-
-    // Check if we have a direct mapping
-    if (bylawMap[bylawNumber]) {
-      return bylawMap[bylawNumber];
-    }
-
-    // If no direct mapping, look for a generic file with the number
-    return `/pdfs/${bylawNumber}.pdf`;
-  };
   
-  // Function to find specific section in PDF and return page number
-  const findSectionInPdf = async (pdfPath: string, section: string): Promise<number | null> => {
-    // This would normally use PDF.js to search through the PDF content
-    // For this implementation, we'll use a simpler approach with known section page mappings
-    const sectionPageMap: Record<string, Record<string, number>> = {
-      // Anti-Noise Bylaw example mappings
-      '3210': {
-        '3': 2, // Section 3 is on page 2
-        '4': 3, // Section 4 is on page 3
-        '5': 4, // etc.
-        '5(7)(a)': 5,
-        '5(7)(b)': 5,
-        '4(5)(a)': 3,
-        '4(5)(b)': 3
-      },
-      '3531': {
-        '1': 1,
-        '2': 2,
-        '3': 3
-      }
-    };
-    
-    // Normalize section format for lookup
-    const normalizedSection = section.replace(/^(section|part|schedule)\s+/i, '');
-    
-    // If we have mappings for this bylaw and section, return the page number
-    if (sectionPageMap[bylawNumber] && sectionPageMap[bylawNumber][normalizedSection]) {
-      return sectionPageMap[bylawNumber][normalizedSection];
-    }
-    
-    // If no mapping is found, return null (default to page 1)
-    return null;
-  };
 
   useEffect(() => {
     if (isOpen && bylawNumber) {
       setLoading(true);
 
-      // Check if we should use external PDF directly 
-      // This is a significant improvement for PDF rendering - use the actual external source
-      const useExternalPdf = true; // Set to true to use direct links to municipal website PDFs
-      
-      // Determine PDF URL based on setting
-      const resolvedPdfPath = useExternalPdf 
-        ? getExternalPdfUrl(bylawNumber, title)
-        : (pdfPath || getPdfPath(bylawNumber));
+      // Always use the best PDF URL based on environment
+      // In production, use direct links to municipal website PDFs
+      // In development, use local PDF files if available
+      const resolvedPdfPath = pdfPath || getBestPdfUrl(bylawNumber, title);
         
       console.log(`Loading PDF from: ${resolvedPdfPath}`);
       setPdfUrl(resolvedPdfPath);
@@ -228,37 +81,16 @@ export function PdfViewerModal({
       // For this implementation, using a simulated approach
       const simulatePdfLoad = async () => {
         try {
-          // Find the specific section page if available
+          // Find the specific section page if available using utility function
           if (section) {
-            const sectionPage = await findSectionInPdf(resolvedPdfPath, section);
+            const sectionPage = findSectionPage(bylawNumber, section);
             if (sectionPage) {
               setCurrentPage(sectionPage);
             }
           }
           
-          // Set a more realistic page count based on bylaw number
-          // Different bylaws have different lengths
-          let pageCount = 20; // default
-          
-          // Set specific page counts for known bylaws
-          const bylawPageCounts: Record<string, number> = {
-            '3210': 12,  // Anti-Noise Bylaw
-            '3531': 150, // Zoning Bylaw (typically very long)
-            '4742': 45,  // Tree Protection Bylaw
-            '4100': 30,  // Streets & Traffic Bylaw
-          };
-          
-          if (bylawPageCounts[bylawNumber]) {
-            pageCount = bylawPageCounts[bylawNumber];
-          } else {
-            // For unknown bylaws, base count on bylaw number (newer bylaws tend to be longer)
-            const numericBylawNum = parseInt(bylawNumber, 10);
-            if (!isNaN(numericBylawNum)) {
-              if (numericBylawNum < 4000) pageCount = 10 + (numericBylawNum % 10);
-              else if (numericBylawNum < 4500) pageCount = 20 + (numericBylawNum % 15);
-              else pageCount = 25 + (numericBylawNum % 20);
-            }
-          }
+          // Get estimated page count from utility function
+          const pageCount = getEstimatedPageCount(bylawNumber);
           
           setTotalPages(pageCount);
           setLoading(false);
@@ -271,6 +103,7 @@ export function PdfViewerModal({
       
       simulatePdfLoad();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, bylawNumber, pdfPath, section, title]);
 
   // Reset state when modal closes
