@@ -59,6 +59,37 @@ export function Chat({
     // Default error messages
     let errorMessage = 'An error occurred, please try again!';
     let errorDescription = 'The system is experiencing technical difficulties.';
+    
+    // Check if error is from PDF viewer or bylaw citation
+    const isPdfOrBylawError = 
+      (error instanceof Error && 
+        (error.message.includes('PDF') || 
+         error.message.includes('bylaw') || 
+         error.message.includes('iframe') ||
+         error.message.includes('citation'))) ||
+      (typeof error === 'string' && 
+        (error.includes('PDF') || 
+         error.includes('bylaw') || 
+         error.includes('iframe') ||
+         error.includes('citation')));
+    
+    if (isPdfOrBylawError) {
+      errorMessage = 'PDF viewer issue detected';
+      errorDescription = 'There was a problem displaying a bylaw PDF. Your conversation will continue normally.';
+      
+      // Log specific error for debugging
+      console.warn('PDF/Bylaw rendering error:', error);
+      
+      // This is a UI rendering issue, not a critical error
+      // Just show a toast but let the conversation continue
+      toast.warning(errorMessage, {
+        duration: 5000,
+        description: errorDescription,
+      });
+      
+      // Return early to prevent full error display
+      return;
+    }
 
     // Parse structured error from server if available
     if (typeof error === 'string') {

@@ -100,15 +100,34 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
       if (bylawNumber && isValidBylaw) {
         // Add bylaw citation component if we have a valid bylaw number
         try {
+          // Wrap in error boundary to prevent client-side exceptions
           segments.push(
-            <BylawCitation
-              key={`bylaw-${key++}`}
-              bylawNumber={bylawNumber}
-              title={title}
-              section={section}
-              excerpt={`Referenced in text as: "${fullMatch}"`}
-              isVerified={isValidBylaw}
-            />
+            <div key={`bylaw-wrapper-${key}`} className="bylaw-safe-wrapper">
+              {(() => {
+                try {
+                  return (
+                    <BylawCitation
+                      key={`bylaw-${key++}`}
+                      bylawNumber={bylawNumber}
+                      title={title}
+                      section={section}
+                      excerpt={`Referenced in text as: "${fullMatch}"`}
+                      isVerified={isValidBylaw}
+                    />
+                  );
+                } catch (citationError) {
+                  console.error('Error rendering BylawCitation:', citationError);
+                  // Fallback to plain text if component fails
+                  return (
+                    <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+                      <p className="text-sm text-amber-800">
+                        {fullMatch} <a href={`https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`} target="_blank" rel="noopener noreferrer" className="underline">View on official site</a>
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
+            </div>
           );
         } catch (error) {
           console.error('Error rendering BylawCitation:', error);

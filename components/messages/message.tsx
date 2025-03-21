@@ -182,15 +182,50 @@ const PurePreviewMessage = ({
                                     title?: string;
                                     section: string;
                                     content: string;
-                                  }) => (
-                                    <BylawCitation
-                                      key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
-                                      bylawNumber={bylawInfo.bylawNumber}
-                                      section={bylawInfo.section}
-                                      title={bylawInfo.title}
-                                      excerpt={bylawInfo.content}
-                                    />
-                                  ),
+                                  }) => {
+                                    try {
+                                      return (
+                                        <div key={`bylaw-safe-${bylawInfo.bylawNumber}-${bylawInfo.section}`}>
+                                          {(() => {
+                                            try {
+                                              return (
+                                                <BylawCitation
+                                                  key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
+                                                  bylawNumber={bylawInfo.bylawNumber}
+                                                  section={bylawInfo.section}
+                                                  title={bylawInfo.title}
+                                                  excerpt={bylawInfo.content}
+                                                />
+                                              );
+                                            } catch (error) {
+                                              console.error("Error rendering BylawCitation:", error);
+                                              return (
+                                                <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+                                                  <p className="text-sm text-amber-800">
+                                                    Bylaw {bylawInfo.bylawNumber}: {bylawInfo.title || `Section ${bylawInfo.section}`}
+                                                    <a 
+                                                      href={`https://www.oakbay.ca/bylaws/${bylawInfo.bylawNumber}.pdf`} 
+                                                      target="_blank" 
+                                                      rel="noopener noreferrer" 
+                                                      className="ml-2 underline"
+                                                    >
+                                                      View on official site
+                                                    </a>
+                                                  </p>
+                                                  {bylawInfo.content && (
+                                                    <p className="mt-1 text-sm italic">{bylawInfo.content}</p>
+                                                  )}
+                                                </div>
+                                              );
+                                            }
+                                          })()}
+                                        </div>
+                                      );
+                                    } catch (error) {
+                                      console.error("Error in bylaw map function:", error);
+                                      return null;
+                                    }
+                                  }
                                 )}
                               </>
                             ) : (
