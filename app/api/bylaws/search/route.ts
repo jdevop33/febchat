@@ -1,15 +1,21 @@
 /**
- * API endpoint for searching bylaws
+ * API endpoint for searching bylaws - Unified Implementation
+ * 
+ * This optimized version combines features from previous implementations:
+ * - Input validation with Zod
+ * - Performance tracking
+ * - Caching and rate limiting
+ * - Detailed error responses
  */
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { searchBylaws } from '@/lib/vector/search-service';
-import {
-  searchBylawsWithVerification,
-  recordSearchQuery,
-} from '@/lib/vector/enhanced-search';
+import { searchBylaws } from '@/lib/vector/search-unified';
+import { logger } from '@/lib/monitoring/logger';
 import { z } from 'zod';
+
+// Rate limiting
+import { LRUCache } from 'lru-cache';
 
 // Schema for search request validation
 const searchSchema = z.object({
@@ -20,224 +26,150 @@ const searchSchema = z.object({
       bylawNumber: z.string().optional(),
       dateFrom: z.string().optional(),
       dateTo: z.string().optional(),
+      consolidated: z.boolean().optional(),
     })
     .optional(),
-  limit: z.number().min(1).max(20).optional().default(5),
-  minScore: z.number().min(0).max(1).optional().default(0.5),
+  limit: z.number().min(1).max(20).optional(),
+  includeScores: z.boolean().optional(),
+  minScore: z.number().min(0).max(1).optional(),
+  useCache: z.boolean().optional(),
 });
 
-// Simple in-memory LRU cache for search results
-// In production, use a distributed cache like Redis
-const MAX_CACHE_SIZE = 100;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+// Rate limiting setup
+const rateLimit = new LRUCache({
+  max: 500,
+  ttl: 60 * 1000, // 1 minute
+});
 
-interface CacheEntry {
-  results: any;
-  timestamp: number;
-}
-
-const searchCache = new Map<string, CacheEntry>();
-
-/**
- * Generate a cache key from search parameters
- */
-function generateCacheKey(query: string, options: any): string {
-  return `${query.toLowerCase()}_${JSON.stringify(options)}`;
-}
-
-/**
- * Clean old cache entries periodically (called on each request)
- */
-function cleanExpiredCacheEntries(): void {
-  const now = Date.now();
-  for (const [key, entry] of searchCache.entries()) {
-    if (now - entry.timestamp > CACHE_TTL_MS) {
-      searchCache.delete(key);
+// Endpoint for searching bylaws
+export async function POST(request: Request) {
+  const startTime = Date.now();
+  let sessionUser = null;
+  
+  try {
+    // Parse request body
+    const body = await request.json();
+    
+    // Get client IP for rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitKey = `search:${ip}`;
+    
+    // Check rate limit (10 requests per minute)
+    const currentCount = rateLimit.get(rateLimitKey) || 0;
+    if (currentCount > 10) {
+      logger.warn(`Rate limit exceeded for ${ip}`);
+      return NextResponse.json(
+        { error: 'Rate limit exceeded, please try again later' },
+        { status: 429 }
+      );
     }
+    
+    // Update rate limit counter
+    rateLimit.set(rateLimitKey, currentCount + 1);
+    
+    // Validate request schema
+    const result = searchSchema.safeParse(body);
+    if (!result.success) {
+      logger.warn('Invalid search request', { errors: result.error.format() });
+      return NextResponse.json(
+        { error: 'Invalid search parameters', details: result.error.format() },
+        { status: 400 }
+      );
+    }
+    
+    // Extract validated parameters
+    const { query, filters, limit, includeScores, minScore, useCache } = result.data;
+    
+    // Get authentication context (for personalization)
+    const session = await auth();
+    sessionUser = session?.user;
+    
+    // Perform the search
+    const searchResults = await searchBylaws(query, {
+      filters,
+      limit,
+      includeScores,
+      minScore,
+      useCache,
+      userId: sessionUser?.id,
+    });
+    
+    // Format the response
+    const response = {
+      query,
+      results: searchResults.map(result => ({
+        bylawNumber: result.metadata.bylawNumber,
+        title: result.metadata.title,
+        section: result.metadata.section,
+        sectionTitle: result.metadata.sectionTitle,
+        content: result.text,
+        score: includeScores ? result.score : undefined,
+        officialUrl: result.metadata.officialUrl,
+        isConsolidated: result.metadata.isConsolidated,
+        consolidatedDate: result.metadata.consolidatedDate,
+      })),
+      meta: {
+        count: searchResults.length,
+        executionTimeMs: Date.now() - startTime,
+        filters: filters || {},
+      }
+    };
+    
+    logger.info(`Search completed in ${Date.now() - startTime}ms`, {
+      query,
+      resultCount: searchResults.length,
+      userEmail: sessionUser?.email,
+    });
+    
+    return NextResponse.json(response);
+  } catch (error) {
+    logger.error('Search failed with error', { error });
+    
+    return NextResponse.json(
+      { error: 'An error occurred while searching', message: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 
-/**
- * POST handler for bylaw search with caching
- */
-export async function POST(request: Request) {
+// Handle GET requests with query params
+export async function GET(request: Request) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    // Parse and validate request body
-    const body = await request.json();
-    const { query, filters, limit, minScore } = searchSchema.parse(body);
-
-    // Search options
-    const searchOptions = {
-      limit,
-      minScore,
-      filters,
-      userId: session.user.id, // Include user ID for logging but not for cache key
-    };
-
-    // Create a cache key without the userId to allow sharing results between users
-    const cacheKey = generateCacheKey(query, {
-      limit,
-      minScore,
-      filters,
-    });
-
-    // Clean expired cache entries
-    cleanExpiredCacheEntries();
-
-    // Check cache first
-    const cachedEntry = searchCache.get(cacheKey);
-    let results: Awaited<ReturnType<typeof searchBylaws>> = [];
-    let fromCache = false;
-
-    if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
-      // Use cached results
-      results = cachedEntry.results;
-      fromCache = true;
-    } else {
-      // Perform search with verification
-      try {
-        // Convert searchOptions to enhanced search format
-        const enhancedOptions = {
-          topK: limit,
-          bylawFilter: filters?.bylawNumber,
-          categoryFilter: filters?.category,
-          dateRange:
-            filters?.dateFrom || filters?.dateTo
-              ? {
-                  start: filters.dateFrom,
-                  end: filters.dateTo,
-                }
-              : undefined,
-        };
-
-        // Use the enhanced search with verification
-        const verifiedResults = await searchBylawsWithVerification(
-          query,
-          enhancedOptions,
-        );
-
-        // Record query for analytics
-        await recordSearchQuery(query, verifiedResults);
-
-        // Convert verified results to expected format and cast to proper type
-        results = verifiedResults.map((result) => ({
-          id: `bylaw-${result.bylawNumber}-${result.section}`,
-          score: result.score,
-          text: result.content,
-          metadata: {
-            bylawNumber: result.bylawNumber,
-            title: result.title,
-            section: result.section,
-            sectionTitle: result.sectionTitle,
-            category: result.section.includes('1') ? 'general' : 'specific', // Placeholder
-            dateEnacted: result.enactmentDate || 'unknown', // Ensure string value
-            text: result.content, // Add text field required by BylawMetadata
-            lastUpdated: result.consolidatedDate || 'unknown', // Ensure string value
-            isVerified: result.isVerified,
-            pdfPath: result.pdfPath,
-            officialUrl: result.officialUrl,
-            isConsolidated: result.isConsolidated,
-          },
-        })) as any; // Cast to any to bypass type checking
-      } catch (error) {
-        console.error(
-          'Enhanced search failed, falling back to standard search:',
-          error,
-        );
-        // Fall back to original search if enhanced search fails
-        results = await searchBylaws(query, searchOptions);
-      }
-
-      // Cache results
-      if (searchCache.size >= MAX_CACHE_SIZE) {
-        // Remove oldest entry if cache is full
-        const oldestKey = searchCache.keys().next().value;
-        if (oldestKey !== undefined) {
-          searchCache.delete(oldestKey);
-        }
-      }
-
-      searchCache.set(cacheKey, {
-        results,
-        timestamp: Date.now(),
-      });
-    }
-
-    // Format and return results with cache indicator and verification info
-    const formattedResults = results.map((result: any) => ({
-      id: result.id,
-      bylawNumber: result.metadata.bylawNumber,
-      title: result.metadata.title,
-      section: result.metadata.section,
-      sectionTitle: result.metadata.sectionTitle,
-      content: result.text,
-      url:
-        result.metadata.officialUrl ||
-        `https://oakbay.civicweb.net/document/bylaw/${result.metadata.bylawNumber}?section=${result.metadata.section}`,
-      pdfPath:
-        result.metadata.pdfPath || `/pdfs/${result.metadata.bylawNumber}.pdf`,
-      score: result.score,
-      isVerified:
-        result.metadata.isVerified === undefined
-          ? false
-          : result.metadata.isVerified,
-      isConsolidated: result.metadata.isConsolidated || false,
-      metadata: {
-        category: result.metadata.category,
-        dateEnacted: result.metadata.dateEnacted,
-        lastUpdated:
-          result.metadata.lastUpdated || result.metadata.consolidatedDate,
-        amendedBylaw: result.metadata.amendedBylaw,
-      },
-    }));
-
-    // Count verified results
-    const verifiedCount = formattedResults.filter(
-      (result) => result.isVerified,
-    ).length;
-
-    const response = NextResponse.json({
-      success: true,
-      query,
-      count: results.length,
-      verifiedCount,
-      verificationRate: results.length > 0 ? verifiedCount / results.length : 0,
-      fromCache,
-      results: formattedResults,
-    });
-
-    // Add cache control headers
-    response.headers.set('Cache-Control', 'private, max-age=300');
-
-    return response;
-  } catch (error) {
-    console.error('Bylaw search error:', error);
-
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q');
+    
+    if (!query) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid search parameters',
-          details: error.errors,
-        },
-        { status: 400 },
+        { error: 'Query parameter "q" is required' },
+        { status: 400 }
       );
     }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Search failed',
+    
+    // Convert to POST request format
+    const body = {
+      query,
+      filters: {
+        bylawNumber: searchParams.get('bylaw') || undefined,
+        category: searchParams.get('category') || undefined,
       },
-      { status: 500 },
+      limit: searchParams.get('limit') ? Number.parseInt(searchParams.get('limit') as string, 10) : undefined,
+    };
+    
+    // Create new request with body for POST handler
+    const newReq = new Request(request.url, {
+      method: 'POST',
+      headers: request.headers,
+      body: JSON.stringify(body),
+    });
+    
+    // Pass to POST handler
+    return POST(newReq);
+  } catch (error) {
+    logger.error('GET search failed with error', { error });
+    
+    return NextResponse.json(
+      { error: 'An error occurred while searching', message: (error as Error).message },
+      { status: 500 }
     );
   }
 }
