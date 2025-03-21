@@ -2,9 +2,11 @@ import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
+import { env } from 'node:process';
 
 // Import the centralized database client
-import db, { schema } from './index';
+import db from './index';
+import * as schema from './schema';
 
 // Extract schema objects for more readable queries
 const {
@@ -318,7 +320,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: ArtifactKind;
+  kind: string;
   content: string;
   userId: string;
 }) {

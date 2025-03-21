@@ -7,7 +7,7 @@
 import 'server-only';
 
 import { drizzle } from 'drizzle-orm/vercel-postgres';
-import { sql } from '@vercel/postgres';
+import { sql, db as vercelDb } from '@vercel/postgres';
 import { env } from 'node:process';
 
 import * as schema from './schema';
@@ -20,7 +20,7 @@ const isBuildPhase = env.NEXT_PHASE === 'build';
 console.log(`DB: Initializing database client (${isProduction ? 'production' : 'development'})`);
 
 // Define database client (singleton pattern)
-let db: ReturnType<typeof drizzle<typeof schema>>;
+let db: ReturnType<typeof drizzle>;
 
 if (isBuildPhase) {
   console.log('DB: Build phase detected, using mock database client');
@@ -35,11 +35,11 @@ if (isBuildPhase) {
   try {
     // Use Vercel's PostgreSQL client
     console.log('DB: Initializing with Vercel Postgres integration');
-    db = drizzle(schema);
+    db = drizzle(vercelDb, { schema });
     
     // Test connection (only in development)
     if (!isProduction && !isBuildPhase) {
-      db.execute(sql`SELECT 1 as connected`)
+      vercelDb.query('SELECT 1 as connected')
         .then(() => console.log('DB: ✅ Successfully connected to database'))
         .catch((error) => {
           console.error('DB: ❌ Failed to connect to database:', error);
@@ -64,4 +64,4 @@ if (isBuildPhase) {
 export default db;
 
 // Re-export schema for convenience
-export { schema };
+export * from './schema';
