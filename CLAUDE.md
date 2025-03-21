@@ -12,8 +12,6 @@
 - `pnpm db:migrate`: Run database migrations
 - `pnpm db:studio`: Launch Drizzle studio interface
 - `ts-node scripts/<script-name>.ts`: Run TypeScript scripts
-- `node scripts/index-bylaws.ts`: Index bylaws for search
-- `node scripts/verify-pinecone.ts`: Verify Pinecone connection
 
 ## Code Style Guidelines
 
@@ -23,10 +21,8 @@
 - Imports: external libs first, then internal with `@/` path alias
 - Component naming: PascalCase for components, camelCase for functions/variables
 - React Server Components (RSCs) preferred over client components
-- Server Actions for data mutations; client actions for UI-only operations
-- Error handling: use try/catch blocks, Zod for validation, toast for notifications
+- Error handling: try/catch blocks, Zod for validation, toast for notifications
 - Styling: Tailwind CSS with `cn()` utility for conditional classes
-- File organization: group by feature rather than by type
 - Custom hooks: prefix with `use`, like `useIsMobile`
 
 ## Architecture
@@ -36,5 +32,4 @@
 - Authentication: NextAuth.js with credentials provider
 - UI: Tailwind CSS + shadcn/ui components
 - Vector search: Pinecone for bylaw search functionality
-- State management: React Context + React Query where needed
 - AI integration: AI SDK with Anthropic and OpenAI

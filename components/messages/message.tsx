@@ -14,6 +14,7 @@ import type { MessageProps } from '@/types/messages/message-types';
 import { DocumentToolCall, DocumentToolResult } from '@/components/documents/document';
 import { PencilEditIcon, SparklesIcon } from '@/components/icons';
 import { Markdown } from '@/components/markdown';
+import { EnhancedMarkdown } from '@/components/enhanced-markdown';
 import { MessageActions } from '@/components/message-actions';
 import { PreviewAttachment } from '@/components/preview-attachment';
 import { Weather } from '@/components/weather';
@@ -112,7 +113,11 @@ const PurePreviewMessage = ({
                       message.role === 'user',
                   })}
                 >
-                  <Markdown>{message.content as string}</Markdown>
+                  {message.role === 'assistant' ? (
+                    <EnhancedMarkdown>{message.content as string}</EnhancedMarkdown>
+                  ) : (
+                    <Markdown>{message.content as string}</Markdown>
+                  )}
                 </div>
               </div>
             )}
