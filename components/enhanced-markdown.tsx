@@ -3,23 +3,11 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-// Hardcoded values to eliminate client/server mismatch
-const VALIDATED_BYLAWS = [
-  "3210", "3531", "4100", "4247", "4742", "4849", "4861", "4891", "4892"
-];
-
-// Hardcoded bylaw title mapping
-const bylawTitleMap: Record<string, string> = {
-  "3210": "Anti-Noise Bylaw",
-  "3531": "Zoning Bylaw",
-  "4100": "Streets and Traffic Bylaw",
-  "4247": "Building and Plumbing Bylaw",
-  "4742": "Tree Protection Bylaw",
-  "4849": "Property Tax Exemption Bylaw, 2023",
-  "4861": "Tax Rates Bylaw, 2024",
-  "4891": "Development Cost Charge Bylaw",
-  "4892": "Amenity Cost Charge Bylaw"
-};
+import { 
+  VALIDATED_BYLAWS, 
+  BYLAW_TITLE_MAP as bylawTitleMap,
+  getExternalPdfUrl 
+} from '@/lib/utils/bylaw-maps-client';
 
 interface EnhancedMarkdownProps {
   children: string;
@@ -130,7 +118,7 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
                     <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
                       <p className="text-sm text-amber-800">
                         {fullMatch} <a 
-                          href={`https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`} 
+                          href={getExternalPdfUrl(bylawNumber)} 
                           target="_blank" 
                           rel="noopener noreferrer" 
                           className="underline flex items-center gap-1"

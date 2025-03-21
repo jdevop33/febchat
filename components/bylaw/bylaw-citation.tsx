@@ -19,45 +19,11 @@ import { toast } from 'sonner';
 import { PdfViewerModal } from '@/components/pdf-viewer-modal';
 import { CitationFeedback } from '@/components/citation-feedback';
 import {
-  VALIDATED_BYLAWS as SERVER_VALIDATED_BYLAWS,
-} from '@/lib/utils/bylaw-utils';
-
-// Hardcoded PDF URLs to prevent client/server mismatch issues
-const HARDCODED_PDF_URLS: Record<string, string> = {
-  "4247": "https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf",
-  "4742": "https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf",
-  "3210": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf",
-  "3531": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf",
-  "4100": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf",
-  "4849": "https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf",
-  "4861": "https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf",
-  "4891": "https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf",
-  "4892": "https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf"
-};
-
-// Safe client-side URL getters that don't rely on server imports
-const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
-  // Use hardcoded URL if available
-  if (HARDCODED_PDF_URLS[bylawNumber]) {
-    return HARDCODED_PDF_URLS[bylawNumber];
-  }
-  
-  // Fallback to a predictable format
-  return `https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`;
-};
-
-const getLocalPdfPath = (bylawNumber: string): string => {
-  return `/pdfs/${bylawNumber}.pdf`;
-};
-
-const getBestPdfUrl = (bylawNumber: string, title?: string): string => {
-  // Always use external URLs for consistency between client and server
-  return getExternalPdfUrl(bylawNumber, title);
-};
-
-const VALIDATED_BYLAWS_LIST = Array.isArray(SERVER_VALIDATED_BYLAWS) 
-  ? SERVER_VALIDATED_BYLAWS
-  : [];
+  VALIDATED_BYLAWS,
+  getExternalPdfUrl,
+  getLocalPdfPath,
+  getBestPdfUrl
+} from '@/lib/utils/bylaw-maps-client';
 
 interface BylawCitationProps {
   bylawNumber: string;
@@ -76,9 +42,6 @@ interface BylawCitationProps {
   sectionTitle?: string;
   score?: number;
 }
-
-// Using imported VALIDATED_BYLAWS_LIST from centralized utility
-const VALIDATED_BYLAWS = VALIDATED_BYLAWS_LIST;
 
 export function BylawCitation({
   bylawNumber,

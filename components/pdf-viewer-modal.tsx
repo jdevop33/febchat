@@ -22,69 +22,12 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 
-// Hardcoded PDF URLs to prevent client/server mismatch issues
-const HARDCODED_PDF_URLS: Record<string, string> = {
-  "4247": "https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf",
-  "4742": "https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf",
-  "3210": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf",
-  "3531": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf",
-  "4100": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf",
-  "4849": "https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf",
-  "4861": "https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf",
-  "4891": "https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf",
-  "4892": "https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf"
-};
-
-// Hard-coded section page mappings
-const SECTION_PAGE_MAPPINGS: Record<string, Record<string, number>> = {
-  "3210": { "3": 2, "4": 3, "5": 4, "5(7)(a)": 5, "5(7)(b)": 5, "4(5)(a)": 3, "4(5)(b)": 3, "7": 6 },
-  "3531": { "1": 1, "2": 2, "3": 3, "4.1": 5, "4.2": 6, "5.1": 10, "6.1": 15 },
-  "4742": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5 },
-  "4100": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5 },
-  "4247": { "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8 }
-};
-
-// Safe client-side URL getters that don't rely on server imports
-const getExternalPdfUrl = (bylawNumber: string, title?: string): string => {
-  // Use hardcoded URL if available
-  if (HARDCODED_PDF_URLS[bylawNumber]) {
-    return HARDCODED_PDF_URLS[bylawNumber];
-  }
-  
-  // Fallback to a predictable format
-  return `https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`;
-};
-
-const getBestPdfUrl = (bylawNumber: string, title?: string): string => {
-  // Always use external URLs for consistency between client and server
-  return getExternalPdfUrl(bylawNumber, title);
-};
-
-const findSectionPage = (bylawNumber: string, section: string): number | null => {
-  // Normalize section format for lookup
-  const normalizedSection = section.replace(/^(section|part|schedule)\s+/i, '');
-
-  // Check our hardcoded mappings
-  if (SECTION_PAGE_MAPPINGS[bylawNumber]?.[normalizedSection]) {
-    return SECTION_PAGE_MAPPINGS[bylawNumber][normalizedSection];
-  }
-  
-  // Fallback to page 1
-  return 1;
-};
-
-const getEstimatedPageCount = (bylawNumber: string): number => {
-  // Hardcoded page counts for common bylaws
-  const pageCountMap: Record<string, number> = {
-    "3210": 12, // Anti-Noise Bylaw
-    "3531": 150, // Zoning Bylaw
-    "4742": 45, // Tree Protection Bylaw
-    "4100": 30, // Streets & Traffic Bylaw
-    "4247": 40, // Building and Plumbing Bylaw
-  };
-  
-  return pageCountMap[bylawNumber] || 20; // Default to 20 pages
-};
+import {
+  getExternalPdfUrl,
+  getBestPdfUrl,
+  findSectionPage,
+  getEstimatedPageCount
+} from '@/lib/utils/bylaw-maps-client';
 
 interface PdfViewerModalProps {
   isOpen: boolean;
