@@ -15,7 +15,18 @@ export function CitationFallback({
   error
 }: CitationFallbackProps) {
   // Get the external URL for linking to official source
-  const externalUrl = getExternalPdfUrl(bylawNumber);
+  let externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  
+  try {
+    // Try to get the URL from our utility, but don't fail if it doesn't work
+    if (bylawNumber && getExternalPdfUrl) {
+      externalUrl = getExternalPdfUrl(bylawNumber);
+    }
+  } catch (err) {
+    console.error('Error getting external PDF URL:', err);
+    // Fallback to a predictable URL format
+    externalUrl = `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
+  }
   
   return (
     <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">

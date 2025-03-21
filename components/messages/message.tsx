@@ -216,32 +216,53 @@ const PurePreviewMessage = ({
                                 <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                                   Relevant Bylaw Information:
                                 </div>
-                                {result.results?.map(
+                                {Array.isArray(result.results) ? result.results.map(
                                   (bylawInfo: {
                                     bylawNumber: string;
                                     title?: string;
                                     section: string;
                                     content: string;
                                   }) => {
+                                    if (!bylawInfo || typeof bylawInfo !== 'object') {
+                                      console.error("Invalid bylaw result:", bylawInfo);
+                                      return null;
+                                    }
+
                                     try {
                                       return (
-                                        <div key={`bylaw-safe-${bylawInfo.bylawNumber}-${bylawInfo.section}`}>
+                                        <div key={`bylaw-safe-${bylawInfo.bylawNumber || 'unknown'}-${bylawInfo.section || 'section'}`}>
                                           <ErrorBoundaryFallback
-                                            bylawInfo={bylawInfo}
+                                            bylawInfo={{
+                                              bylawNumber: bylawInfo.bylawNumber || 'unknown',
+                                              title: bylawInfo.title,
+                                              section: bylawInfo.section || 'Unknown Section',
+                                              content: bylawInfo.content || 'No content available'
+                                            }}
                                             fallback={(
                                               <CitationFallback
-                                            bylawNumber={bylawInfo.bylawNumber}
-                                            formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber}`}
-                                          />
+                                                bylawNumber={bylawInfo.bylawNumber || 'unknown'}
+                                                formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber || 'unknown'}`}
+                                                error={new Error('Unable to display citation')}
+                                              />
                                             )}
                                           />
                                         </div>
                                       );
                                     } catch (error) {
-                                      console.error("Error in bylaw map function:", error);
-                                      return null;
+                                      console.error("Error rendering bylaw citation:", error);
+                                      return (
+                                        <CitationFallback
+                                          bylawNumber={bylawInfo.bylawNumber || 'unknown'}
+                                          formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber || 'unknown'}`}
+                                          error={error instanceof Error ? error : new Error('Unknown error')}
+                                        />
+                                      );
                                     }
                                   }
+                                ) : (
+                                  <div className="text-sm italic text-muted-foreground">
+                                    Error displaying bylaw results. Please try your search again.
+                                  </div>
                                 )}
                               </>
                             ) : (
