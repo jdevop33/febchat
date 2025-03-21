@@ -7,7 +7,7 @@
 import 'server-only';
 
 import { drizzle } from 'drizzle-orm/vercel-postgres';
-import { sql, db as vercelDb } from '@vercel/postgres';
+import { db as vercelDb } from '@vercel/postgres';
 import { env } from 'node:process';
 
 import * as schema from './schema';
@@ -33,29 +33,75 @@ if (isBuildPhase) {
 } else {
   // Initialize real database client
   try {
+    // Check if Vercel Postgres client is available
+    if (!vercelDb) {
+      console.error('DB: ❌ Vercel Postgres client is not available');
+      throw new Error('Vercel Postgres client is undefined');
+    }
+    
     // Use Vercel's PostgreSQL client
     console.log('DB: Initializing with Vercel Postgres integration');
     db = drizzle(vercelDb, { schema });
     
-    // Test connection (only in development)
-    if (!isProduction && !isBuildPhase) {
-      vercelDb.query('SELECT 1 as connected')
-        .then(() => console.log('DB: ✅ Successfully connected to database'))
-        .catch((error) => {
-          console.error('DB: ❌ Failed to connect to database:', error);
-          // Don't throw - allow server to start with degraded functionality
-        });
+    // Test connection (in any environment except build, to catch issues early)
+    if (!isBuildPhase) {
+      // We'll use a self-executing async function to test the connection
+      // without awaiting it at the top level
+      (async () => {
+        try {
+          // Use a timeout to prevent hanging
+          const connectionPromise = vercelDb.query('SELECT 1 as connected');
+          const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Database connection timeout')), 5000)
+          );
+          
+          await Promise.race([connectionPromise, timeoutPromise]);
+          console.log('DB: ✅ Successfully connected to database');
+        } catch (connError) {
+          console.error('DB: ❌ Failed to connect to database:', connError);
+          // Log environment variables status (not the values) for debugging
+          console.error('DB: Environment variables check:');
+          console.error('DB: - POSTGRES_URL:', env.POSTGRES_URL ? 'Set' : 'Not set');
+          console.error('DB: - DATABASE_URL:', env.DATABASE_URL ? 'Set' : 'Not set');
+          console.error('DB: - POSTGRES_USER:', env.POSTGRES_USER ? 'Set' : 'Not set');
+          console.error('DB: - NODE_ENV:', env.NODE_ENV || 'Not set');
+        }
+      })().catch(error => {
+        console.error('DB: Failed to test database connection:', error);
+      });
     }
   } catch (error) {
     console.error('DB: ❌ Error initializing database client:', error);
     
-    // Provide a fallback mock in case of initialization errors
-    // This prevents the app from crashing completely
+    // Provide a more robust fallback mock client
     console.warn('DB: Using fallback mock database client');
     db = {
-      query: async () => [],
-      execute: async () => [],
-      // Add any other mock methods needed
+      query: async () => {
+        console.warn('DB: Mock query executed - database is not available');
+        return [];
+      },
+      execute: async () => {
+        console.warn('DB: Mock execute called - database is not available');
+        return [];
+      },
+      select: () => ({
+        from: () => ({
+          where: () => Promise.resolve([]),
+          orderBy: () => Promise.resolve([]),
+          limit: () => Promise.resolve([]),
+        }),
+      }),
+      insert: () => ({
+        values: () => Promise.resolve([]),
+      }),
+      update: () => ({
+        set: () => ({
+          where: () => Promise.resolve([]),
+        }),
+      }),
+      delete: () => ({
+        where: () => Promise.resolve([]),
+      }),
     } as any;
   }
 }
