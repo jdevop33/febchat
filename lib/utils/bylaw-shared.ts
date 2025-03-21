@@ -12,14 +12,15 @@ import { knownBylawUrls, bylawTitleMap, VALIDATED_BYLAWS } from './bylaw-maps';
  * Get external PDF URL for a bylaw
  */
 export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
-  // Use hardcoded URL if available (always preferred for accuracy)
-  if (knownBylawUrls[bylawNumber]) {
-    return knownBylawUrls[bylawNumber];
-  }
+  // TEMPORARILY DISABLED EXTERNAL PDF URLS - FOR TESTING
+  // Original implementation:
+  // if (knownBylawUrls[bylawNumber]) {
+  //   return knownBylawUrls[bylawNumber];
+  // }
+  // return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
   
-  // For bylaws not in our hardcoded list, direct to the main bylaws page
-  // instead of trying to guess the PDF URL with current date (which was causing broken links)
-  return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
+  // Return a consistent URL for testing
+  return `https://www.oakbay.ca/municipal-services/bylaws`;
 }
 
 /**
@@ -33,8 +34,12 @@ export function getLocalPdfPath(bylawNumber: string): string {
  * Get the best PDF URL to use
  */
 export function getBestPdfUrl(bylawNumber: string, title?: string): string {
-  // Always use external URLs for consistency between client and server
-  return getExternalPdfUrl(bylawNumber, title);
+  // TEMPORARILY DISABLED PDF URL MAPPING - FOR TESTING
+  // Original implementation:
+  // return getExternalPdfUrl(bylawNumber, title);
+  
+  // Return a placeholder for testing
+  return `/pdfs/placeholder.pdf`;
 }
 
 /**
