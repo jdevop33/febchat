@@ -23,15 +23,21 @@ export type DataStreamDelta = {
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
-  const { data: dataStream } = useChat({ id, api: '/api/chat' });
+  // Get chat data with null check to prevent destructuring error
+  const chatResult = useChat({ id, api: '/api/chat' });
+  const dataStream = chatResult?.data || [];
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
-    if (!dataStream?.length) return;
+    // Additional safety check
+    if (!Array.isArray(dataStream) || dataStream.length === 0) return;
 
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
+
+    // Check if newDeltas is an array before trying to iterate
+    if (!Array.isArray(newDeltas) || newDeltas.length === 0) return;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
       const artifactDefinition = artifactDefinitions.find(
