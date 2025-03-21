@@ -133,17 +133,23 @@ export function PdfViewerModal({
   };
 
   const handleDownload = () => {
-    // Trigger download of the PDF
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = `Oak_Bay_Bylaw_${bylawNumber}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Only run in browser context
+    if (typeof document !== 'undefined') {
+      // Trigger download of the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `Oak_Bay_Bylaw_${bylawNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    toast.success('Downloading PDF', {
-      description: `Bylaw ${bylawNumber} is being downloaded`,
-    });
+      toast.success('Downloading PDF', {
+        description: `Bylaw ${bylawNumber} is being downloaded`,
+      });
+    } else {
+      // Fallback for non-browser environments
+      console.log('Document API not available');
+    }
   };
 
   // Create direct PDF viewer URL with parameters including section targeting
@@ -268,9 +274,11 @@ export function PdfViewerModal({
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                window.open(pdfUrl, '_blank', 'noopener,noreferrer')
-              }
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+                }
+              }}
               disabled={loading}
             >
               <ExternalLink size={16} className="mr-1" />
@@ -279,9 +287,11 @@ export function PdfViewerModal({
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                window.open(getExternalPdfUrl(bylawNumber, title), '_blank')
-              }
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.open(getExternalPdfUrl(bylawNumber, title), '_blank');
+                }
+              }}
               disabled={loading}
             >
               <ExternalLink size={16} className="mr-1" />
@@ -302,9 +312,11 @@ export function PdfViewerModal({
               <p className="mb-2 text-muted-foreground">Unable to load PDF</p>
               <Button
                 variant="default"
-                onClick={() =>
-                  window.open(getExternalPdfUrl(bylawNumber, title), '_blank')
-                }
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    window.open(getExternalPdfUrl(bylawNumber, title), '_blank');
+                  }
+                }}
               >
                 <ExternalLink size={16} className="mr-2" />
                 View on Official Website

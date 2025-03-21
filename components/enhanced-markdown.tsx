@@ -3,7 +3,8 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { VALIDATED_BYLAWS, bylawTitleMap } from '@/lib/utils/bylaw-utils';
+import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-utils';
+import { bylawTitleMap } from '@/lib/utils/bylaw-maps';
 
 interface EnhancedMarkdownProps {
   children: string;

@@ -180,10 +180,23 @@ export function BylawCitation({
         break;
     }
 
-    navigator.clipboard.writeText(content);
-    toast.success(
-      `${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`,
-    );
+    // Check if navigator is available (only in browser context)
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(content)
+        .then(() => {
+          toast.success(
+            `${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`,
+          );
+        })
+        .catch((err) => {
+          console.error('Failed to copy text: ', err);
+          toast.error('Failed to copy to clipboard');
+        });
+    } else {
+      // Fallback for non-browser environments (SSR)
+      console.log('Clipboard API not available');
+      toast.info('Copy function is only available in the browser');
+    }
   };
 
   // Get the external URL
@@ -195,8 +208,10 @@ export function BylawCitation({
       description: `We couldn't find the PDF for Bylaw No. ${bylawNumber} in our system. Please check the external link for the official document.`,
     });
 
-    // Auto-open external link if PDF not found
-    window.open(externalUrl, '_blank');
+    // Auto-open external link if PDF not found (browser-only)
+    if (typeof window !== 'undefined') {
+      window.open(externalUrl, '_blank');
+    }
   };
 
   // Function to get the appropriate PDF path using centralized utility
@@ -458,8 +473,10 @@ export function BylawCitation({
                       // For local PDF file display, use centralized getBestPdfUrl utility
                       const pdfPath = getBestPdfUrl(bylawNumber, title);
 
-                      // Open in new tab
-                      window.open(pdfPath, '_blank', 'noopener,noreferrer');
+                      // Open in new tab (browser-only)
+                      if (typeof window !== 'undefined') {
+                        window.open(pdfPath, '_blank', 'noopener,noreferrer');
+                      }
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />
@@ -481,7 +498,9 @@ export function BylawCitation({
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(externalUrl, '_blank');
+                      if (typeof window !== 'undefined') {
+                        window.open(externalUrl, '_blank');
+                      }
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />

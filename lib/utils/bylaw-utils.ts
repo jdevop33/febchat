@@ -85,18 +85,14 @@ export function getLocalPdfPath(bylawNumber: string): string {
 
 /**
  * Get best PDF URL based on environment
- * In production, use external URLs directly
- * In development, use local PDF files
- *
+ * 
  * @param bylawNumber - The bylaw number as string
  * @param title - Optional title for URL formatting
- * @returns The best PDF URL based on environment
+ * @returns The best PDF URL - always use external URL to avoid client/server issues
  */
 export function getBestPdfUrl(bylawNumber: string, title?: string): string {
-  const isProduction = process.env.NODE_ENV === 'production';
-  return isProduction
-    ? getExternalPdfUrl(bylawNumber, title)
-    : getLocalPdfPath(bylawNumber);
+  // Always use external URLs to avoid client/server environment issues
+  return getExternalPdfUrl(bylawNumber, title);
 }
 
 /**
