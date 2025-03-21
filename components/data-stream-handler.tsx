@@ -25,11 +25,13 @@ export type DataStreamDelta = {
 export function DataStreamHandler({ id }: { id: string }) {
   // Get chat data with null check to prevent destructuring error
   const chatResult = useChat({ id, api: '/api/chat' });
-  const dataStream = chatResult?.data || [];
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
+    // Move dataStream inside the effect to avoid the exhaustive-deps warning
+    const dataStream = chatResult?.data || [];
+    
     // Additional safety check
     if (!Array.isArray(dataStream) || dataStream.length === 0) return;
 
@@ -97,7 +99,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [dataStream, setArtifact, setMetadata, artifact]);
+  }, [chatResult, setArtifact, setMetadata, artifact]);
 
   return null;
 }

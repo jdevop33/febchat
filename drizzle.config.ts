@@ -8,8 +8,11 @@ config({
 export default defineConfig({
   schema: './lib/db/schema.ts',
   out: './lib/db/migrations',
-  dialect: 'sqlite',
+  dialect: 'postgresql',
   dbCredentials: {
-    url: 'sqlite.db',
+    url: process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
   },
+  driver: 'pg',
+  verbose: true,
+  strict: true,
 });

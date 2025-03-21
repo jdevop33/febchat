@@ -3,10 +3,10 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
+import { CitationFallback } from '@/components/bylaw/citation-fallback';
 import { 
   VALIDATED_BYLAWS, 
   BYLAW_TITLE_MAP as bylawTitleMap,
-  getExternalPdfUrl 
 } from '@/lib/utils/bylaw-maps-client';
 
 interface EnhancedMarkdownProps {
@@ -71,18 +71,18 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
       let title = bylawName;
       if (!title && bylawNumber) {
         try {
+          // Ensure bylawTitleMap is defined before accessing it
+          const titleMap = bylawTitleMap || {};
           // Get title from centralized bylaw map
-          title = bylawTitleMap?.[bylawNumber] ? 
-                 bylawTitleMap[bylawNumber] : 
-                 `Bylaw No. ${bylawNumber}`;
+          title = titleMap[bylawNumber] || `Bylaw No. ${bylawNumber}`;
         } catch (error) {
           console.error('Error accessing bylaw title map:', error);
           title = `Bylaw No. ${bylawNumber}`;
         }
       }
       
-      // Safe validation check
-      const validatedBylaws = Array.isArray(VALIDATED_BYLAWS) ? VALIDATED_BYLAWS : [];
+      // Safe validation check to ensure VALIDATED_BYLAWS exists and is an array
+      const validatedBylaws = VALIDATED_BYLAWS && Array.isArray(VALIDATED_BYLAWS) ? VALIDATED_BYLAWS : [];
       const isValidBylaw = validatedBylaws.includes(bylawNumber);
       
       if (bylawNumber && isValidBylaw) {
@@ -115,43 +115,21 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
                   
                   // If component creation succeeded, render it with a fallback
                   return CitationComponent || (
-                    <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
-                      <p className="text-sm text-amber-800">
-                        {fullMatch} <a 
-                          href={getExternalPdfUrl(bylawNumber)} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="underline flex items-center gap-1"
-                          aria-label={`View Bylaw ${bylawNumber} on official site (opens in new tab)`}
-                        >
-                          <span>View on official site</span>
-                          <svg 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            width="12" 
-                            height="12" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
-                            strokeLinejoin="round" 
-                            aria-hidden="true"
-                          >
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                            <polyline points="15 3 21 3 21 9" />
-                            <line x1="10" y1="14" x2="21" y2="3" />
-                          </svg>
-                        </a>
-                      </p>
-                    </div>
+                    <CitationFallback 
+                      bylawNumber={bylawNumber}
+                      formattedTitle={title || `Bylaw No. ${bylawNumber}`}
+                      error={new Error("Failed to render citation component")}
+                    />
                   );
                 } catch (renderError) {
                   // Ultimate fallback if everything else fails
                   console.error('Critical error in bylaw citation rendering:', renderError);
                   return (
-                    <span className="text-amber-700 font-medium">
-                      {fullMatch} (PDF available on official site)
-                    </span>
+                    <CitationFallback
+                      bylawNumber={bylawNumber}
+                      formattedTitle={fullMatch}
+                      error={renderError instanceof Error ? renderError : new Error("Critical rendering error")}
+                    />
                   );
                 }
               })()}

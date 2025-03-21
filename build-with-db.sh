@@ -12,21 +12,21 @@ npx prisma generate
 export NEXT_PHASE="build"
 export NODE_ENV="production"
 
-# Check if we're in a writable environment and can create a database
-if [ -w "$(dirname "$(pwd)/prisma/dev.db")" ]; then
-  echo "Environment appears to be writable, attempting to run migrations..."
+# Check if we're in a Vercel environment with Postgres integration
+if [ -n "$POSTGRES_URL" ] || [ -n "$DATABASE_URL" ]; then
+  echo "Postgres URL detected, running migrations..."
   
-  # Run database migrations
-  npx prisma migrate deploy
+  # Run database migrations using Prisma for schema tables
+  npx prisma migrate deploy || echo "Prisma migration warning (non-fatal)"
+  
+  # Also run Drizzle migrations for application tables
+  echo "Running Drizzle migrations..."
+  npx tsx lib/db/migrate.ts || echo "Drizzle migration warning (non-fatal)"
 else
-  echo "Non-writable environment detected (likely Vercel), skipping migrations"
-  echo "Database operations will fall back to file-based verification"
-fi
-
-# Provide a mock DATABASE_URL for the build process if not set
-if [ -z "$DATABASE_URL" ] && [ -z "$POSTGRES_URL" ]; then
+  echo "No database URLs detected, skipping migrations"
   echo "Setting mock DATABASE_URL for build process"
   export DATABASE_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+  export POSTGRES_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
 fi
 
 # Run Next.js build

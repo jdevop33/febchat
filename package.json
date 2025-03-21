@@ -18,6 +18,8 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
+    "db:test": "npx tsx scripts/test-db-connection.ts",
+    "db:init": "npx tsx lib/db/init.ts",
     "pinecone:upload": "npx tsx scripts/upload-pdfs-to-pinecone.ts",
     "pinecone:upload:llama": "npx tsx scripts/upload-with-llama-embeddings.ts",
     "pinecone:namespace": "npx tsx scripts/pinecone-namespace-upload.ts",
