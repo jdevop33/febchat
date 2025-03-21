@@ -22,20 +22,23 @@ export const initialArtifactData: UIArtifact = {
 type Selector<T> = (state: UIArtifact) => T;
 
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
-  const { data: localArtifact } = useSWR<UIArtifact>('artifact', null, {
+  // Apply default value directly in the destructuring to ensure it's never undefined
+  const { data: localArtifact = initialArtifactData } = useSWR<UIArtifact>('artifact', null, {
     fallbackData: initialArtifactData,
   });
 
   const selectedValue = useMemo(() => {
-    if (!localArtifact) return selector(initialArtifactData);
-    return selector(localArtifact);
+    // Additional safety check
+    const safeArtifact = localArtifact || initialArtifactData;
+    return selector(safeArtifact);
   }, [localArtifact, selector]);
 
   return selectedValue;
 }
 
 export function useArtifact() {
-  const { data: localArtifact, mutate: setLocalArtifact } = useSWR<UIArtifact>(
+  // Use default value in destructuring for safety
+  const { data: localArtifact = initialArtifactData, mutate: setLocalArtifact } = useSWR<UIArtifact>(
     'artifact',
     null,
     {
@@ -44,26 +47,33 @@ export function useArtifact() {
   );
 
   const artifact = useMemo(() => {
-    if (!localArtifact) return initialArtifactData;
-    return localArtifact;
+    return localArtifact || initialArtifactData;
   }, [localArtifact]);
 
   const setArtifact = useCallback(
     (updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact)) => {
-      setLocalArtifact((currentArtifact) => {
-        const artifactToUpdate = currentArtifact || initialArtifactData;
+      try {
+        setLocalArtifact((currentArtifact) => {
+          // Always ensure we have a valid artifact
+          const artifactToUpdate = currentArtifact || initialArtifactData;
 
-        if (typeof updaterFn === 'function') {
-          return updaterFn(artifactToUpdate);
-        }
+          if (typeof updaterFn === 'function') {
+            return updaterFn(artifactToUpdate);
+          }
 
-        return updaterFn;
-      });
+          return updaterFn || initialArtifactData; // Safety check
+        });
+      } catch (error) {
+        console.error('Error updating artifact:', error);
+        // Fallback: set to initialArtifactData in case of error
+        setLocalArtifact(initialArtifactData);
+      }
     },
     [setLocalArtifact],
   );
 
-  const { data: localArtifactMetadata, mutate: setLocalArtifactMetadata } =
+  // Default to empty object to avoid undefined
+  const { data: localArtifactMetadata = null, mutate: setLocalArtifactMetadata } =
     useSWR<any>(
       () =>
         artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
@@ -77,7 +87,7 @@ export function useArtifact() {
     () => ({
       artifact,
       setArtifact,
-      metadata: localArtifactMetadata,
+      metadata: localArtifactMetadata || null, // Safety for potential undefined
       setMetadata: setLocalArtifactMetadata,
     }),
     [artifact, setArtifact, localArtifactMetadata, setLocalArtifactMetadata],

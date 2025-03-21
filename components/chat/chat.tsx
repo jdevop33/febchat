@@ -1,13 +1,17 @@
 'use client';
 
-import type { Message } from 'ai';
+import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
 import { useState, useEffect, type ReactNode } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat/chat-header';
-import { generateUUID } from '@/lib/utils';
+import type { Vote } from '@/lib/db/schema';
+import { fetcher, generateUUID } from '@/lib/utils';
 import { MultimodalInput } from '@/components/multimodal-input';
 import { Messages } from '@/components/messages';
+import type { VisibilityType } from '@/components/visibility-selector';
+import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
@@ -49,10 +53,11 @@ export function Chat({
   id: string;
   initialMessages: Array<Message>;
   selectedChatModel: string;
-  selectedVisibilityType: any; // Changed from VisibilityType
+  selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
 }) {
-  // Simplified chat component for testing
+  const { mutate } = useSWRConfig();
+
   const {
     messages,
     setMessages,
@@ -71,26 +76,91 @@ export function Chat({
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      // Simplified: removed mutate call
-      console.log('Chat finished');
+      mutate('/api/history');
     },
-    onError: (error) => {
-      console.error('Chat error occurred:', error);
-      toast.error('An error occurred', {
-        description: 'Please try again',
-      });
-    },
+    onError: handleChatError,
   });
 
-  // Simplified state
-  const [attachments, setAttachments] = useState<Array<any>>([]);
-  const isArtifactVisible = false; // Simplified
+  // Extracted error handling function for better readability
+  function handleChatError(error: unknown) {
+    console.error('Chat request error:', error);
+
+    // Default error messages
+    let errorMessage = 'An error occurred, please try again!';
+    let errorDescription = 'The system is experiencing technical difficulties.';
+    
+    // Check if error is from PDF viewer or bylaw citation
+    const isPdfOrBylawError = 
+      (error instanceof Error && 
+        (error.message.includes('PDF') || 
+         error.message.includes('bylaw') || 
+         error.message.includes('iframe') ||
+         error.message.includes('citation'))) ||
+      (typeof error === 'string' && 
+        (error.includes('PDF') || 
+         error.includes('bylaw') || 
+         error.includes('iframe') ||
+         error.includes('citation')));
+    
+    if (isPdfOrBylawError) {
+      errorMessage = 'PDF viewer issue detected';
+      errorDescription = 'There was a problem displaying a bylaw PDF. Your conversation will continue normally.';
+      
+      // Log specific error for debugging
+      console.warn('PDF/Bylaw rendering error:', error);
+      
+      // This is a UI rendering issue, not a critical error
+      // Just show a toast but let the conversation continue
+      toast.warning(errorMessage, {
+        duration: 5000,
+        description: errorDescription,
+      });
+      
+      // Return early to prevent full error display
+      return;
+    }
+
+    // Parse structured error from server if available
+    if (typeof error === 'string') {
+      try {
+        const errorData = JSON.parse(error);
+        if (errorData.error) {
+          errorMessage = errorData.error;
+          errorDescription = errorData.details || errorDescription;
+        }
+      } catch {
+        // If not JSON, use the error string directly
+        errorMessage = error;
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message || errorMessage;
+    }
+
+    // Display error to user
+    toast.error(errorMessage, {
+      duration: 8000,
+      description: errorDescription,
+    });
+  }
+
+  // Use default value in destructuring to prevent undefined errors
+  const { data: votes = [] } = useSWR<Array<Vote>>(
+    `/api/vote?chatId=${id}`,
+    fetcher,
+    {
+      fallbackData: [],
+    }
+  );
+
+  const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
 
   return (
     <div className="flex h-dvh min-w-0 flex-col bg-background">
       <ChatHeader chatId={id} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Error boundary for messages section */}
         <ErrorBoundary
           fallback={
             <div className="flex-1 p-4 text-center">
@@ -112,7 +182,7 @@ export function Chat({
           <Messages
             chatId={id}
             isLoading={isLoading}
-            votes={[]} // Simplified - empty votes array
+            votes={votes}
             messages={messages}
             setMessages={setMessages}
             reload={reload}

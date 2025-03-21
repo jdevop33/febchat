@@ -13,8 +13,12 @@ export function useChatVisibility({
   chatId: string;
   initialVisibility: VisibilityType;
 }) {
-  const { mutate, cache } = useSWRConfig();
-  const history: Array<Chat> = cache.get('/api/history')?.data;
+  const { mutate } = useSWRConfig();
+  
+  // FIXED: Don't access cache directly, use useSWR with fallback
+  const { data: history = [] } = useSWR<Array<Chat>>('/api/history', null, {
+    fallbackData: [],
+  });
 
   const { data: localVisibility, mutate: setLocalVisibility } = useSWR(
     `${chatId}-visibility`,
@@ -25,37 +29,45 @@ export function useChatVisibility({
   );
 
   const visibilityType = useMemo(() => {
-    if (!history) return localVisibility;
-    const chat = history.find((chat) => chat.id === chatId);
-    if (!chat) return 'private';
+    // Safely access history with fallback
+    const safeHistory = history || [];
+    const chat = safeHistory.find((chat) => chat.id === chatId);
+    if (!chat) return localVisibility || 'private';
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
   const setVisibilityType = (updatedVisibilityType: VisibilityType) => {
     setLocalVisibility(updatedVisibilityType);
 
-    mutate<Array<Chat>>(
-      '/api/history',
-      (history) => {
-        return history
-          ? history.map((chat) => {
-              if (chat.id === chatId) {
-                return {
-                  ...chat,
-                  visibility: updatedVisibilityType,
-                };
-              }
-              return chat;
-            })
-          : [];
-      },
-      { revalidate: false },
-    );
-
-    updateChatVisibility({
-      chatId: chatId,
-      visibility: updatedVisibilityType,
-    });
+    // Safely update the history cache with error handling
+    try {
+      mutate<Array<Chat>>(
+        '/api/history',
+        (prevHistory) => {
+          const safeHistory = prevHistory || [];
+          return safeHistory.map((chat) => {
+            if (chat.id === chatId) {
+              return {
+                ...chat,
+                visibility: updatedVisibilityType,
+              };
+            }
+            return chat;
+          });
+        },
+        { revalidate: false },
+      );
+      
+      // Server action to persist the change
+      updateChatVisibility({
+        chatId: chatId,
+        visibility: updatedVisibilityType,
+      }).catch(err => {
+        console.error('Failed to update chat visibility:', err);
+      });
+    } catch (error) {
+      console.error('Error updating visibility in cache:', error);
+    }
   };
 
   return { visibilityType, setVisibilityType };
