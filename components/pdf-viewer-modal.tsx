@@ -214,6 +214,9 @@ export function PdfViewerModal({
   const viewerUrl = section
     ? `${pdfUrl}#page=${currentPage}&zoom=${scale * 100}&search=${encodeURIComponent(section)}`
     : `${pdfUrl}#page=${currentPage}&zoom=${scale * 100}`;
+    
+  // Log the created URL for debugging purposes
+  console.log("PDF Viewer URL:", viewerUrl);
 
   // Track PDF load errors
   const [loadError, setLoadError] = useState(false);
@@ -334,7 +337,8 @@ export function PdfViewerModal({
               size="sm"
               onClick={() => {
                 if (typeof window !== 'undefined') {
-                  window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+                  console.log('Opening PDF in new tab:', pdfUrl);
+                  window.open(pdfUrl, '_blank', 'noopener,noreferrer,popup=yes');
                 }
               }}
               disabled={loading}
@@ -346,8 +350,10 @@ export function PdfViewerModal({
               variant="outline"
               size="sm"
               onClick={() => {
+                const officialUrl = getExternalPdfUrl(bylawNumber, title);
+                console.log('Opening official site URL:', officialUrl);
                 if (typeof window !== 'undefined') {
-                  window.open(getExternalPdfUrl(bylawNumber, title), '_blank');
+                  window.open(officialUrl, '_blank', 'noopener,noreferrer,popup=yes');
                 }
               }}
               disabled={loading}
@@ -371,8 +377,10 @@ export function PdfViewerModal({
               <Button
                 variant="default"
                 onClick={() => {
+                  const errorRedirectUrl = getExternalPdfUrl(bylawNumber, title);
+                  console.log('Redirecting to official site due to error:', errorRedirectUrl);
                   if (typeof window !== 'undefined') {
-                    window.open(getExternalPdfUrl(bylawNumber, title), '_blank');
+                    window.open(errorRedirectUrl, '_blank', 'noopener,noreferrer,popup=yes');
                   }
                 }}
               >
@@ -387,7 +395,7 @@ export function PdfViewerModal({
               title={`Bylaw ${bylawNumber}`}
               onError={handleIframeError}
               onLoad={() => setLoading(false)}
-              sandbox="allow-same-origin allow-scripts allow-forms"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
               referrerPolicy="no-referrer"
             />
           )}

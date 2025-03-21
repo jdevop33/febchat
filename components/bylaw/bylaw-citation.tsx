@@ -517,9 +517,12 @@ export function BylawCitation({
                       // For local PDF file display, use centralized getBestPdfUrl utility
                       const pdfPath = getBestPdfUrl(bylawNumber, title);
 
-                      // Open in new tab (browser-only)
+                      // Log the PDF URL for debugging
+                      console.log('Opening PDF URL:', pdfPath);
+
+                      // Open in new tab (browser-only) with all necessary permissions
                       if (typeof window !== 'undefined') {
-                        window.open(pdfPath, '_blank', 'noopener,noreferrer');
+                        window.open(pdfPath, '_blank', 'noopener,noreferrer,popup=yes');
                       }
                     }}
                   >
@@ -542,8 +545,12 @@ export function BylawCitation({
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
+                      
+                      // Log the external URL for debugging
+                      console.log('Opening official URL:', externalUrl);
+                      
                       if (typeof window !== 'undefined') {
-                        window.open(externalUrl, '_blank');
+                        window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
                       }
                     }}
                   >
