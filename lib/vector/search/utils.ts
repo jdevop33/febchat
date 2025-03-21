@@ -1,7 +1,7 @@
 /**
  * Utility functions for optimized vector search
  */
-import { BylawSearchResult, PineconeFilter, SearchFilters } from './types';
+import type { BylawSearchResult, PineconeFilter, SearchFilters } from './types';
 
 // Common stop words for text processing - defined once for reuse
 export const STOP_WORDS = new Set([

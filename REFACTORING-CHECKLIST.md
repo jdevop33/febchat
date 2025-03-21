@@ -55,7 +55,10 @@ Progress:
 - [ ] Move remaining bylaw-related components to `/components/bylaw`
 - [ ] Move remaining chat-related components to `/components/chat`
 - [ ] Move general utility components to `/components/shared`
-- [ ] Create index files for each component directory for easier imports
+- [x] Create index files for component directories:
+  - ✅ `/components/artifacts/index.ts`
+  - ✅ `/components/documents/index.ts`
+  - ✅ `/components/messages/index.ts`
 
 ## Code Cleanup
 

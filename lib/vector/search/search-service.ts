@@ -5,7 +5,7 @@
 import { logger } from '../../monitoring/logger';
 import { getBatchedVectorSearch } from '../api-batching';
 import { processBatchedQueries } from './batch-processor';
-import { BylawSearchOptions, BylawSearchResult } from './types';
+import type { BylawSearchOptions, BylawSearchResult } from './types';
 
 /**
  * Optimized search for bylaws using vector similarity with batching

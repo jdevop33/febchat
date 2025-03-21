@@ -5,7 +5,7 @@ import { profiler } from '../../utils/profiler';
 import { getPineconeIndex } from '../pinecone-client';
 import { getEmbeddingsModel } from './embeddings';
 import { formatSearchResults, buildPineconeFilter } from './utils';
-import { ProcessBatchedQueriesFunction, SearchQuery, BylawSearchResult } from './types';
+import type { ProcessBatchedQueriesFunction, SearchQuery, BylawSearchResult } from './types';
 
 /**
  * Process a batch of search queries

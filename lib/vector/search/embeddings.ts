@@ -2,7 +2,7 @@
  * Embedding utilities for vector search
  */
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { EmbeddingModel } from './types';
+import type { EmbeddingModel } from './types';
 
 // Cached embeddings model
 let embeddingsModel: EmbeddingModel | null = null;

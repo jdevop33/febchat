@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run linting
-        run: pnpm lint
+      - name: Run CI checks
+        run: ./scripts/ci-check.sh
 
       - name: Build project
         run: pnpm build

@@ -1,7 +1,7 @@
 /**
  * Search service type definitions
  */
-import { BylawSearchOptions, BylawSearchResult } from '../types';
+import type { BylawSearchOptions, BylawSearchResult } from '../types';
 
 // Embedding model types
 export interface EmbeddingModel {
@@ -10,9 +10,7 @@ export interface EmbeddingModel {
 }
 
 // Search processing types
-export interface ProcessBatchedQueriesFunction {
-  (queries: SearchQuery[]): Promise<SearchResult[][]>;
-}
+export type ProcessBatchedQueriesFunction = (queries: SearchQuery[]) => Promise<SearchResult[][]>
 
 // Re-export base types
 export type { BylawSearchOptions, BylawSearchResult };

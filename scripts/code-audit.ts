@@ -174,8 +174,9 @@ function extractImports(content: string, filePath: string): ImportData[] {
     // In a production environment, use a proper AST parser
     const importRegex = /import\s+(?:(?:{[^}]*}|\*\s+as\s+\w+|\w+)\s+from\s+)?['"]([^'"]+)['"]/g;
     
-    let match;
-    while ((match = importRegex.exec(content)) !== null) {
+    // Rewritten to avoid assignment in expression
+    let match: RegExpExecArray | null = importRegex.exec(content);
+    while (match !== null) {
       const importPath = resolveImportPath(match[1], filePath);
       if (importPath) {
         imports.push({
@@ -184,6 +185,9 @@ function extractImports(content: string, filePath: string): ImportData[] {
           importedFrom: filePath,
         });
       }
+      
+      // Get next match
+      match = importRegex.exec(content);
     }
   } catch (error) {
     console.error(`Error extracting imports from ${filePath}:`, error);
@@ -371,12 +375,16 @@ function extractFunctions(content: string): { name: string; code: string }[] {
   ];
   
   for (const regex of functionRegexes) {
-    let match;
-    while ((match = regex.exec(content)) !== null) {
+    // Rewritten to avoid assignment in expression
+    let match: RegExpExecArray | null = regex.exec(content);
+    while (match !== null) {
       const name = match[1];
       const code = match[0];
       
       functions.push({ name, code });
+      
+      // Get next match
+      match = regex.exec(content);
     }
   }
   
