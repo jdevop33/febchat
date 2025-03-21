@@ -74,17 +74,14 @@ export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
     return HARDCODED_PDF_URLS[bylawNumber];
   }
   
-  // Get current year and month for URL construction
-  const currentYear = new Date().getFullYear();
-  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-  
-  // Format title for URL if provided, otherwise just use the bylaw number
+  // Try both common URL patterns used by Oak Bay
   const formattedTitle = title ? 
-    `-${title.replace(/\s+/g, '-')}` : 
+    `%20-${title.replace(/\s+/g, '%20')}` : 
     '';
   
-  // Modern Oak Bay bylaws use the wp-content upload pattern with year/month folders
-  return `https://www.oakbay.ca/wp-content/uploads/${currentYear}/${currentMonth}/${bylawNumber}${formattedTitle}.pdf`;
+  // For bylaws not in our hardcoded list, direct to the main bylaws page
+  // This ensures we don't generate broken links with incorrect paths
+  return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
 }
 
 /**
@@ -177,6 +174,10 @@ export function analyzeUrlStructure(): { patterns: Record<string, number>, examp
       examples[pattern].push(`${number}: ${url}`);
     }
   });
+  
+  // Add additional pattern types for diagnostic purposes
+  patterns["total-hardcoded"] = Object.keys(HARDCODED_PDF_URLS).length;
+  patterns["total-validated"] = VALIDATED_BYLAWS.length;
   
   return { patterns, examples };
 }
