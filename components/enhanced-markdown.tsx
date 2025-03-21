@@ -25,10 +25,11 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
   // Process text and convert bylaw references to components
   const segments: React.ReactNode[] = [];
   let lastIndex = 0;
-  let match;
+  let match: RegExpExecArray | null = null;
   let key = 0;
   
-  while ((match = bylawRegex.exec(children)) !== null) {
+  // eslint-disable-next-line no-cond-assign
+  while (match = bylawRegex.exec(children)) {
     // Add text before match
     if (match.index > lastIndex) {
       segments.push(

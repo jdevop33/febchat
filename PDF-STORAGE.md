@@ -8,6 +8,29 @@ Currently, PDF files are stored in the `/public/pdfs/` directory during developm
 - `getExternalPdfUrl`: Returns a URL to an external PDF file
 - `getBestPdfUrl`: Determines the best URL based on the environment (local for development, external for production)
 
+## PDF Management Scripts
+
+We've implemented a complete bylaw PDF management system with these scripts:
+
+```bash
+# Scrape bylaw data from the Oak Bay website
+pnpm pdfs:scrape
+
+# Download PDFs to the local public/pdfs directory
+pnpm pdfs:download
+
+# Run the complete pipeline (scrape, download, upload to Vercel in production)
+pnpm pdfs:pipeline
+
+# Upload PDFs to Vercel Blob Storage (production only)
+pnpm pdfs:upload
+```
+
+The scripts maintain a centralized bylaw mapping in `lib/utils/bylaw-maps.ts` that contains:
+- URLs to official PDFs on the Oak Bay website
+- Bylaw title mapping for consistent references
+- List of validated bylaw numbers
+
 ## Storage Options for Production
 
 ### 1. Vercel Blob Storage (Recommended)

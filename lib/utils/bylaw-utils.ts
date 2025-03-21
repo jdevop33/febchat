@@ -2,6 +2,9 @@
  * Utility functions for bylaw-related functionality
  */
 
+// Import centralized bylaw maps
+import { knownBylawUrls, bylawTitleMap, VALIDATED_BYLAWS as BYLAW_LIST } from './bylaw-maps';
+
 /**
  * Get external PDF URL for a bylaw from the municipal website
  *
@@ -10,38 +13,7 @@
  * @returns URL string to the PDF on the municipal website
  */
 export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
-  // Special case for known bylaws with specific URLs
-  const knownBylawUrls: Record<string, string> = {
-    '3210':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210.pdf',
-    '4892':
-      'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
-    '3416':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3416-Boulevard-Frontage-Tax-BL-1982-CONSOLIDATED-to-May-8-2023.pdf',
-    '3531':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf',
-    '3545':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3545-Uplands-Bylaw-1987-CONSOLIDATED-to-February-10-2020.pdf',
-    '3578':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3578_Subdivision-and-Development_CONSOLIDATED-to-September-2023.pdf',
-    '4100':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf',
-    '4183':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4183_Board-of-Variance-Bylaw_CONSOLIDATED-to-Sept11-2023.pdf',
-    '4371':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4371-Refuse-Collection-and-Disposal-Bylaw-2007-CONSOLIDATED.pdf',
-    '4672':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4672-Parks-and-Beaches-Bylaw-2017-CONSOLIDATED.pdf',
-    '4742':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
-    '4844':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4844-Consolidated-up-to-4858.pdf',
-    '4845':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4845-Planning-and-Development-Fees-and-Charges-CONSOLIDATED.pdf',
-    '4849':
-      'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4849-Property-Tax-Exemption-Bylaw-No-4849-2023.pdf',
-  };
-
+  // First check the centralized mapping
   if (knownBylawUrls[bylawNumber]) {
     return knownBylawUrls[bylawNumber];
   }
@@ -72,75 +44,33 @@ export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
 }
 
 /**
+ * Get title for a bylaw by number
+ * 
+ * @param bylawNumber - The bylaw number as string
+ * @returns The bylaw title if known, or a default title
+ */
+export function getBylawTitle(bylawNumber: string): string {
+  return bylawTitleMap[bylawNumber] || `Bylaw No. ${bylawNumber}`;
+}
+
+/**
  * Map bylaw number to local PDF filename
  *
  * @param bylawNumber - The bylaw number as string
  * @returns The local filename for the bylaw PDF
  */
 export function getFilenameForBylaw(bylawNumber: string): string {
-  // Comprehensive map of bylaw numbers to filenames
-  const bylawMap: Record<string, string> = {
-    '3152': '3152.pdf',
-    '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
-    '3370': '3370, Water Rate Bylaw, 1981 (CONSOLIDATED)_2.pdf',
-    '3416':
-      '3416-Boulevard-Frontage-Tax-BL-1982-CONSOLIDATED-to-May-8-2023.pdf',
-    '3531': '3531_ZoningBylawConsolidation_Aug302024.pdf',
-    '3536': '3536.pdf',
-    '3540': '3540, Parking Facilities BL 1986 (CONSOLIDATED)_1.pdf',
-    '3545': '3545-Uplands-Bylaw-1987-(CONSOLIDATED-to-February-10-2020).pdf',
-    '3550': '3550, Driveway Access BL (CONSOLIDATED).pdf',
-    '3578':
-      '3578_Subdivision-and-Development_CONSOLIDATED-to-September-2023.pdf',
-    '3603': '3603, Business Licence Bylaw 1988 - CONSOLIDATED FIN.pdf',
-    '3805': '3805.pdf',
-    '3827': '3827, Records Administration BL 94 (CONSOLIDATED 2).pdf',
-    '3829': '3829.pdf',
-    '3832': '3832.pdf',
-    '3891': '3891-Public-Sewer-Bylaw,-1996-CONSOLIDATED.pdf',
-    '3938': '3938.pdf',
-    '3946': '3946 Sign Bylaw 1997 (CONSOLIDATED) to Sept 11 2023_0.pdf',
-    '3952': '3952, Ticket Information Utilization BL 97 (CONSOLIDATED)_2.pdf',
-    '4008': '4008.pdf',
-    '4013': '4013, Animal Control Bylaw, 1999 (CONSOLIDATED)_1.pdf',
-    '4100': '4100-Streets-Traffic-Bylaw-2000.pdf',
-    '4144':
-      '4144, Oil Burning Equipment and Fuel Tank Regulation Bylaw, 2002.pdf',
-    '4183': '4183_Board-of-Variance-Bylaw_CONSOLIDATED-to-Sept11-2023.pdf',
-    '4222': '4222.pdf',
-    '4239': '4239, Administrative Procedures Bylaw, 2004, (CONSOLIDATED).pdf',
-    '4247':
-      '4247 Building and Plumbing Bylaw 2005 Consolidated to September 11 2023_0.pdf',
-    '4284': '4284, Elections and Voting (CONSOLIDATED).pdf',
-    '4371': '4371-Refuse-Collection-and-Disposal-Bylaw-2007-(CONSOLIDATED).pdf',
-    '4375': '4375.pdf',
-    '4392': '4392, Sewer User Charge Bylaw 2008 (CONSOLIDATED).pdf',
-    '4421': '4421.pdf',
-    '4518': '4518.pdf',
-    '4620': '4620, Oak Bay Official Community Plan Bylaw, 2014.pdf',
-    '4671': '4671, Sign Bylaw Amendment Bylaw No. 4671, 2017.pdf',
-    '4672': '4672-Parks-and-Beaches-Bylaw-2017-CONSOLIDATED.pdf',
-    '4719': '4719, Fire Prevention and Life Safety Bylaw, 2018.pdf',
-    '4720': '4720.pdf',
-    '4740': '4740 Council Procedure Bylaw CONSOLIDATED 4740.003.pdf',
-    '4742': '4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
-    '4747': '4747, Reserve Funds Bylaw, 2020 CONSOLIDATED.pdf',
-    '4770': '4770 Heritage Commission Bylaw CONSOLIDATED 4770.001.pdf',
-    '4771': '4771 Advisory Planning Commission Bylaw CONSOLIDATED 4771.001.pdf',
-    '4772': '4772 Advisory Planning Commission Bylaw CONSOLIDATED 4772.001.pdf',
-    '4777': '4777 PRC Fees and Charges Bylaw CONSOLIDATED.pdf',
-    '4822': '4822 Council Remuneration Bylaw - DRAFT.pdf',
-    '4844': '4844-Consolidated-up to-4858.pdf',
-    '4845': '4845-Planning-and-Development-Fees-and-Charges-CONSOLIDATED.pdf',
-    '4849': '4849-Property-Tax-Exemption-Bylaw-No-4849-2023.pdf',
-    '4879': '4879, Oak Bay Business Improvement Area Bylaw, 2024.pdf',
-    '4891': 'Development Cost Charge Bylaw No. 4891, 2024.pdf',
-    '4892': 'Amenity Cost Charge Bylaw No. 4892, 2024.pdf',
-    '4866': 'Boulevard Frontage Tax Amendment Bylaw No. 4866, 2024.pdf',
-    '4861': 'Tax Rates Bylaw 2024, No. 4861.pdf',
-  };
-
-  return bylawMap[bylawNumber] || `${bylawNumber}.pdf`;
+  // Extract filename from URL for known bylaws
+  if (knownBylawUrls[bylawNumber]) {
+    const url = knownBylawUrls[bylawNumber];
+    // Extract filename from URL
+    const parts = url.split('/');
+    const filename = parts[parts.length - 1];
+    if (filename) return filename;
+  }
+  
+  // Default to just the bylaw number if we can't determine a better filename
+  return `${bylawNumber}.pdf`;
 }
 
 /**
@@ -211,6 +141,17 @@ export const sectionPageMapping: Record<string, Record<string, number>> = {
     '4': 4,
     '5': 5,
   },
+  // Building and Plumbing Bylaw mappings
+  '4247': {
+    '1': 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+  },
 };
 
 /**
@@ -255,6 +196,7 @@ export function getEstimatedPageCount(bylawNumber: string): number {
     '4620': 80, // Official Community Plan
     '4719': 25, // Fire Prevention Bylaw
     '4747': 15, // Reserve Funds Bylaw
+    '4247': 40, // Building and Plumbing Bylaw
   };
 
   if (bylawPageCounts[bylawNumber]) {
@@ -272,60 +214,5 @@ export function getEstimatedPageCount(bylawNumber: string): number {
   return pageCount;
 }
 
-// List of validated bylaw numbers that we know exist in our PDF collection
-export const VALIDATED_BYLAWS = [
-  '3152',
-  '3210',
-  '3370',
-  '3416',
-  '3531',
-  '3536',
-  '3540',
-  '3545',
-  '3550',
-  '3578',
-  '3603',
-  '3805',
-  '3827',
-  '3829',
-  '3832',
-  '3891',
-  '3938',
-  '3946',
-  '3952',
-  '4008',
-  '4013',
-  '4100',
-  '4144',
-  '4183',
-  '4222',
-  '4239',
-  '4247',
-  '4284',
-  '4371',
-  '4375',
-  '4392',
-  '4421',
-  '4518',
-  '4620',
-  '4671',
-  '4672',
-  '4719',
-  '4720',
-  '4740',
-  '4742',
-  '4747',
-  '4770',
-  '4771',
-  '4772',
-  '4777',
-  '4822',
-  '4844',
-  '4845',
-  '4849',
-  '4879',
-  '4892',
-  '4866',
-  '4891',
-  '4861',
-];
+// Re-export the list of validated bylaws from the centralized map
+export const VALIDATED_BYLAWS = BYLAW_LIST;

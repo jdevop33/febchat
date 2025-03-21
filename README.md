@@ -12,6 +12,8 @@ We've made significant improvements to the chat functionality:
 2. Replaced streaming with more reliable non-streaming approach
 3. Added improved error handling and diagnostic logging
 4. Enhanced bylaw search with fallback to static data when vector search is unavailable
+5. Added automatic detection of bylaw references in text with interactive components
+6. Implemented complete PDF management system for bylaw documents
 
 See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for solutions to common issues.
 

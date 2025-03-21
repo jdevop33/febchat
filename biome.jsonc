@@ -130,5 +130,16 @@
         },
       },
     },
+    // Allow assignments in while expressions for our regex loops
+    {
+      "include": ["scripts/scrape-bylaw-urls.ts", "components/enhanced-markdown.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noAssignInExpressions": "off",
+          },
+        },
+      },
+    },
   ],
 }

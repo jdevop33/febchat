@@ -23,6 +23,10 @@
     "pinecone:namespace": "npx tsx scripts/pinecone-namespace-upload.ts",
     "pinecone:verify": "npx tsx scripts/verify-pinecone.ts",
     "pdfs:organize": "npx tsx scripts/organize-bylaws.ts",
+    "pdfs:download": "npx tsx scripts/download-bylaws.ts",
+    "pdfs:scrape": "npx tsx scripts/scrape-bylaw-urls.ts",
+    "pdfs:pipeline": "npx tsx scripts/bylaw-manager.ts pipeline",
+    "pdfs:upload": "NODE_ENV=production npx tsx scripts/bylaw-manager.ts upload",
     "audit:code": "npx tsx scripts/code-audit.ts",
     "audit:code:verbose": "npx tsx scripts/code-audit.ts --verbose"
   },
@@ -59,6 +63,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
     "codemirror": "^6.0.1",
+    "commander": "^12.1.0",
     "date-fns": "^4.1.0",
     "diff-match-patch": "^1.0.5",
     "dotenv": "^16.4.5",
