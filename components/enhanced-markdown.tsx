@@ -3,12 +3,23 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { VALIDATED_BYLAWS as SERVER_VALIDATED_BYLAWS } from '@/lib/utils/bylaw-utils';
-import { bylawTitleMap as SERVER_BYLAW_TITLE_MAP } from '@/lib/utils/bylaw-maps';
+// Hardcoded values to eliminate client/server mismatch
+const VALIDATED_BYLAWS = [
+  "3210", "3531", "4100", "4247", "4742", "4849", "4861", "4891", "4892"
+];
 
-// Safely handle server imports in client component
-const VALIDATED_BYLAWS = Array.isArray(SERVER_VALIDATED_BYLAWS) ? SERVER_VALIDATED_BYLAWS : [];
-const bylawTitleMap = typeof SERVER_BYLAW_TITLE_MAP === 'object' ? SERVER_BYLAW_TITLE_MAP : {};
+// Hardcoded bylaw title mapping
+const bylawTitleMap: Record<string, string> = {
+  "3210": "Anti-Noise Bylaw",
+  "3531": "Zoning Bylaw",
+  "4100": "Streets and Traffic Bylaw",
+  "4247": "Building and Plumbing Bylaw",
+  "4742": "Tree Protection Bylaw",
+  "4849": "Property Tax Exemption Bylaw, 2023",
+  "4861": "Tax Rates Bylaw, 2024",
+  "4891": "Development Cost Charge Bylaw",
+  "4892": "Amenity Cost Charge Bylaw"
+};
 
 interface EnhancedMarkdownProps {
   children: string;
