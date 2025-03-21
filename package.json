@@ -20,6 +20,8 @@
     "db:up": "drizzle-kit up",
     "db:test": "npx tsx scripts/test-db-connection.ts",
     "db:init": "npx tsx lib/db/init.ts",
+    "vercel:test": "npx tsx scripts/test-vercel-integrations.ts",
+    "deploy:check": "npm run lint && npm run vercel:test",
     "pinecone:upload": "npx tsx scripts/upload-pdfs-to-pinecone.ts",
     "pinecone:upload:llama": "npx tsx scripts/upload-with-llama-embeddings.ts",
     "pinecone:namespace": "npx tsx scripts/pinecone-namespace-upload.ts",

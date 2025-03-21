@@ -1,158 +1,29 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte, inArray, sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
-import postgres from 'postgres';
-import { env } from 'node:process';
+import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
 
-import {
+// Import the centralized database client
+import db, { schema } from './index';
+
+// Extract schema objects for more readable queries
+const {
   user,
   chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  type Message,
   message,
   vote,
+  document,
+  suggestion
+} = schema;
+
+// Export types for use in other files
+export type {
+  User,
+  Chat,
+  Message,
+  Document,
+  Suggestion
 } from './schema';
-import type { ArtifactKind } from '@/components/artifact';
-
-const isProduction = env.NODE_ENV === 'production';
-
-console.log(`Environment: ${env.NODE_ENV || 'development'}`);
-console.log(`Database mode: REAL (PostgreSQL)`);
-
-// Ensure database URL exists - but only throw error during runtime, not during build
-if (!env.POSTGRES_URL && !env.DATABASE_URL) {
-  console.error(
-    'CRITICAL ERROR: Neither POSTGRES_URL nor DATABASE_URL environment variable is set!',
-  );
-
-  // Don't throw error during build phase - allow build to complete with mock DB
-  if (env.NEXT_PHASE !== 'build') {
-    throw new Error('Database connection configuration missing');
-  } else {
-    console.log(
-      'Build phase detected - continuing with mock database settings',
-    );
-  }
-}
-
-let client: ReturnType<typeof postgres> | undefined;
-// Use any to bypass type errors with Drizzle's database configurations
-let db: any;
-
-// During build, provide a mock DB that doesn't actually connect
-// This allows the build to complete without database connection errors
-if (env.NEXT_PHASE === 'build') {
-  // Create a mock DB implementation that doesn't perform actual database operations
-  console.log('Setting up mock database for build process only');
-  db = {
-    // Basic mock implementations that return empty results
-    select: () => ({ from: () => Promise.resolve([]) }),
-    insert: () => ({
-      values: () => ({ returning: () => Promise.resolve([]) }),
-    }),
-    update: () => ({
-      set: () => ({ where: () => ({ returning: () => Promise.resolve([]) }) }),
-    }),
-    delete: () => ({ where: () => ({ returning: () => Promise.resolve([]) }) }),
-  } as any;
-} else {
-  // Real application runtime - use the actual database connection
-  try {
-    // Use Vercel Postgres if available, otherwise use direct Postgres connection
-    if (env.POSTGRES_URL) {
-      // Use Vercel's built-in connection
-      console.log('Using Vercel Postgres');
-      // Cast to any to avoid type issues with different client implementations
-      db = vercelDrizzle({
-        schema: { user, chat, message, vote, document, suggestion },
-      }) as any;
-    } else {
-      // Use direct connection with connection string
-      if (!env.DATABASE_URL) {
-        throw new Error(
-          'DATABASE_URL environment variable is required for direct Postgres connection',
-        );
-      }
-      const connectionString = env.DATABASE_URL;
-      console.log('Using direct Postgres connection');
-      client = postgres(connectionString, { max: 3 });
-      db = drizzle(client, {
-        schema: { user, chat, message, vote, document, suggestion },
-      });
-    }
-  } catch (err) {
-    console.error('Failed to initialize database:', err);
-    throw new Error('Database initialization failed');
-  }
-}
-
-try {
-  if (isProduction) {
-    // In production on Vercel, use the Vercel Postgres SDK
-    console.log('Using Vercel Postgres integration in production');
-
-    // Initialize Drizzle with Vercel's SQL client
-    db = vercelDrizzle({
-      schema: { user, chat, message, vote, document, suggestion },
-    }) as any;
-
-    // No need to test connection as Vercel handles this
-    console.log('✅ Using Vercel Postgres integration');
-  } else {
-    // For development or other environments, use postgres-js
-    console.log('Connecting to PostgreSQL database...');
-    const connectionString = env.POSTGRES_URL || env.DATABASE_URL || '';
-
-    if (!connectionString) {
-      throw new Error('No database connection string available');
-    }
-
-    // Don't log any part of the connection string for security
-    console.log('Database connection string available and will be used');
-
-    // Create pooled client with configurable settings
-    client = postgres(connectionString, {
-      max: Number.parseInt(env.DB_POOL_MAX || '10', 10), // Maximum connections
-      idle_timeout: Number.parseInt(env.DB_IDLE_TIMEOUT || '20', 10), // Seconds to keep idle connections
-      connect_timeout: Number.parseInt(env.DB_CONNECT_TIMEOUT || '30', 10), // Seconds to wait for connection
-      connection: {
-        application_name: 'febchat-app',
-      },
-      ssl: env.DB_USE_SSL !== 'false', // Enable SSL by default but allow disabling
-      onnotice: (notice) => {
-        // Only log notices in development to prevent log spam in production
-        if (env.NODE_ENV === 'development') {
-          console.log('Database notice:', notice.message);
-        }
-      },
-    });
-
-    console.log('Database connection pool initialized');
-
-    // Initialize Drizzle ORM
-    db = drizzle(client, {
-      schema: { user, chat, message, vote, document, suggestion },
-    });
-
-    // Test connection
-    try {
-      const result = await db.execute(sql`SELECT 1 as test`);
-      console.log('✅ Successfully connected to database');
-    } catch (queryError) {
-      console.error('❌ Failed to connect to database:', queryError);
-      throw new Error('Database connection failed');
-    }
-  }
-} catch (error) {
-  console.error('Failed to initialize database connection:', error);
-  throw new Error('Database connection initialization failed');
-}
 
 /**
  * Database operation error with contextual information

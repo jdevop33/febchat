@@ -1,32 +1,42 @@
 #!/bin/bash
+#
+# Simplified build script for FebChat deployment
+# This script handles building the application with proper database settings
 
-# Build script for production deployment
+echo "FebChat: Starting build process..."
 
-echo "Starting build process..."
-
-# Generate Prisma client
-echo "Generating Prisma Client..."
-npx prisma generate
-
-# Set environment variables for build process to prevent database connection errors
+# Set environment variables for the build
 export NEXT_PHASE="build"
 export NODE_ENV="production"
 
-# Check if we're in a Vercel environment with Postgres integration
-if [ -n "$POSTGRES_URL" ] || [ -n "$DATABASE_URL" ]; then
-  echo "Postgres URL detected, running migrations..."
+# Check if we're running in Vercel or similar environment
+if [ -n "$VERCEL" ] || [ -n "$DEPLOY_ENV" ]; then
+  echo "Deployment environment detected (Vercel or similar)"
   
-  # Run database migrations using Prisma for schema tables
-  npx prisma migrate deploy || echo "Prisma migration warning (non-fatal)"
+  # Check for database URLs
+  if [ -n "$POSTGRES_URL" ] || [ -n "$DATABASE_URL" ]; then
+    echo "Database URL detected - will use Vercel Database integration"
+  else
+    echo "⚠️ WARNING: No database URLs found. Your app may not function correctly."
+    # Set mock database URL for build process only
+    export DATABASE_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+    export POSTGRES_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+  fi
   
-  # Also run Drizzle migrations for application tables
-  echo "Running Drizzle migrations..."
-  npx tsx lib/db/migrate.ts || echo "Drizzle migration warning (non-fatal)"
+  # Check for blob storage
+  if [ -n "$BLOB_READ_WRITE_TOKEN" ]; then
+    echo "Blob storage token detected - will use Vercel Blob Storage"
+  else
+    echo "⚠️ WARNING: No blob storage token found. File uploads may not work."
+  fi
 else
-  echo "No database URLs detected, skipping migrations"
-  echo "Setting mock DATABASE_URL for build process"
-  export DATABASE_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
-  export POSTGRES_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+  echo "Local build environment detected"
+  # Provide clear instructions for local builds
+  if [ -z "$DATABASE_URL" ] && [ -z "$POSTGRES_URL" ]; then
+    echo "Setting mock DATABASE_URL for build process"
+    export DATABASE_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+    export POSTGRES_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+  fi
 fi
 
 # Run Next.js build
