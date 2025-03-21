@@ -106,16 +106,17 @@ export function BylawCitation({
     }
   };
 
-  // Function to get the appropriate PDF path using centralized utility
+  // TEMPORARILY SIMPLIFIED FOR TESTING
+  // Function to get the appropriate PDF path (simplified for testing)
   const getPdfPath = () => {
     if (pdfPath) {
       return pdfPath;
     }
-    return getLocalPdfPath(bylawNumber);
+    return `/pdfs/placeholder.pdf`;
   };
 
-  // Get the external URL
-  const externalUrl = officialUrl || getExternalPdfUrl(bylawNumber, title);
+  // Get a simplified external URL (for testing)
+  const externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
 
   // Various action handlers
   const handleViewPdf = () => {
@@ -123,21 +124,18 @@ export function BylawCitation({
   };
 
   const handleViewExternalPdf = () => {
-    // For local PDF file display, use centralized getBestPdfUrl utility
-    const pdfPath = getBestPdfUrl(bylawNumber, title);
+    // Simplified for testing
+    console.log('PDF viewer temporarily disabled for testing');
     
-    // Log the PDF URL for debugging
-    console.log('Opening PDF URL:', pdfPath);
-    
-    // Open in new tab (browser-only) with all necessary permissions
+    // Open generic URL in new tab
     if (typeof window !== 'undefined') {
-      window.open(pdfPath, '_blank', 'noopener,noreferrer,popup=yes');
+      window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
     }
   };
 
   const handleViewOfficialSite = () => {
-    // Log the external URL for debugging
-    console.log('Opening official URL:', externalUrl);
+    // Log the action for debugging
+    console.log('Opening official site (simplified for testing)');
     
     if (typeof window !== 'undefined') {
       window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
@@ -153,7 +151,7 @@ export function BylawCitation({
       },
     );
 
-    // Create a citation verification record
+    // Create a citation verification record (simplified for testing)
     const verificationData = {
       bylawNumber,
       section,
@@ -161,7 +159,7 @@ export function BylawCitation({
       isConsolidated,
       consolidatedDate,
       citationText: excerpt,
-      sourceUrl: getExternalPdfUrl(bylawNumber, title),
+      sourceUrl: 'https://www.oakbay.ca/municipal-services/bylaws', // Simplified for testing
       verifiedDate: new Date().toISOString().split('T')[0],
       pdfPath: getPdfPath(),
     };
