@@ -22,11 +22,28 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import {
-  getExternalPdfUrl,
-  getBestPdfUrl,
-  findSectionPage,
-  getEstimatedPageCount,
+  getExternalPdfUrl as serverGetExternalPdfUrl,
+  getBestPdfUrl as serverGetBestPdfUrl,
+  findSectionPage as serverFindSectionPage,
+  getEstimatedPageCount as serverGetEstimatedPageCount,
 } from '@/lib/utils/bylaw-utils';
+
+// Safely handle server imports in client component
+const getExternalPdfUrl = typeof serverGetExternalPdfUrl === 'function' 
+  ? serverGetExternalPdfUrl 
+  : (bylawNumber: string, title?: string) => `https://www.oakbay.ca/municipal-bylaws/${bylawNumber}`;
+
+const getBestPdfUrl = typeof serverGetBestPdfUrl === 'function'
+  ? serverGetBestPdfUrl
+  : (bylawNumber: string, title?: string) => getExternalPdfUrl(bylawNumber, title);
+
+const findSectionPage = typeof serverFindSectionPage === 'function'
+  ? serverFindSectionPage
+  : (bylawNumber: string, section: string) => 1;
+
+const getEstimatedPageCount = typeof serverGetEstimatedPageCount === 'function'
+  ? serverGetEstimatedPageCount
+  : (bylawNumber: string) => 20;
 
 interface PdfViewerModalProps {
   isOpen: boolean;

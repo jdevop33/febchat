@@ -17,6 +17,15 @@ jest.mock('./markdown', () => ({
   Markdown: ({ children }: any) => <div data-testid="markdown">{children}</div>,
 }));
 
+// Mock bylaw maps
+jest.mock('@/lib/utils/bylaw-maps', () => ({
+  bylawTitleMap: {
+    '4247': 'Building and Plumbing Bylaw',
+    '4742': 'Tree Protection Bylaw',
+    '3210': 'Anti-Noise Bylaw',
+  },
+}));
+
 describe('EnhancedMarkdown', () => {
   it('should render regular markdown when no bylaw references exist', () => {
     render(<EnhancedMarkdown>This is regular text with no bylaw references.</EnhancedMarkdown>);

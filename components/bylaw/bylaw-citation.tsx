@@ -19,11 +19,28 @@ import { toast } from 'sonner';
 import { PdfViewerModal } from '@/components/pdf-viewer-modal';
 import { CitationFeedback } from '@/components/citation-feedback';
 import {
-  getExternalPdfUrl,
-  getLocalPdfPath,
-  getBestPdfUrl,
-  VALIDATED_BYLAWS as VALIDATED_BYLAWS_LIST,
+  getExternalPdfUrl as serverGetExternalPdfUrl,
+  getLocalPdfPath as serverGetLocalPdfPath,
+  getBestPdfUrl as serverGetBestPdfUrl,
+  VALIDATED_BYLAWS as SERVER_VALIDATED_BYLAWS,
 } from '@/lib/utils/bylaw-utils';
+
+// Safely handle server imports in client component
+const getExternalPdfUrl = typeof serverGetExternalPdfUrl === 'function' 
+  ? serverGetExternalPdfUrl 
+  : (bylawNumber: string, title?: string) => `https://www.oakbay.ca/municipal-bylaws/${bylawNumber}`;
+
+const getLocalPdfPath = typeof serverGetLocalPdfPath === 'function'
+  ? serverGetLocalPdfPath
+  : (bylawNumber: string) => `/pdfs/${bylawNumber}.pdf`;
+
+const getBestPdfUrl = typeof serverGetBestPdfUrl === 'function'
+  ? serverGetBestPdfUrl
+  : (bylawNumber: string, title?: string) => serverGetExternalPdfUrl(bylawNumber, title);
+
+const VALIDATED_BYLAWS_LIST = Array.isArray(SERVER_VALIDATED_BYLAWS) 
+  ? SERVER_VALIDATED_BYLAWS
+  : [];
 
 interface BylawCitationProps {
   bylawNumber: string;
@@ -223,22 +240,32 @@ export function BylawCitation({
     return getLocalPdfPath(bylawNumber);
   };
 
-  return (
-    <>
-      <Card
-        className={cn(
-          'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
-          'group relative hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700 transition-all duration-200',
-          !validBylaw &&
-            'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
-          className,
-        )}
-        onClick={() => (validBylaw ? setIsPdfOpen(true) : handlePdfNotFound())}
-        data-testid={`bylaw-citation-${bylawNumber}-${section}`}
-        data-bylaw-number={bylawNumber}
-        data-section={section}
-        data-consolidated={isConsolidated}
-      >
+  // Fallback rendering in case of errors
+  if (!bylawNumber) {
+    return (
+      <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+        <p className="text-sm text-amber-800">Bylaw citation could not be displayed properly</p>
+      </div>
+    );
+  }
+
+  try {
+    return (
+      <>
+        <Card
+          className={cn(
+            'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
+            'group relative hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700 transition-all duration-200',
+            !validBylaw &&
+              'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
+            className,
+          )}
+          onClick={() => (validBylaw ? setIsPdfOpen(true) : handlePdfNotFound())}
+          data-testid={`bylaw-citation-${bylawNumber}-${section}`}
+          data-bylaw-number={bylawNumber}
+          data-section={section}
+          data-consolidated={isConsolidated}
+        >
         {/* PDF indicator icon & helper text */}
         <div className="absolute right-3 top-3 flex items-center gap-2">
           <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
@@ -590,4 +617,20 @@ export function BylawCitation({
       )}
     </>
   );
+  } catch (error) {
+    console.error('Error rendering BylawCitation:', error);
+    return (
+      <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+        <p className="text-sm text-amber-800">Bylaw {bylawNumber}: {formattedTitle} - citation could not be displayed properly</p>
+        <a 
+          href={getExternalPdfUrl(bylawNumber, title)} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="mt-1 text-xs text-blue-600 underline"
+        >
+          View PDF on external site
+        </a>
+      </div>
+    );
+  }
 }

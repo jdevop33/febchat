@@ -3,8 +3,12 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-utils';
-import { bylawTitleMap } from '@/lib/utils/bylaw-maps';
+import { VALIDATED_BYLAWS as SERVER_VALIDATED_BYLAWS } from '@/lib/utils/bylaw-utils';
+import { bylawTitleMap as SERVER_BYLAW_TITLE_MAP } from '@/lib/utils/bylaw-maps';
+
+// Safely handle server imports in client component
+const VALIDATED_BYLAWS = Array.isArray(SERVER_VALIDATED_BYLAWS) ? SERVER_VALIDATED_BYLAWS : [];
+const bylawTitleMap = typeof SERVER_BYLAW_TITLE_MAP === 'object' ? SERVER_BYLAW_TITLE_MAP : {};
 
 interface EnhancedMarkdownProps {
   children: string;
@@ -12,81 +16,123 @@ interface EnhancedMarkdownProps {
 }
 
 export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps) {
-  // Regular expression to match bylaw references with number capture groups and optional section
-  const bylawRegex = /(?:Oak Bay(?:'s)?|Municipal)?\s*(?:((?:Building and Plumbing|Tree Protection|Anti-Noise|Streets[- ]Traffic|Zoning|Parks and Beaches|Subdivision|Uplands|Refuse Collection|Board of Variance|Property Tax(?:\s+Exemption)?|Tax Rates|Development Cost Charge|Amenity Cost Charge|Sign|Animal Control)\s+Bylaw(?:\s*\(?(?:No\.?|Number)?\s*(\d{4})\)?)?)|(?:Bylaw(?:\s+(?:No\.?|Number)?)?\s*(\d{4})))(?:,?\s*(?:Section|Sec\.|§)\s*([\w\d\.\(\)]+))?/gi;
-  
-  // If no bylaw references or no content, just render as regular markdown
-  if (!children || !bylawRegex.test(children)) {
-    return <Markdown className={className}>{children}</Markdown>;
-  }
-  
-  // Reset regex state
-  bylawRegex.lastIndex = 0;
-  
-  // Process text and convert bylaw references to components
-  const segments: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null = null;
-  let key = 0;
-  
-  // eslint-disable-next-line no-cond-assign
-  while (match = bylawRegex.exec(children)) {
-    // Add text before match
-    if (match.index > lastIndex) {
+  try {
+    // Regular expression to match bylaw references with number capture groups and optional section
+    const bylawRegex = /(?:Oak Bay(?:'s)?|Municipal)?\s*(?:((?:Building and Plumbing|Tree Protection|Anti-Noise|Streets[- ]Traffic|Zoning|Parks and Beaches|Subdivision|Uplands|Refuse Collection|Board of Variance|Property Tax(?:\s+Exemption)?|Tax Rates|Development Cost Charge|Amenity Cost Charge|Sign|Animal Control)\s+Bylaw(?:\s*\(?(?:No\.?|Number)?\s*(\d{4})\)?)?)|(?:Bylaw(?:\s+(?:No\.?|Number)?)?\s*(\d{4})))(?:,?\s*(?:Section|Sec\.|§)\s*([\w\d\.\(\)]+))?/gi;
+    
+    // Safety check for content
+    if (!children || typeof children !== 'string') {
+      console.log('EnhancedMarkdown received invalid children:', typeof children);
+      return <Markdown className={className}>{children || ''}</Markdown>;
+    }
+    
+    // If no bylaw references, just render as regular markdown
+    if (!bylawRegex.test(children)) {
+      return <Markdown className={className}>{children}</Markdown>;
+    }
+    
+    // Reset regex state
+    bylawRegex.lastIndex = 0;
+    
+    // Process text and convert bylaw references to components
+    const segments: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null = null;
+    let key = 0;
+    
+    // eslint-disable-next-line no-cond-assign
+    while (match = bylawRegex.exec(children)) {
+      // Add text before match
+      if (match.index > lastIndex) {
+        segments.push(
+          <Markdown key={`text-${key++}`} className={className}>
+            {children.substring(lastIndex, match.index)}
+          </Markdown>
+        );
+      }
+      
+      // Extract bylaw info
+      const fullMatch = match[0];
+      const bylawName = match[1];
+      const bylawNumber = match[2] || match[3] || (bylawName ? getBylawNumberFromName(bylawName) : null);
+      const section = match[4] || "1"; // Get section if available, default to 1
+      
+      // Safe check for bylaw number
+      if (!bylawNumber) {
+        segments.push(
+          <Markdown key={`text-${key++}`} className={className}>
+            {fullMatch}
+          </Markdown>
+        );
+        lastIndex = match.index + fullMatch.length;
+        continue;
+      }
+      
+      // Get a title for the bylaw using centralized mapping (safely)
+      let title = bylawName;
+      if (!title && bylawNumber) {
+        try {
+          // Get title from centralized bylaw map
+          title = bylawTitleMap?.[bylawNumber] ? 
+                 bylawTitleMap[bylawNumber] : 
+                 `Bylaw No. ${bylawNumber}`;
+        } catch (error) {
+          console.error('Error accessing bylaw title map:', error);
+          title = `Bylaw No. ${bylawNumber}`;
+        }
+      }
+      
+      // Safe validation check
+      const validatedBylaws = Array.isArray(VALIDATED_BYLAWS) ? VALIDATED_BYLAWS : [];
+      const isValidBylaw = validatedBylaws.includes(bylawNumber);
+      
+      if (bylawNumber && isValidBylaw) {
+        // Add bylaw citation component if we have a valid bylaw number
+        try {
+          segments.push(
+            <BylawCitation
+              key={`bylaw-${key++}`}
+              bylawNumber={bylawNumber}
+              title={title}
+              section={section}
+              excerpt={`Referenced in text as: "${fullMatch}"`}
+              isVerified={isValidBylaw}
+            />
+          );
+        } catch (error) {
+          console.error('Error rendering BylawCitation:', error);
+          segments.push(
+            <Markdown key={`text-${key++}`} className={className}>
+              {fullMatch}
+            </Markdown>
+          );
+        }
+      } else {
+        // If no valid bylaw number, just render as text
+        segments.push(
+          <Markdown key={`text-${key++}`} className={className}>
+            {fullMatch}
+          </Markdown>
+        );
+      }
+      
+      lastIndex = match.index + fullMatch.length;
+    }
+    
+    // Add any remaining text after the last match
+    if (lastIndex < children.length) {
       segments.push(
         <Markdown key={`text-${key++}`} className={className}>
-          {children.substring(lastIndex, match.index)}
+          {children.substring(lastIndex)}
         </Markdown>
       );
     }
-    
-    // Extract bylaw info
-    const fullMatch = match[0];
-    const bylawName = match[1];
-    const bylawNumber = match[2] || match[3] || (bylawName ? getBylawNumberFromName(bylawName) : null);
-    const section = match[4] || "1"; // Get section if available, default to 1
-    
-    // Get a title for the bylaw using centralized mapping
-    let title = bylawName;
-    if (!title && bylawNumber) {
-      // Get title from centralized bylaw map
-      title = bylawTitleMap[bylawNumber] || `Bylaw No. ${bylawNumber}`;
-    }
-    
-    if (bylawNumber && VALIDATED_BYLAWS.includes(bylawNumber)) {
-      // Add bylaw citation component if we have a valid bylaw number
-      segments.push(
-        <BylawCitation
-          key={`bylaw-${key++}`}
-          bylawNumber={bylawNumber}
-          title={title}
-          section={section}
-          excerpt={`Referenced in text as: "${fullMatch}"`}
-          isVerified={VALIDATED_BYLAWS.includes(bylawNumber)}
-        />
-      );
-    } else {
-      // If no valid bylaw number, just render as text
-      segments.push(
-        <Markdown key={`text-${key++}`} className={className}>
-          {fullMatch}
-        </Markdown>
-      );
-    }
-    
-    lastIndex = match.index + fullMatch.length;
+
+    return <>{segments}</>;
+  } catch (error) {
+    console.error('Error in EnhancedMarkdown:', error);
+    return <Markdown className={className}>{children || ''}</Markdown>;
   }
-  
-  // Add any remaining text after the last match
-  if (lastIndex < children.length) {
-    segments.push(
-      <Markdown key={`text-${key++}`} className={className}>
-        {children.substring(lastIndex)}
-      </Markdown>
-    );
-  }
-  
-  return <>{segments}</>;
 }
 
 // Helper function to get bylaw number from name (for common bylaws without numbers in text)
@@ -121,12 +167,19 @@ function getBylawNumberFromName(bylawName: string): string | null {
     }
   }
   
-  // Check if the title is in our centralized bylawTitleMap
+  // Check if the title is in our centralized bylawTitleMap (safely)
   // (reverse lookup - find bylaw number from title)
-  for (const [number, title] of Object.entries(bylawTitleMap)) {
-    if (bylawNameLower.includes(title.toLowerCase())) {
-      return number;
+  try {
+    if (bylawTitleMap) {
+      for (const [number, title] of Object.entries(bylawTitleMap)) {
+        if (typeof title === 'string' && bylawNameLower.includes(title.toLowerCase())) {
+          return number;
+        }
+      }
     }
+  } catch (error) {
+    console.error('Error in bylawTitleMap lookup:', error);
+    // Continue without failing
   }
   
   return null;
