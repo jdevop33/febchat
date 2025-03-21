@@ -210,66 +210,14 @@ const PurePreviewMessage = ({
                             isReadonly={isReadonly}
                           />
                         ) : toolName === 'searchBylaws' ? (
-                          <div className="flex flex-col gap-3">
-                            {result.found ? (
-                              <>
-                                <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                  Relevant Bylaw Information:
-                                </div>
-                                {Array.isArray(result.results) ? result.results.map(
-                                  (bylawInfo: {
-                                    bylawNumber: string;
-                                    title?: string;
-                                    section: string;
-                                    content: string;
-                                  }) => {
-                                    if (!bylawInfo || typeof bylawInfo !== 'object') {
-                                      console.error("Invalid bylaw result:", bylawInfo);
-                                      return null;
-                                    }
-
-                                    try {
-                                      return (
-                                        <div key={`bylaw-safe-${bylawInfo.bylawNumber || 'unknown'}-${bylawInfo.section || 'section'}`}>
-                                          <ErrorBoundaryFallback
-                                            bylawInfo={{
-                                              bylawNumber: bylawInfo.bylawNumber || 'unknown',
-                                              title: bylawInfo.title,
-                                              section: bylawInfo.section || 'Unknown Section',
-                                              content: bylawInfo.content || 'No content available'
-                                            }}
-                                            fallback={(
-                                              <CitationFallback
-                                                bylawNumber={bylawInfo.bylawNumber || 'unknown'}
-                                                formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber || 'unknown'}`}
-                                                error={new Error('Unable to display citation')}
-                                              />
-                                            )}
-                                          />
-                                        </div>
-                                      );
-                                    } catch (error) {
-                                      console.error("Error rendering bylaw citation:", error);
-                                      return (
-                                        <CitationFallback
-                                          bylawNumber={bylawInfo.bylawNumber || 'unknown'}
-                                          formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber || 'unknown'}`}
-                                          error={error instanceof Error ? error : new Error('Unknown error')}
-                                        />
-                                      );
-                                    }
-                                  }
-                                ) : (
-                                  <div className="text-sm italic text-muted-foreground">
-                                    Error displaying bylaw results. Please try your search again.
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <div className="text-sm italic text-muted-foreground">
-                                {result.message}
-                              </div>
-                            )}
+                          <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                              Bylaw Functionality Temporarily Disabled
+                            </div>
+                            <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                              To improve application stability, the bylaw search functionality has been 
+                              temporarily disabled.
+                            </div>
                           </div>
                         ) : (
                           <pre>{JSON.stringify(result, null, 2)}</pre>

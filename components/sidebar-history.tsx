@@ -152,13 +152,12 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
   const { id } = useParams();
   const pathname = usePathname();
-  const {
-    data: history,
-    isLoading,
-    mutate,
-  } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
-    fallbackData: [],
-  });
+  // TEMPORARILY DISABLED HISTORY LOADING FOR TESTING
+  const history: Array<Chat> = [];
+  const isLoading = false;
+  const mutate = () => {
+    console.log('History mutate called (disabled for testing)');
+  };
 
   useEffect(() => {
     mutate();
