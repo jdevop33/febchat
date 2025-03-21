@@ -3,6 +3,60 @@
  */
 
 /**
+ * Options for bylaw search
+ */
+export interface BylawSearchOptions {
+  /** Maximum number of results to return */
+  limit?: number;
+  
+  /** Whether to include raw vector scores */
+  includeScores?: boolean;
+  
+  /** Filter parameters for the search */
+  filters?: BylawSearchFilters | {
+    bylawNumber?: string;
+    category?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+  
+  /** Reranking strategy */
+  reranking?: 'default' | 'semantic' | 'hybrid';
+  
+  /** Whether to exclude bylaw content that couldn't be verified */
+  verifiedOnly?: boolean;
+  
+  /** Whether to cache results */
+  useCache?: boolean;
+
+  /** Minimum score threshold for search results */
+  minScore?: number;
+  
+  /** User ID for personalized results */
+  userId?: string;
+}
+
+/**
+ * Filters for bylaw search
+ */
+export interface BylawSearchFilters {
+  /** Filter by bylaw number(s) */
+  bylawNumbers?: string[];
+  
+  /** Filter by bylaw categories */
+  categories?: string[];
+  
+  /** Filter by whether bylaw is consolidated */
+  consolidated?: boolean;
+  
+  /** Filter by date range */
+  dateRange?: {
+    start?: string;
+    end?: string;
+  };
+}
+
+/**
  * Metadata for a bylaw chunk
  */
 export interface ChunkMetadata {

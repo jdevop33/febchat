@@ -12,10 +12,14 @@ export interface HandleTransactionParams {
 export type BuildContentFromDocumentFn = (document: Node) => string;
 export type BuildDocumentFromContentFn = (content: string) => Node;
 
-// Re-export from suggestions.tsx if needed
+// UI Suggestion with all required properties
 export interface UISuggestion {
   id: string;
   selectionStart: number;
   selectionEnd: number;
-  // Add other properties as needed
+  description: string;
+  suggestedText: string;
+  originalText: string;
+  type?: string;
+  metadata?: Record<string, any>;
 }

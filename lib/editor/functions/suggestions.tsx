@@ -49,16 +49,34 @@ export function projectWithPositions(
 
     if (!positions) {
       return {
-        ...suggestion,
+        id: suggestion.id,
         selectionStart: 0,
         selectionEnd: 0,
+        originalText: suggestion.originalText,
+        suggestedText: suggestion.suggestedText,
+        description: suggestion.description || '',  // Convert null to empty string
+        type: 'suggestion',
+        metadata: {
+          documentId: suggestion.documentId,
+          userId: suggestion.userId,
+          createdAt: suggestion.createdAt.toISOString()
+        }
       };
     }
 
     return {
-      ...suggestion,
+      id: suggestion.id,
       selectionStart: positions.start,
       selectionEnd: positions.end,
+      originalText: suggestion.originalText,
+      suggestedText: suggestion.suggestedText,
+      description: suggestion.description || '',  // Convert null to empty string
+      type: 'suggestion',
+      metadata: {
+        documentId: suggestion.documentId,
+        userId: suggestion.userId,
+        createdAt: suggestion.createdAt.toISOString()
+      }
     };
   });
 }

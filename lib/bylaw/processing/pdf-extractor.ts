@@ -93,7 +93,7 @@ export async function extractFromPDF(
         : {}),
       originalFilename: filename,
       lastUpdated: new Date().toISOString(),
-      metadataSource: metadataSourceInfo, // For debugging
+      metadataSourceStr: JSON.stringify(metadataSourceInfo) // For debugging, converted to string
     };
 
     return {
@@ -333,8 +333,8 @@ export function extractBylawMetadata(text: string): Partial<BylawMetadata> {
     }
   }
 
-  // Store the metadata source information for debugging
-  metadata.metadataSource = metadataSource as Record<string, string>;
+  // Store the metadata source information for debugging (as string)
+  metadata.metadataSourceStr = JSON.stringify(metadataSource);
 
   // Attempt to detect category
   if (
