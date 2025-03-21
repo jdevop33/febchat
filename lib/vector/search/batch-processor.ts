@@ -5,15 +5,15 @@ import { profiler } from '../../utils/profiler';
 import { getPineconeIndex } from '../pinecone-client';
 import { getEmbeddingsModel } from './embeddings';
 import { formatSearchResults, buildPineconeFilter } from './utils';
-import type { ProcessBatchedQueriesFunction, SearchQuery, BylawSearchResult } from './types';
+import type { SearchQuery as ApiBatchingSearchQuery, SearchResult as ApiBatchingSearchResult } from '../api-batching';
 
 /**
  * Process a batch of search queries
  * This is used by the batch processor to handle multiple searches efficiently
  */
-export const processBatchedQueries: ProcessBatchedQueriesFunction = async (
-  queries: SearchQuery[],
-): Promise<BylawSearchResult[][]> => {
+export const processBatchedQueries = async (
+  queries: ApiBatchingSearchQuery[],
+): Promise<ApiBatchingSearchResult[][]> => {
   return profiler.measure('batched-embedding-query', async () => {
     // Get embeddings model
     const embeddings = getEmbeddingsModel();

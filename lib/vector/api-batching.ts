@@ -16,6 +16,7 @@ export type SearchQuery = {
 };
 
 export type SearchResult = PineconeRecord<any> & {
+  id: string; // Ensure id is always a string
   score: number;
   text?: string; // Make text field available
 };

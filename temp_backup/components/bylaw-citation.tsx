@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   FileText,
   ExternalLink,
@@ -13,17 +13,17 @@ import {
   FileSearch,
   AlertTriangle,
 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { PdfViewerModal } from './pdf-viewer-modal';
-import { CitationFeedback } from './citation-feedback';
+import { PdfViewerModal } from '@/components/pdf-viewer-modal';
+import { CitationFeedback } from '@/components/citation-feedback';
 import {
   getExternalPdfUrl,
   getLocalPdfPath,
   getBestPdfUrl,
   VALIDATED_BYLAWS as VALIDATED_BYLAWS_LIST,
-} from '@/lib/utils/bylaw-utils';
+} from '@/lib/utils/bylaw-maps-client';
 
 interface BylawCitationProps {
   bylawNumber: string;
@@ -180,10 +180,23 @@ export function BylawCitation({
         break;
     }
 
-    navigator.clipboard.writeText(content);
-    toast.success(
-      `${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`,
-    );
+    // Check if navigator is available (only in browser context)
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(content)
+        .then(() => {
+          toast.success(
+            `${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`,
+          );
+        })
+        .catch((err) => {
+          console.error('Failed to copy text: ', err);
+          toast.error('Failed to copy to clipboard');
+        });
+    } else {
+      // Fallback for non-browser environments (SSR)
+      console.log('Clipboard API not available');
+      toast.info('Copy function is only available in the browser');
+    }
   };
 
   // Get the external URL
@@ -195,8 +208,10 @@ export function BylawCitation({
       description: `We couldn't find the PDF for Bylaw No. ${bylawNumber} in our system. Please check the external link for the official document.`,
     });
 
-    // Auto-open external link if PDF not found
-    window.open(externalUrl, '_blank');
+    // Auto-open external link if PDF not found (browser-only)
+    if (typeof window !== 'undefined') {
+      window.open(externalUrl, '_blank');
+    }
   };
 
   // Function to get the appropriate PDF path using centralized utility
@@ -208,27 +223,67 @@ export function BylawCitation({
     return getLocalPdfPath(bylawNumber);
   };
 
-  return (
-    <>
-      <Card
-        className={cn(
-          'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
-          !validBylaw &&
-            'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
-          className,
-        )}
-        onClick={() => (validBylaw ? setIsPdfOpen(true) : handlePdfNotFound())}
-        data-testid={`bylaw-citation-${bylawNumber}-${section}`}
-        data-bylaw-number={bylawNumber}
-        data-section={section}
-        data-consolidated={isConsolidated}
-      >
+  // Fallback rendering in case of errors
+  if (!bylawNumber) {
+    console.warn("BylawCitation: Missing bylaw number", { props: { bylawNumber, section, title } });
+    return (
+      <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+        <p className="text-sm text-amber-800">Bylaw citation could not be displayed properly</p>
+      </div>
+    );
+  }
+
+  // Safety guard to prevent PDF viewer errors
+  const safeRender = () => {
+    try {
+    return (
+      <>
+        <Card
+          className={cn(
+            'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
+            'group relative hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700 transition-all duration-200',
+            !validBylaw &&
+              'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
+            className,
+          )}
+          onClick={() => (validBylaw ? setIsPdfOpen(true) : handlePdfNotFound())}
+          data-testid={`bylaw-citation-${bylawNumber}-${section}`}
+          data-bylaw-number={bylawNumber}
+          data-section={section}
+          data-consolidated={isConsolidated}
+        >
+        {/* PDF indicator icon & helper text */}
+        <div className="absolute right-3 top-3 flex items-center gap-2">
+          <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
+            Click to view PDF
+          </span>
+          <div className="rounded-full bg-blue-100 p-1 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-300">
+            <FileSearch size={16} />
+          </div>
+        </div>
         <CardContent className="pt-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
               <FileText size={16} className="shrink-0" />
-              <div className="font-medium">
+              <div className="font-medium flex items-center">
                 {formattedTitle}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="px-1 text-blue-600 dark:text-blue-400 font-medium underline hover:text-blue-800 dark:hover:text-blue-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
+                      }}
+                    >
+                      <FileSearch size={14} className="mr-1" />
+                      View PDF
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Open the PDF viewer</TooltipContent>
+                </Tooltip>
                 {isVerified ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -315,27 +370,46 @@ export function BylawCitation({
             role="presentation"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(!expanded);
-              }}
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp size={14} className="mr-1" />
-                  Show Less
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={14} className="mr-1" />
-                  Show More
-                </>
+            <div className="flex gap-2">
+              <Button
+                variant={expanded ? "ghost" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-8 px-2 text-xs",
+                  !expanded && "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded(!expanded);
+                }}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp size={14} className="mr-1" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={14} className="mr-1" />
+                    Show Options
+                  </>
+                )}
+              </Button>
+              {!expanded && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 px-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:hover:bg-blue-900/80 dark:text-blue-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
+                  }}
+                >
+                  <FileSearch size={14} className="mr-1" />
+                  View Full PDF
+                </Button>
               )}
-            </Button>
+            </div>
 
             <div className="flex items-center gap-1">
               <div className="mr-2">
@@ -412,8 +486,13 @@ export function BylawCitation({
                       // For local PDF file display, use centralized getBestPdfUrl utility
                       const pdfPath = getBestPdfUrl(bylawNumber, title);
 
-                      // Open in new tab
-                      window.open(pdfPath, '_blank', 'noopener,noreferrer');
+                      // Log the PDF URL for debugging
+                      console.log('Opening PDF URL:', pdfPath);
+
+                      // Open in new tab (browser-only) with all necessary permissions
+                      if (typeof window !== 'undefined') {
+                        window.open(pdfPath, '_blank', 'noopener,noreferrer,popup=yes');
+                      }
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />
@@ -435,7 +514,13 @@ export function BylawCitation({
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(externalUrl, '_blank');
+                      
+                      // Log the external URL for debugging
+                      console.log('Opening official URL:', externalUrl);
+                      
+                      if (typeof window !== 'undefined') {
+                        window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
+                      }
                     }}
                   >
                     <ExternalLink size={14} className="mr-1" />
@@ -525,4 +610,42 @@ export function BylawCitation({
       )}
     </>
   );
+    } catch (error) {
+      console.error('Error rendering BylawCitation:', error);
+      return (
+        <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+          <p className="text-sm text-amber-800">Bylaw {bylawNumber}: {formattedTitle} - citation could not be displayed properly</p>
+          <a 
+            href={getExternalPdfUrl(bylawNumber, title)} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="mt-1 text-xs text-blue-600 underline flex items-center gap-1"
+            aria-label={`View Bylaw ${bylawNumber} PDF on official Oak Bay website (opens in new tab)`}
+          >
+            <span>View PDF on official site</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="12" 
+              height="12" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              aria-hidden="true"
+              className="inline-block"
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
+        </div>
+      );
+    }
+  }
+  
+  // Use the safe rendering function
+  return safeRender();
 }

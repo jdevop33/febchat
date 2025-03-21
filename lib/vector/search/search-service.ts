@@ -3,9 +3,9 @@
  * This module enhances the base search functionality with batching and caching
  */
 import { logger } from '../../monitoring/logger';
-import { getBatchedVectorSearch } from '../api-batching';
+import { getBatchedVectorSearch, } from '../api-batching';
 import { processBatchedQueries } from './batch-processor';
-import type { BylawSearchOptions, BylawSearchResult } from './types';
+import type { BylawSearchOptions, BylawSearchResult, } from './types';
 
 /**
  * Optimized search for bylaws using vector similarity with batching

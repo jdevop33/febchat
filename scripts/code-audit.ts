@@ -261,7 +261,7 @@ async function checkTestCoverage() {
       const statementCoverage = fileCoverage.statementMap ? 
         Object.keys(fileCoverage.statementMap).length : 0;
       const coveredStatements = fileCoverage.s ? 
-        Object.values(fileCoverage.s).filter(v => v > 0).length : 0;
+        Object.values(fileCoverage.s).filter((v): v is number => typeof v === 'number' && v > 0).length : 0;
       
       const coveragePercentage = statementCoverage ? 
         (coveredStatements / statementCoverage) * 100 : 0;
@@ -761,7 +761,7 @@ function printSummary(result: AuditResult) {
   } else {
     console.log(chalk.red(`  ${result.duplicateFunctionality.length} potential duplications found`));
     result.duplicateFunctionality.slice(0, 5).forEach(dup => {
-      console.log(`  - ${dup.description} (${dup.similarity.toFixed(2) * 100}% similar)`);
+      console.log(`  - ${dup.description} (${(Number.parseFloat(dup.similarity.toFixed(2)) * 100)}% similar)`);
       dup.files.slice(0, 2).forEach(file => console.log(`    ${file.replace(process.cwd(), '')}`));
     });
     if (result.duplicateFunctionality.length > 5) {

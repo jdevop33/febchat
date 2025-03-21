@@ -1,7 +1,8 @@
 /**
  * Utility functions for optimized vector search
  */
-import type { BylawSearchResult, PineconeFilter, SearchFilters } from './types';
+import type { PineconeFilter, SearchFilters } from './types';
+import type { SearchResult as ApiBatchingSearchResult } from '../api-batching';
 
 // Common stop words for text processing - defined once for reuse
 export const STOP_WORDS = new Set([
@@ -84,7 +85,7 @@ export function formatSearchResults(
   results: any[],
   query: string,
   limit: number,
-): BylawSearchResult[] {
+): ApiBatchingSearchResult[] {
   // Extract keywords for keyword boosting
   const keywords = extractKeywords(query);
 
