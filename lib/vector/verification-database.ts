@@ -236,8 +236,8 @@ export function getFilenameForBylaw(bylawNumber: string): string | null {
   // Map of known bylaw numbers to PDF filenames
   const bylawMap: Record<string, string> = {
     '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
-    '4842': 'Tree-Protection-Bylaw.pdf',
-    '4567': 'Zoning-Bylaw-Oak-Bay.pdf',
+    '4742': 'Tree-Protection-Bylaw.pdf',
+    '3531': 'Zoning-Bylaw-Oak-Bay.pdf',
     '4700': 'Official-Community-Plan-2020.pdf',
   };
 
