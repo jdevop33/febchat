@@ -100,25 +100,33 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
       if (bylawNumber && isValidBylaw) {
         // Add bylaw citation component if we have a valid bylaw number
         try {
-          // Wrap in error boundary to prevent client-side exceptions
+          // Super-safe rendering with multiple layers of error protection
           segments.push(
             <div key={`bylaw-wrapper-${key}`} className="bylaw-safe-wrapper">
               {(() => {
+                // First error handling layer - component creation
                 try {
-                  return (
-                    <BylawCitation
-                      key={`bylaw-${key++}`}
-                      bylawNumber={bylawNumber}
-                      title={title}
-                      section={section}
-                      excerpt={`Referenced in text as: "${fullMatch}"`}
-                      isVerified={isValidBylaw}
-                    />
-                  );
-                } catch (citationError) {
-                  console.error('Error rendering BylawCitation:', citationError);
-                  // Fallback to plain text if component fails
-                  return (
+                  // Create the citation component in an IIFE to isolate errors
+                  const CitationComponent = (() => {
+                    try {
+                      return (
+                        <BylawCitation
+                          key={`bylaw-${key++}`}
+                          bylawNumber={bylawNumber}
+                          title={title}
+                          section={section}
+                          excerpt={`Referenced in text as: "${fullMatch}"`}
+                          isVerified={isValidBylaw}
+                        />
+                      );
+                    } catch (citationError) {
+                      console.error('Error creating BylawCitation component:', citationError);
+                      return null;
+                    }
+                  })();
+                  
+                  // If component creation succeeded, render it with a fallback
+                  return CitationComponent || (
                     <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
                       <p className="text-sm text-amber-800">
                         {fullMatch} <a 
@@ -148,6 +156,14 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
                         </a>
                       </p>
                     </div>
+                  );
+                } catch (renderError) {
+                  // Ultimate fallback if everything else fails
+                  console.error('Critical error in bylaw citation rendering:', renderError);
+                  return (
+                    <span className="text-amber-700 font-medium">
+                      {fullMatch} (PDF available on official site)
+                    </span>
                   );
                 }
               })()}

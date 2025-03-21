@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/shared/theme-provider';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 import './globals.css';
 
@@ -106,7 +107,9 @@ export default async function RootLayout({
               className: 'text-sm font-medium',
             }}
           />
-          <div className="grid min-h-screen">{children}</div>
+          <ErrorBoundary>
+            <div className="grid min-h-screen">{children}</div>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

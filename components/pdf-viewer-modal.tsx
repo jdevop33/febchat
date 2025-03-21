@@ -435,15 +435,43 @@ export function PdfViewerModal({
             </div>
           ) : (
             <ErrorBoundary>
-              <iframe
-                src={viewerUrl}
-                className="h-[calc(90vh-110px)] w-full"
-                title={`Bylaw ${bylawNumber}`}
-                onError={handleIframeError}
-                onLoad={() => setLoading(false)}
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
-                referrerPolicy="no-referrer"
-              />
+              {(() => {
+                try {
+                  return (
+                    <iframe
+                      src={viewerUrl}
+                      className="h-[calc(90vh-110px)] w-full"
+                      title={`Bylaw ${bylawNumber}`}
+                      onError={handleIframeError}
+                      onLoad={() => setLoading(false)}
+                      sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
+                      referrerPolicy="no-referrer"
+                    />
+                  );
+                } catch (error) {
+                  console.error("Error rendering PDF iframe:", error);
+                  handleIframeError();
+                  return (
+                    <div className="flex h-full flex-col items-center justify-center">
+                      <AlertTriangle className="mb-2 size-10 text-amber-500" />
+                      <p className="mb-2 text-muted-foreground">Unable to display PDF</p>
+                      <Button
+                        variant="default"
+                        onClick={() => {
+                          const errorRedirectUrl = getExternalPdfUrl(bylawNumber, title);
+                          console.log('Redirecting to official site due to error:', errorRedirectUrl);
+                          if (typeof window !== 'undefined') {
+                            window.open(errorRedirectUrl, '_blank', 'noopener,noreferrer,popup=yes');
+                          }
+                        }}
+                      >
+                        <ExternalLink size={16} className="mr-2" />
+                        View on Official Website
+                      </Button>
+                    </div>
+                  );
+                }
+              })()}
             </ErrorBoundary>
           )}
         </div>

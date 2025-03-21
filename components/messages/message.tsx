@@ -25,6 +25,35 @@ import { DocumentPreview } from '@/components/documents/document-preview';
 import { MessageReasoning } from '@/components/message-reasoning';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
 
+// Safe error boundary for bylaw citations
+interface ErrorBoundaryFallbackProps {
+  bylawInfo: {
+    bylawNumber: string;
+    title?: string;
+    section: string;
+    content: string;
+  };
+  fallback: React.ReactNode;
+}
+
+// Safely renders BylawCitation with fallback
+const ErrorBoundaryFallback = ({ bylawInfo, fallback }: ErrorBoundaryFallbackProps) => {
+  try {
+    return (
+      <BylawCitation
+        key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
+        bylawNumber={bylawInfo.bylawNumber}
+        section={bylawInfo.section}
+        title={bylawInfo.title}
+        excerpt={bylawInfo.content}
+      />
+    );
+  } catch (error) {
+    console.error("Error rendering BylawCitation in ErrorBoundaryFallback:", error);
+    return <>{fallback}</>;
+  }
+};
+
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -186,56 +215,44 @@ const PurePreviewMessage = ({
                                     try {
                                       return (
                                         <div key={`bylaw-safe-${bylawInfo.bylawNumber}-${bylawInfo.section}`}>
-                                          {(() => {
-                                            try {
-                                              return (
-                                                <BylawCitation
-                                                  key={`${bylawInfo.bylawNumber}-${bylawInfo.section}`}
-                                                  bylawNumber={bylawInfo.bylawNumber}
-                                                  section={bylawInfo.section}
-                                                  title={bylawInfo.title}
-                                                  excerpt={bylawInfo.content}
-                                                />
-                                              );
-                                            } catch (error) {
-                                              console.error("Error rendering BylawCitation:", error);
-                                              return (
-                                                <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
-                                                  <p className="text-sm text-amber-800">
-                                                    Bylaw {bylawInfo.bylawNumber}: {bylawInfo.title || `Section ${bylawInfo.section}`}
-                                                    <a 
-                                                      href={`https://www.oakbay.ca/bylaws/${bylawInfo.bylawNumber}.pdf`} 
-                                                      target="_blank" 
-                                                      rel="noopener noreferrer" 
-                                                      className="ml-2 underline inline-flex items-center gap-1"
-                                                      aria-label={`View Bylaw ${bylawInfo.bylawNumber} on official site (opens in new tab)`}
+                                          <ErrorBoundaryFallback
+                                            bylawInfo={bylawInfo}
+                                            fallback={(
+                                              <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+                                                <p className="text-sm text-amber-800">
+                                                  Bylaw {bylawInfo.bylawNumber}: {bylawInfo.title || `Section ${bylawInfo.section}`}
+                                                  <a 
+                                                    href={`https://www.oakbay.ca/bylaws/${bylawInfo.bylawNumber}.pdf`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="ml-2 underline flex items-center gap-1"
+                                                    aria-label={`View Bylaw ${bylawInfo.bylawNumber} on official site (opens in new tab)`}
+                                                  >
+                                                    <span>View on official site</span>
+                                                    <svg 
+                                                      xmlns="http://www.w3.org/2000/svg" 
+                                                      width="12" 
+                                                      height="12" 
+                                                      viewBox="0 0 24 24" 
+                                                      fill="none" 
+                                                      stroke="currentColor" 
+                                                      strokeWidth="2" 
+                                                      strokeLinecap="round" 
+                                                      strokeLinejoin="round" 
+                                                      aria-hidden="true"
                                                     >
-                                                      <span>View on official site</span>
-                                                      <svg 
-                                                        xmlns="http://www.w3.org/2000/svg" 
-                                                        width="12" 
-                                                        height="12" 
-                                                        viewBox="0 0 24 24" 
-                                                        fill="none" 
-                                                        stroke="currentColor" 
-                                                        strokeWidth="2" 
-                                                        strokeLinecap="round" 
-                                                        strokeLinejoin="round" 
-                                                        aria-hidden="true"
-                                                      >
-                                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                                        <polyline points="15 3 21 3 21 9" />
-                                                        <line x1="10" y1="14" x2="21" y2="3" />
-                                                      </svg>
-                                                    </a>
-                                                  </p>
-                                                  {bylawInfo.content && (
-                                                    <p className="mt-1 text-sm italic">{bylawInfo.content}</p>
-                                                  )}
-                                                </div>
-                                              );
-                                            }
-                                          })()}
+                                                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                                      <polyline points="15 3 21 3 21 9" />
+                                                      <line x1="10" y1="14" x2="21" y2="3" />
+                                                    </svg>
+                                                  </a>
+                                                </p>
+                                                {bylawInfo.content && (
+                                                  <p className="mt-1 text-sm italic">{bylawInfo.content}</p>
+                                                )}
+                                              </div>
+                                            )}
+                                          />
                                         </div>
                                       );
                                     } catch (error) {
