@@ -114,7 +114,11 @@ const PurePreviewMessage = ({
                   })}
                 >
                   {message.role === 'assistant' ? (
-                    <EnhancedMarkdown>{message.content as string}</EnhancedMarkdown>
+                    message.content && typeof message.content === 'string' ? (
+                      <EnhancedMarkdown>{message.content}</EnhancedMarkdown>
+                    ) : (
+                      <Markdown>{message.content || ''}</Markdown>
+                    )
                   ) : (
                     <Markdown>{message.content as string}</Markdown>
                   )}
