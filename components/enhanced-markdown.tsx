@@ -3,7 +3,7 @@
 import React from 'react';
 import { Markdown } from '@/components/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-utils';
+import { VALIDATED_BYLAWS, bylawTitleMap } from '@/lib/utils/bylaw-utils';
 
 interface EnhancedMarkdownProps {
   children: string;
@@ -12,7 +12,7 @@ interface EnhancedMarkdownProps {
 
 export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps) {
   // Regular expression to match bylaw references with number capture groups and optional section
-  const bylawRegex = /(?:Oak Bay(?:'s)?|Municipal)?\s*(?:((?:Building and Plumbing|Tree Protection|Anti-Noise|Streets[- ]Traffic|Zoning|Parks and Beaches|Subdivision|Uplands|Refuse Collection|Board of Variance|Property Tax|Sign|Animal Control)\s+Bylaw(?:\s*\(?(?:No\.?|Number)?\s*(\d{4})\)?)?)|(?:Bylaw(?:\s+(?:No\.?|Number)?)?\s*(\d{4})))(?:,?\s*(?:Section|Sec\.|§)\s*([\w\d\.\(\)]+))?/gi;
+  const bylawRegex = /(?:Oak Bay(?:'s)?|Municipal)?\s*(?:((?:Building and Plumbing|Tree Protection|Anti-Noise|Streets[- ]Traffic|Zoning|Parks and Beaches|Subdivision|Uplands|Refuse Collection|Board of Variance|Property Tax(?:\s+Exemption)?|Tax Rates|Development Cost Charge|Amenity Cost Charge|Sign|Animal Control)\s+Bylaw(?:\s*\(?(?:No\.?|Number)?\s*(\d{4})\)?)?)|(?:Bylaw(?:\s+(?:No\.?|Number)?)?\s*(\d{4})))(?:,?\s*(?:Section|Sec\.|§)\s*([\w\d\.\(\)]+))?/gi;
   
   // If no bylaw references or no content, just render as regular markdown
   if (!children || !bylawRegex.test(children)) {
@@ -45,19 +45,11 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
     const bylawNumber = match[2] || match[3] || (bylawName ? getBylawNumberFromName(bylawName) : null);
     const section = match[4] || "1"; // Get section if available, default to 1
     
-    // Get a title for the bylaw
+    // Get a title for the bylaw using centralized mapping
     let title = bylawName;
     if (!title && bylawNumber) {
-      // Try to get title from known bylaws
-      if (bylawNumber === '4247') title = 'Building and Plumbing Bylaw';
-      else if (bylawNumber === '4742') title = 'Tree Protection Bylaw';
-      else if (bylawNumber === '3210') title = 'Anti-Noise Bylaw';
-      else if (bylawNumber === '4100') title = 'Streets and Traffic Bylaw';
-      else if (bylawNumber === '3531') title = 'Zoning Bylaw';
-      else if (bylawNumber === '4672') title = 'Parks and Beaches Bylaw';
-      else if (bylawNumber === '3578') title = 'Subdivision and Development Bylaw';
-      else if (bylawNumber === '3545') title = 'Uplands Bylaw';
-      else title = `Bylaw No. ${bylawNumber}`;
+      // Get title from centralized bylaw map
+      title = bylawTitleMap[bylawNumber] || `Bylaw No. ${bylawNumber}`;
     }
     
     if (bylawNumber && VALIDATED_BYLAWS.includes(bylawNumber)) {
@@ -100,19 +92,41 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
 function getBylawNumberFromName(bylawName: string): string | null {
   const bylawNameLower = bylawName.toLowerCase();
   
-  if (bylawNameLower.includes('building and plumbing')) return '4247';
-  if (bylawNameLower.includes('tree protection')) return '4742';
-  if (bylawNameLower.includes('anti-noise')) return '3210';
-  if (bylawNameLower.includes('streets') && bylawNameLower.includes('traffic')) return '4100';
-  if (bylawNameLower.includes('zoning')) return '3531';
-  if (bylawNameLower.includes('parks and beaches')) return '4672';
-  if (bylawNameLower.includes('subdivision')) return '3578';
-  if (bylawNameLower.includes('uplands')) return '3545';
-  if (bylawNameLower.includes('refuse collection')) return '4371';
-  if (bylawNameLower.includes('board of variance')) return '4183';
-  if (bylawNameLower.includes('property tax')) return '4849';
-  if (bylawNameLower.includes('sign')) return '3946';
-  if (bylawNameLower.includes('animal control')) return '4013';
+  // Map common bylaw name patterns to their numbers
+  const namePatterns: Record<string, string> = {
+    'building and plumbing': '4247',
+    'tree protection': '4742',
+    'anti-noise': '3210',
+    'streets and traffic': '4100',
+    'streets traffic': '4100',
+    'zoning': '3531',
+    'parks and beaches': '4672',
+    'subdivision': '3578',
+    'uplands': '3545',
+    'refuse collection': '4371',
+    'board of variance': '4183',
+    'property tax exemption': '4849',
+    'tax rates': '4861',
+    'development cost charge': '4891',
+    'amenity cost charge': '4892',
+    'sign': '3946',
+    'animal control': '4013'
+  };
+  
+  // Find a matching pattern
+  for (const [pattern, number] of Object.entries(namePatterns)) {
+    if (bylawNameLower.includes(pattern)) {
+      return number;
+    }
+  }
+  
+  // Check if the title is in our centralized bylawTitleMap
+  // (reverse lookup - find bylaw number from title)
+  for (const [number, title] of Object.entries(bylawTitleMap)) {
+    if (bylawNameLower.includes(title.toLowerCase())) {
+      return number;
+    }
+  }
   
   return null;
 }

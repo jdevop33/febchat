@@ -213,6 +213,7 @@ export function BylawCitation({
       <Card
         className={cn(
           'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
+          'group relative hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700 transition-all duration-200',
           !validBylaw &&
             'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
           className,
@@ -223,12 +224,38 @@ export function BylawCitation({
         data-section={section}
         data-consolidated={isConsolidated}
       >
+        {/* PDF indicator icon & helper text */}
+        <div className="absolute right-3 top-3 flex items-center gap-2">
+          <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
+            Click to view PDF
+          </span>
+          <div className="rounded-full bg-blue-100 p-1 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-300">
+            <FileSearch size={16} />
+          </div>
+        </div>
         <CardContent className="pt-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
               <FileText size={16} className="shrink-0" />
-              <div className="font-medium">
+              <div className="font-medium flex items-center">
                 {formattedTitle}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="px-1 text-blue-600 dark:text-blue-400 font-medium underline hover:text-blue-800 dark:hover:text-blue-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
+                      }}
+                    >
+                      <FileSearch size={14} className="mr-1" />
+                      View PDF
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Open the PDF viewer</TooltipContent>
+                </Tooltip>
                 {isVerified ? (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -315,27 +342,46 @@ export function BylawCitation({
             role="presentation"
             onClick={(e) => e.stopPropagation()}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(!expanded);
-              }}
-            >
-              {expanded ? (
-                <>
-                  <ChevronUp size={14} className="mr-1" />
-                  Show Less
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={14} className="mr-1" />
-                  Show More
-                </>
+            <div className="flex gap-2">
+              <Button
+                variant={expanded ? "ghost" : "outline"}
+                size="sm"
+                className={cn(
+                  "h-8 px-2 text-xs",
+                  !expanded && "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded(!expanded);
+                }}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp size={14} className="mr-1" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={14} className="mr-1" />
+                    Show Options
+                  </>
+                )}
+              </Button>
+              {!expanded && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 px-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:hover:bg-blue-900/80 dark:text-blue-300"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
+                  }}
+                >
+                  <FileSearch size={14} className="mr-1" />
+                  View Full PDF
+                </Button>
               )}
-            </Button>
+            </div>
 
             <div className="flex items-center gap-1">
               <div className="mr-2">
