@@ -259,6 +259,7 @@ export function BylawCitation({
 
   // Fallback rendering in case of errors
   if (!bylawNumber) {
+    console.warn("BylawCitation: Missing bylaw number", { props: { bylawNumber, section, title } });
     return (
       <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
         <p className="text-sm text-amber-800">Bylaw citation could not be displayed properly</p>
@@ -266,7 +267,9 @@ export function BylawCitation({
     );
   }
 
-  try {
+  // Safety guard to prevent PDF viewer errors
+  const safeRender = () => {
+    try {
     return (
       <>
         <Card
@@ -641,20 +644,42 @@ export function BylawCitation({
       )}
     </>
   );
-  } catch (error) {
-    console.error('Error rendering BylawCitation:', error);
-    return (
-      <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
-        <p className="text-sm text-amber-800">Bylaw {bylawNumber}: {formattedTitle} - citation could not be displayed properly</p>
-        <a 
-          href={getExternalPdfUrl(bylawNumber, title)} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="mt-1 text-xs text-blue-600 underline"
-        >
-          View PDF on external site
-        </a>
-      </div>
-    );
+    } catch (error) {
+      console.error('Error rendering BylawCitation:', error);
+      return (
+        <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
+          <p className="text-sm text-amber-800">Bylaw {bylawNumber}: {formattedTitle} - citation could not be displayed properly</p>
+          <a 
+            href={getExternalPdfUrl(bylawNumber, title)} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="mt-1 text-xs text-blue-600 underline flex items-center gap-1"
+            aria-label={`View Bylaw ${bylawNumber} PDF on official Oak Bay website (opens in new tab)`}
+          >
+            <span>View PDF on official site</span>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="12" 
+              height="12" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              aria-hidden="true"
+              className="inline-block"
+            >
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+      );
+    }
   }
+  
+  // Use the safe rendering function
+  return safeRender();
 }

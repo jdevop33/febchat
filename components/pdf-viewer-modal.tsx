@@ -230,6 +230,51 @@ export function PdfViewerModal({
     });
   };
 
+  // Define an error boundary component to catch PDF rendering errors
+  const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+    const [hasError, setHasError] = useState(false);
+    
+    // Use effect to set up error handler
+    useEffect(() => {
+      // Error event handler for iframe errors
+      const handleError = () => {
+        console.error("PDF iframe error detected");
+        setHasError(true);
+      };
+      
+      // Set global error handler
+      window.addEventListener('error', handleError);
+      
+      // Cleanup
+      return () => {
+        window.removeEventListener('error', handleError);
+      };
+    }, []);
+    
+    if (hasError) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center">
+          <AlertTriangle className="mb-2 size-10 text-amber-500" />
+          <p className="mb-2 text-muted-foreground">Unable to display PDF</p>
+          <Button
+            variant="default"
+            onClick={() => {
+              const officialUrl = getExternalPdfUrl(bylawNumber, title);
+              if (typeof window !== 'undefined') {
+                window.open(officialUrl, '_blank', 'noopener,noreferrer,popup=yes');
+              }
+            }}
+          >
+            <ExternalLink size={16} className="mr-2" />
+            View on Official Website
+          </Button>
+        </div>
+      );
+    }
+    
+    return <>{children}</>;
+  };
+
   return (
     <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent className="h-[90vh] max-w-4xl p-0">
@@ -389,15 +434,17 @@ export function PdfViewerModal({
               </Button>
             </div>
           ) : (
-            <iframe
-              src={viewerUrl}
-              className="h-[calc(90vh-110px)] w-full"
-              title={`Bylaw ${bylawNumber}`}
-              onError={handleIframeError}
-              onLoad={() => setLoading(false)}
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
-              referrerPolicy="no-referrer"
-            />
+            <ErrorBoundary>
+              <iframe
+                src={viewerUrl}
+                className="h-[calc(90vh-110px)] w-full"
+                title={`Bylaw ${bylawNumber}`}
+                onError={handleIframeError}
+                onLoad={() => setLoading(false)}
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation"
+                referrerPolicy="no-referrer"
+              />
+            </ErrorBoundary>
           )}
         </div>
       </AlertDialogContent>

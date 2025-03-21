@@ -2,7 +2,7 @@
 
 import type { Attachment, Message } from 'ai';
 import { useChat } from 'ai/react';
-import { useState } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
 import { ChatHeader } from '@/components/chat/chat-header';
@@ -13,6 +13,35 @@ import { Messages } from '@/components/messages';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { useArtifactSelector } from '@/hooks/use-artifact';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+
+// Error boundary component for graceful error handling
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback: ReactNode;
+}
+
+function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
+  const [hasError, setHasError] = useState(false);
+  
+  useEffect(() => {
+    const errorHandler = () => {
+      setHasError(true);
+    };
+    
+    window.addEventListener('error', errorHandler);
+    
+    return () => {
+      window.removeEventListener('error', errorHandler);
+    };
+  }, []);
+  
+  if (hasError) {
+    return <>{fallback}</>;
+  }
+  
+  return <>{children}</>;
+}
 
 export function Chat({
   id,
@@ -127,16 +156,36 @@ export function Chat({
       <ChatHeader chatId={id} />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Messages
-          chatId={id}
-          isLoading={isLoading}
-          votes={votes}
-          messages={messages}
-          setMessages={setMessages}
-          reload={reload}
-          isReadonly={isReadonly}
-          isArtifactVisible={isArtifactVisible}
-        />
+        {/* Error boundary for messages section */}
+        <ErrorBoundary
+          fallback={
+            <div className="flex-1 p-4 text-center">
+              <div className="mt-8 rounded-lg bg-amber-50 p-4 dark:bg-amber-900/20">
+                <p className="mb-2 text-amber-800 dark:text-amber-300">
+                  There was an issue displaying some messages.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="mt-2"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh page
+                </Button>
+              </div>
+            </div>
+          }
+        >
+          <Messages
+            chatId={id}
+            isLoading={isLoading}
+            votes={votes}
+            messages={messages}
+            setMessages={setMessages}
+            reload={reload}
+            isReadonly={isReadonly}
+            isArtifactVisible={isArtifactVisible}
+          />
+        </ErrorBoundary>
 
         <div className="border-t bg-background">
           <form className="mx-auto flex w-full max-w-3xl gap-2 p-4">

@@ -121,7 +121,31 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
                   return (
                     <div className="my-3 p-2 border border-amber-200 bg-amber-50/40 rounded-lg">
                       <p className="text-sm text-amber-800">
-                        {fullMatch} <a href={`https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`} target="_blank" rel="noopener noreferrer" className="underline">View on official site</a>
+                        {fullMatch} <a 
+                          href={`https://www.oakbay.ca/bylaws/${bylawNumber}.pdf`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="underline flex items-center gap-1 inline-flex"
+                          aria-label={`View Bylaw ${bylawNumber} on official site (opens in new tab)`}
+                        >
+                          <span>View on official site</span>
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="12" 
+                            height="12" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            aria-hidden="true"
+                          >
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                          </svg>
+                        </a>
                       </p>
                     </div>
                   );
