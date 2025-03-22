@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// This script uses ESM imports for chalk
+// This script uses ESM imports
 
-const { execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
-const chalk = (await import('chalk')).default;
-const minimist = require('minimist');
+import { execSync } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import chalk from 'chalk';
+import minimist from 'minimist';
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
@@ -42,7 +42,7 @@ ${chalk.bold('AI Code Audit')}
 This tool orchestrates various AI-powered code analysis and improvement tools.
 
 ${chalk.bold('Usage:')}
-  npx tsx scripts/ai-code-audit.js [options]
+  npx tsx scripts/ai-code-audit.mjs [options]
 
 ${chalk.bold('Options:')}
   -a, --all               Run all audit processes
@@ -56,10 +56,10 @@ ${chalk.bold('Options:')}
   -h, --help              Show this help message
 
 ${chalk.bold('Examples:')}
-  npx tsx scripts/ai-code-audit.js --all
-  npx tsx scripts/ai-code-audit.js --analyze --focus "lib/**/*.ts"
-  npx tsx scripts/ai-code-audit.js --improve --dry-run
-  npx tsx scripts/ai-code-audit.js --context --output-dir docs/ai-context
+  npx tsx scripts/ai-code-audit.mjs --all
+  npx tsx scripts/ai-code-audit.mjs --analyze --focus "lib/**/*.ts"
+  npx tsx scripts/ai-code-audit.mjs --improve --dry-run
+  npx tsx scripts/ai-code-audit.mjs --context --output-dir docs/ai-context
   `);
   process.exit(argv.help ? 0 : 1);
 }
@@ -161,7 +161,7 @@ async function runCodebaseAnalysis(outputDir) {
   try {
     console.log(chalk.blue('Running AI codebase analyzer...'));
     
-    let command = `npx tsx scripts/ai-codebase-analyzer.js --output ${path.join(outputDir, 'analysis-results.json')}`;
+    let command = `npx tsx scripts/ai-codebase-analyzer.mjs --output ${path.join(outputDir, 'analysis-results.json')}`;
     
     if (argv.focus) {
       command += ` --focus "${argv.focus}"`;
@@ -210,7 +210,7 @@ async function runCodeImprovement(outputDir) {
       
       console.log(chalk.blue(`Improving file: ${file}`));
       
-      let command = `npx tsx scripts/ai-code-improvement.js --file ${file}`;
+      let command = `npx tsx scripts/ai-code-improvement.mjs --file ${file}`;
       
       if (argv['dry-run']) {
         command += ' --dry-run';
@@ -247,7 +247,7 @@ async function generateContextDocumentation(outputDir) {
     console.log(chalk.blue('Generating context documentation...'));
     
     const contextDir = path.join(outputDir, 'context');
-    let command = `npx tsx scripts/generate-context-files.js --output-dir ${contextDir}`;
+    let command = `npx tsx scripts/generate-context-files.mjs --output-dir ${contextDir}`;
     
     if (argv.focus) {
       command += ` --focus "${argv.focus}"`;

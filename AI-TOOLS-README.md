@@ -21,7 +21,7 @@ This directory contains a collection of AI-powered tools designed to help analyz
 This tool orchestrates all the other tools, running a complete code audit.
 
 ```bash
-npx tsx scripts/ai-code-audit.js --all --output-dir ai-audit
+npx tsx scripts/ai-code-audit.mjs --all --output-dir ai-audit
 ```
 
 Options:
@@ -38,13 +38,13 @@ Options:
 Examples:
 ```bash
 # Run analysis only
-npx tsx scripts/ai-code-audit.js --analyze
+npx tsx scripts/ai-code-audit.mjs --analyze
 
 # Run code improvement with dry run
-npx tsx scripts/ai-code-audit.js --improve --dry-run
+npx tsx scripts/ai-code-audit.mjs --improve --dry-run
 
 # Focus on specific files
-npx tsx scripts/ai-code-audit.js --all --focus "lib/**/*.ts"
+npx tsx scripts/ai-code-audit.mjs --all --focus "lib/**/*.ts"
 ```
 
 ### 2. AI Codebase Analyzer
@@ -52,7 +52,7 @@ npx tsx scripts/ai-code-audit.js --all --focus "lib/**/*.ts"
 This tool analyzes your entire codebase and provides insights on architecture, code quality, and potential improvements.
 
 ```bash
-npx tsx scripts/ai-codebase-analyzer.js --output ai-analysis-results.json
+npx tsx scripts/ai-codebase-analyzer.mjs --output ai-analysis-results.json
 ```
 
 Options:
@@ -67,7 +67,7 @@ Options:
 This tool improves a specific file with AI suggestions.
 
 ```bash
-npx tsx scripts/ai-code-improvement.js --file components/message.tsx
+npx tsx scripts/ai-code-improvement.mjs --file components/message.tsx
 ```
 
 Options:
@@ -82,7 +82,7 @@ Options:
 This tool generates documentation about different aspects of the codebase.
 
 ```bash
-npx tsx scripts/generate-context-files.js --output-dir docs/context
+npx tsx scripts/generate-context-files.mjs --output-dir docs/context
 ```
 
 Options:

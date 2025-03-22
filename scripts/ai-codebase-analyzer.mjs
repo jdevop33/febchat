@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-// This script uses ESM imports for chalk
+// This script uses ESM imports
 
-const fs = require('fs');
-const path = require('path');
-const { glob } = require('glob');
-const { OpenAI } = require('openai');
-const dotenv = require('dotenv');
-const chalk = (await import('chalk')).default;
-const minimist = require('minimist');
+import fs from 'fs';
+import path from 'path';
+import { glob } from 'glob';
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
+import chalk from 'chalk';
+import minimist from 'minimist';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -40,7 +40,7 @@ ${chalk.bold('AI Codebase Analyzer')}
 This tool uses OpenAI to analyze your codebase and provide insights.
 
 ${chalk.bold('Usage:')}
-  npx tsx scripts/ai-codebase-analyzer.js [options]
+  npx tsx scripts/ai-codebase-analyzer.mjs [options]
 
 ${chalk.bold('Options:')}
   -o, --output <file>    Output file for analysis results (default: ai-analysis-results.json)
@@ -50,8 +50,8 @@ ${chalk.bold('Options:')}
   -h, --help             Show this help message
 
 ${chalk.bold('Examples:')}
-  npx tsx scripts/ai-codebase-analyzer.js --focus "lib/**/*.ts" --verbose
-  npx tsx scripts/ai-codebase-analyzer.js --summary
+  npx tsx scripts/ai-codebase-analyzer.mjs --focus "lib/**/*.ts" --verbose
+  npx tsx scripts/ai-codebase-analyzer.mjs --summary
   `);
   process.exit(0);
 }
