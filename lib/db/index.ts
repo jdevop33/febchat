@@ -51,6 +51,7 @@ if (isBuildPhase) {
       // without awaiting it at the top level
       (async () => {
         try {
+          console.log('DB: Testing database connection...');
           // Use a timeout to prevent hanging
           const connectionPromise = vercelDb.query('SELECT 1 as connected');
           const timeoutPromise = new Promise<never>((_, reject) =>
@@ -60,8 +61,22 @@ if (isBuildPhase) {
             ),
           );
 
-          await Promise.race([connectionPromise, timeoutPromise]);
-          console.log('DB: ✅ Successfully connected to database');
+          const result = await Promise.race([connectionPromise, timeoutPromise]);
+          console.log('DB: ✅ Successfully connected to database', result);
+          
+          // Additional test: Try querying schema version
+          try {
+            const versionResult = await vercelDb.query('SELECT version()');
+            console.log('DB: PostgreSQL version:', versionResult.rows[0].version);
+            
+            // Check if tables exist
+            const tablesResult = await vercelDb.query(
+              "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+            );
+            console.log('DB: Found tables:', tablesResult.rows.map(r => r.table_name).join(', '));
+          } catch (schemaError) {
+            console.error('DB: Error checking schema:', schemaError);
+          }
         } catch (connError) {
           console.error('DB: ❌ Failed to connect to database:', connError);
           // Log environment variables status (not the values) for debugging
@@ -79,9 +94,15 @@ if (isBuildPhase) {
             env.POSTGRES_USER ? 'Set' : 'Not set',
           );
           console.error('DB: - NODE_ENV:', env.NODE_ENV || 'Not set');
+          console.error('DB: - Database logging level:', env.DB_LOG_LEVEL || 'Not set');
+          
+          // Set a global flag to indicate DB connection failure
+          globalThis.__DB_CONNECTION_FAILED = true;
         }
       })().catch((error) => {
         console.error('DB: Failed to test database connection:', error);
+        // Set a global flag to indicate DB connection failure
+        globalThis.__DB_CONNECTION_FAILED = true;
       });
     }
   } catch (error) {

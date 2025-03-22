@@ -15,6 +15,13 @@ export default function Page() {
 
   const [email, setEmail] = useState('');
   const [isSuccessful, setIsSuccessful] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
+
+  // Add debug information - check environment setup
+  useEffect(() => {
+    console.log("Login page mounted - checking app status");
+    setDebugInfo(`App Status: ${process.env.NODE_ENV || 'unknown'}`);
+  }, []);
 
   const [state, formAction] = useActionState<LoginActionState, FormData>(
     login,
@@ -24,6 +31,8 @@ export default function Page() {
   );
 
   useEffect(() => {
+    console.log("Auth state changed:", state.status);
+    
     if (state.status === 'failed') {
       toast.error('Invalid credentials!');
     } else if (state.status === 'invalid_data') {
@@ -47,6 +56,13 @@ export default function Page() {
           <p className="text-sm text-gray-500 dark:text-zinc-400">
             Use your email and password to sign in
           </p>
+          {/* Add debug information */}
+          <div className="mt-2 text-xs text-gray-400">
+            {debugInfo}
+          </div>
+          <div className="mt-1 text-xs text-gray-400">
+            Auth Status: {state.status}
+          </div>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>
           <SubmitButton isSuccessful={isSuccessful}>Sign in</SubmitButton>

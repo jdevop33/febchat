@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { AppErrorHandler } from '@/components/app-error-handler';
 
 import './globals.css';
 
@@ -108,7 +109,9 @@ export default async function RootLayout({
             }}
           />
           <ErrorBoundary>
-            <div className="grid min-h-screen">{children}</div>
+            <AppErrorHandler>
+              <div className="grid min-h-screen">{children}</div>
+            </AppErrorHandler>
           </ErrorBoundary>
         </ThemeProvider>
       </body>

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+// This script uses ESM imports for chalk
+
 const { execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const chalk = require('chalk');
+const chalk = (await import('chalk')).default;
 const minimist = require('minimist');
 
 // Parse command line arguments

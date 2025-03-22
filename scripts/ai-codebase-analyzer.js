@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
+// This script uses ESM imports for chalk
+
 const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
 const { OpenAI } = require('openai');
 const dotenv = require('dotenv');
-const chalk = require('chalk');
+const chalk = (await import('chalk')).default;
 const minimist = require('minimist');
 
 // Load environment variables
