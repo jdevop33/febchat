@@ -34,8 +34,12 @@ export function PdfViewerModal({
   const handleExternalOpen = () => {
     if (typeof window !== 'undefined') {
       // Open a generic URL
-      window.open('https://www.oakbay.ca/municipal-services/bylaws', '_blank', 'noopener,noreferrer');
-      
+      window.open(
+        'https://www.oakbay.ca/municipal-services/bylaws',
+        '_blank',
+        'noopener,noreferrer',
+      );
+
       toast.info('Opening external bylaw site', {
         description: `Opening external site for Bylaw ${bylawNumber}`,
       });

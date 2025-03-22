@@ -1,18 +1,31 @@
 /**
  * CLIENT-SIDE ONLY: Bylaw URL and utility functions
- * 
+ *
  * This is a re-export of shared bylaw utilities to avoid the
  * "React server component" import errors when used in client components.
- * 
+ *
  * All implementation details are now in the shared module.
  */
 
 // Define a fallback list of validated bylaws to avoid undefined errors
 // This ensures the component will never fail even if imports fail
 const FALLBACK_VALIDATED_BYLAWS = [
-  "3210", "3531", "4100", "4247", "4742", "4849", 
-  "4861", "4891", "4892", "3578", "4672", "3545", 
-  "4371", "4183", "3946", "4013"
+  '3210',
+  '3531',
+  '4100',
+  '4247',
+  '4742',
+  '4849',
+  '4861',
+  '4891',
+  '4892',
+  '3578',
+  '4672',
+  '3545',
+  '4371',
+  '4183',
+  '3946',
+  '4013',
 ];
 
 // Define the interface for bylaw-shared module
@@ -37,16 +50,18 @@ try {
   console.error('Error importing bylaw-shared:', error);
   // Define fallback implementations
   bylaw_shared = {
-    getExternalPdfUrl: (bylawNumber: string) => `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`,
+    getExternalPdfUrl: (bylawNumber: string) =>
+      `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`,
     getLocalPdfPath: (bylawNumber: string) => `/pdfs/${bylawNumber}.pdf`,
     getBestPdfUrl: (bylawNumber: string) => `/pdfs/${bylawNumber}.pdf`,
     getBylawTitle: (bylawNumber: string) => `Bylaw No. ${bylawNumber}`,
     findSectionPage: () => 1,
     getEstimatedPageCount: () => 20,
-    isValidatedBylaw: (bylawNumber: string) => FALLBACK_VALIDATED_BYLAWS.includes(bylawNumber),
+    isValidatedBylaw: (bylawNumber: string) =>
+      FALLBACK_VALIDATED_BYLAWS.includes(bylawNumber),
     VALIDATED_BYLAWS: FALLBACK_VALIDATED_BYLAWS,
     sectionPageMapping: {},
-    bylawPageCounts: {}
+    bylawPageCounts: {},
   };
 }
 
@@ -58,7 +73,8 @@ export const getBylawTitle = bylaw_shared.getBylawTitle;
 export const findSectionPage = bylaw_shared.findSectionPage;
 export const getEstimatedPageCount = bylaw_shared.getEstimatedPageCount;
 export const isValidatedBylaw = bylaw_shared.isValidatedBylaw;
-export const VALIDATED_BYLAWS = bylaw_shared.VALIDATED_BYLAWS || FALLBACK_VALIDATED_BYLAWS;
+export const VALIDATED_BYLAWS =
+  bylaw_shared.VALIDATED_BYLAWS || FALLBACK_VALIDATED_BYLAWS;
 export const SECTION_PAGE_MAPPINGS = bylaw_shared.sectionPageMapping || {};
 export const BYLAW_PAGE_COUNTS = bylaw_shared.bylawPageCounts || {};
 
@@ -71,26 +87,29 @@ export const BYLAW_TITLE_MAP = bylawTitleMap;
  * Analyze the URL structure of existing bylaw URLs to determine patterns
  * This is a helper function for development/debugging
  */
-export function analyzeUrlStructure(): { patterns: Record<string, number>, examples: Record<string, string[]> } {
+export function analyzeUrlStructure(): {
+  patterns: Record<string, number>;
+  examples: Record<string, string[]>;
+} {
   const patterns: Record<string, number> = {};
   const examples: Record<string, string[]> = {};
-  
+
   // Analyze all URLs
   Object.entries(HARDCODED_PDF_URLS).forEach(([number, url]) => {
     // Extract pattern type
-    let pattern = "unknown";
-    
+    let pattern = 'unknown';
+
     if (url.includes('/wp-content/uploads/')) {
-      pattern = "wp-content";
+      pattern = 'wp-content';
     } else if (url.includes('/sites/default/files/')) {
-      pattern = "sites-default";
+      pattern = 'sites-default';
     } else if (url.includes('/bylaws/')) {
-      pattern = "direct-bylaws";
+      pattern = 'direct-bylaws';
     }
-    
+
     // Count patterns
     patterns[pattern] = (patterns[pattern] || 0) + 1;
-    
+
     // Store examples
     if (!examples[pattern]) {
       examples[pattern] = [];
@@ -99,13 +118,13 @@ export function analyzeUrlStructure(): { patterns: Record<string, number>, examp
       examples[pattern].push(`${number}: ${url}`);
     }
   });
-  
+
   // Add additional pattern types for diagnostic purposes
-  patterns["total-hardcoded"] = Object.keys(HARDCODED_PDF_URLS).length;
-  
+  patterns['total-hardcoded'] = Object.keys(HARDCODED_PDF_URLS).length;
+
   // Import from the shared module
   const { VALIDATED_BYLAWS } = require('./bylaw-shared');
-  patterns["total-validated"] = VALIDATED_BYLAWS.length;
-  
+  patterns['total-validated'] = VALIDATED_BYLAWS.length;
+
   return { patterns, examples };
 }

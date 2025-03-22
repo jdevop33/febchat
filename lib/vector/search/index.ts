@@ -7,7 +7,11 @@
 export { searchBylawsOptimized } from './search-service';
 
 // Export utility functions
-export { extractKeywords, buildPineconeFilter, formatSearchResults } from './utils';
+export {
+  extractKeywords,
+  buildPineconeFilter,
+  formatSearchResults,
+} from './utils';
 
 // Export embeddings functionality
 export { getEmbeddingsModel, resetEmbeddingsModel } from './embeddings';

@@ -7,6 +7,7 @@
 Demonstrate how the application can understand and respond to questions about Oak Bay bylaws with proper citations:
 
 **Example Queries:**
+
 - "What are the noise restrictions in Oak Bay?"
 - "Tell me about tree protection regulations"
 - "What are the building permit requirements in Oak Bay?"
@@ -17,6 +18,7 @@ The system will include proper bylaw citations with links to official documents.
 ### 2. Interactive Chat Interface
 
 Show how users can:
+
 - Start new conversations
 - Continue existing discussions
 - Get contextual responses that reference previous messages
@@ -25,6 +27,7 @@ Show how users can:
 ### 3. Document Management
 
 Demonstrate how the application handles:
+
 - PDF viewing of bylaw documents
 - Direct linking to specific sections
 - Verification of bylaw citations
@@ -32,6 +35,7 @@ Demonstrate how the application handles:
 ### 4. Citation Feedback
 
 Demonstrate the feedback mechanism where users can:
+
 - Mark citations as correct/incorrect
 - Provide feedback on bylaw interpretations
 - Report outdated information

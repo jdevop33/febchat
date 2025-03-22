@@ -1,6 +1,6 @@
 /**
  * Chat API Client
- * 
+ *
  * Provides client-side functions for interacting with the chat API endpoints
  */
 
@@ -37,7 +37,9 @@ export interface ChatApiResponse {
 /**
  * Sends a chat request to the API
  */
-export async function sendChatRequest(request: ChatApiRequest): Promise<ChatApiResponse> {
+export async function sendChatRequest(
+  request: ChatApiRequest,
+): Promise<ChatApiResponse> {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
@@ -57,7 +59,7 @@ export async function sendChatRequest(request: ChatApiRequest): Promise<ChatApiR
 /**
  * Creates a new chat
  */
-export async function createChat(title: string): Promise<{id: string}> {
+export async function createChat(title: string): Promise<{ id: string }> {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
@@ -77,9 +79,11 @@ export async function createChat(title: string): Promise<{id: string}> {
 /**
  * Fetches chat history
  */
-export async function getChatHistory(): Promise<{id: string, title: string, updatedAt: string}[]> {
+export async function getChatHistory(): Promise<
+  { id: string; title: string; updatedAt: string }[]
+> {
   const response = await fetch('/api/history');
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Get chat history error: ${error}`);
@@ -91,7 +95,10 @@ export async function getChatHistory(): Promise<{id: string, title: string, upda
 /**
  * Creates a client-side message object
  */
-export function createClientMessage(content: string, role: 'user' | 'assistant' | 'system' = 'user'): ChatApiMessage {
+export function createClientMessage(
+  content: string,
+  role: 'user' | 'assistant' | 'system' = 'user',
+): ChatApiMessage {
   return {
     id: nanoid(),
     content,

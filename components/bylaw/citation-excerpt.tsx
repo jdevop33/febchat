@@ -14,12 +14,12 @@ export function CitationExcerpt({
   excerpt,
   expanded,
   relevance,
-  financialImpact
+  financialImpact,
 }: CitationExcerptProps) {
   if (!excerpt && !relevance && !financialImpact) {
     return null;
   }
-  
+
   return (
     <>
       {excerpt && (

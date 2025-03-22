@@ -3,38 +3,47 @@
 // Do not edit manually - use generate-bylaw-url-map.ts to update
 
 export const knownBylawUrls: Record<string, string> = {
-  "3210": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf",
-  "3531": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf",
-  "4100": "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf",
-  "4247": "https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf",
-  "4742": "https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf",
-  "4849": "https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf",
-  "4861": "https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf",
-  "4891": "https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf",
-  "4892": "https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf"
+  '3210':
+    'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf',
+  '3531':
+    'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf',
+  '4100':
+    'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf',
+  '4247':
+    'https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf',
+  '4742':
+    'https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
+  '4849':
+    'https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf',
+  '4861':
+    'https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf',
+  '4891':
+    'https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf',
+  '4892':
+    'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
 };
 
 export const bylawTitleMap: Record<string, string> = {
-  "3210": "Anti-Noise Bylaw",
-  "3531": "Zoning Bylaw",
-  "4100": "Streets and Traffic Bylaw",
-  "4247": "Building and Plumbing Bylaw",
-  "4742": "Tree Protection Bylaw",
-  "4849": "Property Tax Exemption Bylaw, 2023",
-  "4861": "Tax Rates Bylaw, 2024",
-  "4891": "Development Cost Charge Bylaw",
-  "4892": "Amenity Cost Charge Bylaw"
+  '3210': 'Anti-Noise Bylaw',
+  '3531': 'Zoning Bylaw',
+  '4100': 'Streets and Traffic Bylaw',
+  '4247': 'Building and Plumbing Bylaw',
+  '4742': 'Tree Protection Bylaw',
+  '4849': 'Property Tax Exemption Bylaw, 2023',
+  '4861': 'Tax Rates Bylaw, 2024',
+  '4891': 'Development Cost Charge Bylaw',
+  '4892': 'Amenity Cost Charge Bylaw',
 };
 
 // List of all known bylaw numbers
 export const VALIDATED_BYLAWS: string[] = [
-  "3210",
-  "3531",
-  "4100",
-  "4247",
-  "4742",
-  "4849",
-  "4861",
-  "4891",
-  "4892"
+  '3210',
+  '3531',
+  '4100',
+  '4247',
+  '4742',
+  '4849',
+  '4861',
+  '4891',
+  '4892',
 ];

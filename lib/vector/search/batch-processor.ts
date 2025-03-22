@@ -5,7 +5,10 @@ import { profiler } from '../../utils/profiler';
 import { getPineconeIndex } from '../pinecone-client';
 import { getEmbeddingsModel } from './embeddings';
 import { formatSearchResults, buildPineconeFilter } from './utils';
-import type { SearchQuery as ApiBatchingSearchQuery, SearchResult as ApiBatchingSearchResult } from '../api-batching';
+import type {
+  SearchQuery as ApiBatchingSearchQuery,
+  SearchResult as ApiBatchingSearchResult,
+} from '../api-batching';
 
 /**
  * Process a batch of search queries

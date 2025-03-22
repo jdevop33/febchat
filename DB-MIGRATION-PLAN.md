@@ -22,11 +22,13 @@ This document outlines a plan to fully migrate to a consistent database setup us
 ### Phase 2: Complete Drizzle Migration (Next Steps)
 
 1. **Schema Migration**
+
    - [ ] Convert remaining Prisma models to Drizzle schema
    - [ ] Update type definitions to use Drizzle's types
    - [ ] Create Drizzle migrations for all schema changes
 
 2. **Database Access Refactoring**
+
    - [ ] Update all database queries to use Drizzle's query builders
    - [ ] Replace any direct Prisma client usage with Drizzle
    - [ ] Ensure consistent error handling across all database operations
@@ -39,6 +41,7 @@ This document outlines a plan to fully migrate to a consistent database setup us
 ### Phase 3: Prisma Removal
 
 1. **Dependency Cleanup**
+
    - [ ] Remove Prisma dependencies from package.json
    - [ ] Remove Prisma configuration files
    - [ ] Update build and development scripts to remove Prisma references
@@ -51,27 +54,28 @@ This document outlines a plan to fully migrate to a consistent database setup us
 
 ### Schema Migration
 
-| Prisma Model | Drizzle Migration Status | Notes |
-|--------------|--------------------------|-------|
-| User         | ✅ Completed              | Already in Drizzle schema |
-| Chat         | ✅ Completed              | Already in Drizzle schema |
-| Message      | ✅ Completed              | Already in Drizzle schema |
-| Vote         | ✅ Completed              | Already in Drizzle schema |
-| Document     | ✅ Completed              | Already in Drizzle schema |
-| Suggestion   | ✅ Completed              | Already in Drizzle schema |
-| Bylaw        | ❌ Pending                | Convert from Prisma to Drizzle |
-| BylawSection | ❌ Pending                | Convert from Prisma to Drizzle |
-| CitationFeedback | ❌ Pending            | Convert from Prisma to Drizzle |
-| VectorDatabaseEntry | ❌ Pending         | Convert from Prisma to Drizzle |
-| BylawUpdate  | ❌ Pending                | Convert from Prisma to Drizzle |
-| WebScrapeLog | ❌ Pending                | Convert from Prisma to Drizzle |
-| SearchQueryLog | ❌ Pending              | Convert from Prisma to Drizzle |
+| Prisma Model        | Drizzle Migration Status | Notes                          |
+| ------------------- | ------------------------ | ------------------------------ |
+| User                | ✅ Completed             | Already in Drizzle schema      |
+| Chat                | ✅ Completed             | Already in Drizzle schema      |
+| Message             | ✅ Completed             | Already in Drizzle schema      |
+| Vote                | ✅ Completed             | Already in Drizzle schema      |
+| Document            | ✅ Completed             | Already in Drizzle schema      |
+| Suggestion          | ✅ Completed             | Already in Drizzle schema      |
+| Bylaw               | ❌ Pending               | Convert from Prisma to Drizzle |
+| BylawSection        | ❌ Pending               | Convert from Prisma to Drizzle |
+| CitationFeedback    | ❌ Pending               | Convert from Prisma to Drizzle |
+| VectorDatabaseEntry | ❌ Pending               | Convert from Prisma to Drizzle |
+| BylawUpdate         | ❌ Pending               | Convert from Prisma to Drizzle |
+| WebScrapeLog        | ❌ Pending               | Convert from Prisma to Drizzle |
+| SearchQueryLog      | ❌ Pending               | Convert from Prisma to Drizzle |
 
 ## Migration Steps for Each Prisma Model
 
 For each remaining Prisma model, follow these steps:
 
 1. **Add to Drizzle Schema**:
+
    ```typescript
    // Example for Bylaw model
    export const bylaw = pgTable('Bylaw', {
@@ -85,11 +89,12 @@ For each remaining Prisma model, follow these steps:
      enactmentDate: varchar('enactmentDate', { length: 64 }),
      amendments: text('amendments'),
    });
-   
+
    export type Bylaw = InferSelectModel<typeof bylaw>;
    ```
 
 2. **Create Migration**:
+
    ```bash
    pnpm db:generate
    ```
@@ -99,10 +104,16 @@ For each remaining Prisma model, follow these steps:
    // Update any functions that use this model
    export async function getBylawByNumber(bylawNumber: string) {
      try {
-       const [selectedBylaw] = await db.select().from(bylaw).where(eq(bylaw.bylawNumber, bylawNumber));
+       const [selectedBylaw] = await db
+         .select()
+         .from(bylaw)
+         .where(eq(bylaw.bylawNumber, bylawNumber));
        return selectedBylaw;
      } catch (error) {
-       console.error(`Failed to get bylaw ${bylawNumber} from database:`, error);
+       console.error(
+         `Failed to get bylaw ${bylawNumber} from database:`,
+         error,
+       );
        throw new DbOperationError('getBylawByNumber', error);
      }
    }
@@ -113,6 +124,7 @@ For each remaining Prisma model, follow these steps:
 After completing the schema migration, make sure to:
 
 1. Test migrations locally:
+
    ```bash
    pnpm db:generate
    pnpm db:migrate
@@ -133,7 +145,10 @@ import db from '@/lib/db';
 import { bylaw } from '@/lib/db';
 
 // Example query
-const bylaws = await db.select().from(bylaw).where(eq(bylaw.isConsolidated, true));
+const bylaws = await db
+  .select()
+  .from(bylaw)
+  .where(eq(bylaw.isConsolidated, true));
 ```
 
 ## Conclusion

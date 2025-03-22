@@ -54,13 +54,13 @@ export function projectWithPositions(
         selectionEnd: 0,
         originalText: suggestion.originalText,
         suggestedText: suggestion.suggestedText,
-        description: suggestion.description || '',  // Convert null to empty string
+        description: suggestion.description || '', // Convert null to empty string
         type: 'suggestion',
         metadata: {
           documentId: suggestion.documentId,
           userId: suggestion.userId,
-          createdAt: suggestion.createdAt.toISOString()
-        }
+          createdAt: suggestion.createdAt.toISOString(),
+        },
       };
     }
 
@@ -70,13 +70,13 @@ export function projectWithPositions(
       selectionEnd: positions.end,
       originalText: suggestion.originalText,
       suggestedText: suggestion.suggestedText,
-      description: suggestion.description || '',  // Convert null to empty string
+      description: suggestion.description || '', // Convert null to empty string
       type: 'suggestion',
       metadata: {
         documentId: suggestion.documentId,
         userId: suggestion.userId,
-        createdAt: suggestion.createdAt.toISOString()
-      }
+        createdAt: suggestion.createdAt.toISOString(),
+      },
     };
   });
 }

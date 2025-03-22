@@ -11,7 +11,10 @@ import { cn } from '@/lib/utils';
 import type { MessageProps } from '@/types/messages/message-types';
 
 // Components
-import { DocumentToolCall, DocumentToolResult } from '@/components/documents/document';
+import {
+  DocumentToolCall,
+  DocumentToolResult,
+} from '@/components/documents/document';
 import { PencilEditIcon, SparklesIcon } from '@/components/icons';
 import { Markdown } from '@/components/markdown';
 import { EnhancedMarkdown } from '@/components/enhanced-markdown';
@@ -19,7 +22,11 @@ import { MessageActions } from '@/components/message-actions';
 import { PreviewAttachment } from '@/components/preview-attachment';
 import { Weather } from '@/components/weather';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { MessageEditor } from '@/components/message-editor';
 import { DocumentPreview } from '@/components/documents/document-preview';
 import { MessageReasoning } from '@/components/message-reasoning';
@@ -38,7 +45,10 @@ interface ErrorBoundaryFallbackProps {
 }
 
 // Safely renders BylawCitation with fallback
-const ErrorBoundaryFallback = ({ bylawInfo, fallback }: ErrorBoundaryFallbackProps) => {
+const ErrorBoundaryFallback = ({
+  bylawInfo,
+  fallback,
+}: ErrorBoundaryFallbackProps) => {
   try {
     return (
       <BylawCitation
@@ -50,14 +60,23 @@ const ErrorBoundaryFallback = ({ bylawInfo, fallback }: ErrorBoundaryFallbackPro
       />
     );
   } catch (error) {
-    console.error("Error rendering BylawCitation in ErrorBoundaryFallback:", error);
+    console.error(
+      'Error rendering BylawCitation in ErrorBoundaryFallback:',
+      error,
+    );
     // Use the CitationFallback component for a consistent UI
     if (bylawInfo.bylawNumber) {
       return (
         <CitationFallback
           bylawNumber={bylawInfo.bylawNumber}
-          formattedTitle={bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber}`}
-          error={error instanceof Error ? error : new Error("Failed to render bylaw citation")}
+          formattedTitle={
+            bylawInfo.title || `Bylaw No. ${bylawInfo.bylawNumber}`
+          }
+          error={
+            error instanceof Error
+              ? error
+              : new Error('Failed to render bylaw citation')
+          }
         />
       );
     }
@@ -215,8 +234,8 @@ const PurePreviewMessage = ({
                               Bylaw Functionality Temporarily Disabled
                             </div>
                             <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                              To improve application stability, the bylaw search functionality has been 
-                              temporarily disabled.
+                              To improve application stability, the bylaw search
+                              functionality has been temporarily disabled.
                             </div>
                           </div>
                         ) : (

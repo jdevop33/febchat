@@ -1,6 +1,6 @@
 /**
  * Artifacts components module
- * 
+ *
  * This module exports all artifact-related components for easy imports
  */
 
@@ -11,4 +11,7 @@ export { ArtifactActions } from '../artifact-actions';
 export { ArtifactCloseButton } from '../artifact-close-button';
 
 // Types
-export type { ArtifactKind, UIArtifact } from '@/types/artifacts/artifact-types';
+export type {
+  ArtifactKind,
+  UIArtifact,
+} from '@/types/artifacts/artifact-types';

@@ -3,9 +3,9 @@
  * This module enhances the base search functionality with batching and caching
  */
 import { logger } from '../../monitoring/logger';
-import { getBatchedVectorSearch, } from '../api-batching';
+import { getBatchedVectorSearch } from '../api-batching';
 import { processBatchedQueries } from './batch-processor';
-import type { BylawSearchOptions, BylawSearchResult, } from './types';
+import type { BylawSearchOptions, BylawSearchResult } from './types';
 
 /**
  * Optimized search for bylaws using vector similarity with batching
@@ -90,7 +90,7 @@ async function handleSearchError(
 ): Promise<BylawSearchResult[]> {
   // Attempt fallback to standard search with robust error handling
   console.log('Falling back to standard search API with fallback mechanisms');
-  
+
   try {
     // Try the standard search service first
     try {

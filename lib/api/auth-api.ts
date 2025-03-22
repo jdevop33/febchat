@@ -1,6 +1,6 @@
 /**
  * Auth API Client
- * 
+ *
  * Provides client-side functions for interacting with the authentication API endpoints
  */
 
@@ -41,7 +41,7 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   });
 
   const data = await response.json();
-  
+
   if (!response.ok) {
     return {
       success: false,
@@ -58,7 +58,9 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 /**
  * Register a new user
  */
-export async function register(userData: RegisterRequest): Promise<AuthResponse> {
+export async function register(
+  userData: RegisterRequest,
+): Promise<AuthResponse> {
   const response = await fetch('/api/auth/register', {
     method: 'POST',
     headers: {
@@ -68,7 +70,7 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
   });
 
   const data = await response.json();
-  
+
   if (!response.ok) {
     return {
       success: false,
@@ -85,15 +87,15 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
 /**
  * Logout the current user
  */
-export async function logout(): Promise<{success: boolean}> {
+export async function logout(): Promise<{ success: boolean }> {
   const response = await fetch('/api/auth/logout', {
     method: 'POST',
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Logout error: ${error}`);
   }
-  
+
   return { success: true };
 }

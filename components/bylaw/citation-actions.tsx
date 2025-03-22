@@ -1,9 +1,19 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, FileSearch, FileDown, ChevronUp, ChevronDown } from 'lucide-react';
+import {
+  ExternalLink,
+  FileSearch,
+  FileDown,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface CitationActionsProps {
@@ -23,7 +33,7 @@ export function CitationActions({
   onViewExternalPdf,
   onViewOfficialSite,
   onExportReport,
-  validBylaw
+  validBylaw,
 }: CitationActionsProps) {
   return (
     <div
@@ -34,11 +44,12 @@ export function CitationActions({
     >
       <div className="flex gap-2">
         <Button
-          variant={expanded ? "ghost" : "outline"}
+          variant={expanded ? 'ghost' : 'outline'}
           size="sm"
           className={cn(
-            "h-8 px-2 text-xs",
-            !expanded && "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+            'h-8 px-2 text-xs',
+            !expanded &&
+              'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
           )}
           onClick={(e) => {
             e.stopPropagation();
@@ -57,12 +68,12 @@ export function CitationActions({
             </>
           )}
         </Button>
-        
+
         {!expanded && (
           <Button
             variant="secondary"
             size="sm"
-            className="h-8 px-2 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 dark:bg-blue-900/50 dark:hover:bg-blue-900/80 dark:text-blue-300"
+            className="h-8 bg-blue-100 px-2 text-xs text-blue-800 hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80"
             onClick={(e) => {
               e.stopPropagation();
               onViewPdf();
@@ -92,9 +103,7 @@ export function CitationActions({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {validBylaw
-                ? 'Open the bylaw PDF'
-                : 'PDF may not be available'}
+              {validBylaw ? 'Open the bylaw PDF' : 'PDF may not be available'}
             </TooltipContent>
           </Tooltip>
 
@@ -159,9 +168,7 @@ export function CitationActions({
                 Export
               </Button>
             </TooltipTrigger>
-            <TooltipContent>
-              Export citation verification report
-            </TooltipContent>
+            <TooltipContent>Export citation verification report</TooltipContent>
           </Tooltip>
         </div>
       )}

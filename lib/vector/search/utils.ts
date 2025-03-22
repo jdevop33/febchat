@@ -6,16 +6,57 @@ import type { SearchResult as ApiBatchingSearchResult } from '../api-batching';
 
 // Common stop words for text processing - defined once for reuse
 export const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'in', 'on', 'at', 'of', 'for', 'to', 'with', 'by', 'and', 
-  'or', 'but', 'if', 'then', 'else', 'when', 'up', 'down', 'is', 'are', 'was', 
-  'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 
-  'shall', 'will', 'should', 'would', 'may', 'might', 'must', 'can', 'could',
+  'a',
+  'an',
+  'the',
+  'in',
+  'on',
+  'at',
+  'of',
+  'for',
+  'to',
+  'with',
+  'by',
+  'and',
+  'or',
+  'but',
+  'if',
+  'then',
+  'else',
+  'when',
+  'up',
+  'down',
+  'is',
+  'are',
+  'was',
+  'were',
+  'be',
+  'been',
+  'being',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'shall',
+  'will',
+  'should',
+  'would',
+  'may',
+  'might',
+  'must',
+  'can',
+  'could',
 ]);
 
 /**
  * Extract keywords from a search query with improved efficiency
  */
-export function extractKeywords(query: string, stopWords: Set<string> = STOP_WORDS): string[] {
+export function extractKeywords(
+  query: string,
+  stopWords: Set<string> = STOP_WORDS,
+): string[] {
   if (!query) return [];
 
   // Clean and normalize the query
@@ -41,7 +82,9 @@ export function extractKeywords(query: string, stopWords: Set<string> = STOP_WOR
 /**
  * Build a Pinecone filter object from search filters
  */
-export function buildPineconeFilter(filters: SearchFilters): PineconeFilter | undefined {
+export function buildPineconeFilter(
+  filters: SearchFilters,
+): PineconeFilter | undefined {
   const filterConditions: Record<string, any>[] = [];
 
   // Process each filter field

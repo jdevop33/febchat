@@ -1,6 +1,6 @@
 /**
  * Database initialization module
- * 
+ *
  * This module handles database connection setup for both Vercel Postgres integration
  * and direct PostgreSQL connections.
  */
@@ -16,7 +16,9 @@ const isProduction = env.NODE_ENV === 'production';
 const isBuildPhase = env.NEXT_PHASE === 'build';
 
 console.log(`Environment: ${env.NODE_ENV || 'development'}`);
-console.log(`Database mode: PostgreSQL (${isProduction ? 'production' : 'development'})`);
+console.log(
+  `Database mode: PostgreSQL (${isProduction ? 'production' : 'development'})`,
+);
 
 // For TypeScript consistency
 type DrizzleClient = ReturnType<typeof drizzle<typeof schema>>;
@@ -37,27 +39,27 @@ export function initializeDatabase(): DrizzleClient {
   // Check for Vercel Postgres integration
   if (isProduction && env.POSTGRES_URL) {
     console.log('Using Vercel Postgres integration in production');
-    
+
     // Import at runtime to prevent build errors
     const { neon } = require('@neondatabase/serverless');
     const { drizzle: vercelDrizzle } = require('drizzle-orm/neon-http');
-    
+
     // Initialize with Vercel's PostgreSQL client
     const client = neon(env.POSTGRES_URL);
     return vercelDrizzle({ schema }) as unknown as DrizzleClient;
   }
-  
+
   // Fall back to direct connection for development or if Vercel integration isn't available
   const connectionString = env.POSTGRES_URL || env.DATABASE_URL;
-  
+
   if (!connectionString) {
     throw new Error(
-      'No database connection string found. Set POSTGRES_URL or DATABASE_URL environment variable.'
+      'No database connection string found. Set POSTGRES_URL or DATABASE_URL environment variable.',
     );
   }
-  
+
   console.log('Using direct PostgreSQL connection');
-  
+
   // Create PostgreSQL client with pooling
   const client = postgres(connectionString, {
     max: Number.parseInt(env.DB_POOL_MAX || '10', 10),
@@ -65,7 +67,7 @@ export function initializeDatabase(): DrizzleClient {
     connect_timeout: Number.parseInt(env.DB_CONNECT_TIMEOUT || '30', 10),
     ssl: env.DB_USE_SSL !== 'false',
   });
-  
+
   // Initialize and return Drizzle ORM instance
   return drizzle(client, { schema }) as DrizzleClient;
 }

@@ -22,55 +22,49 @@ export function PdfErrorFallback({
   title,
   className = '',
   onRetry,
-  error
+  error,
 }: PdfErrorFallbackProps) {
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
-  
+
   // Get external URL for redirect
   const externalUrl = getExternalPdfUrl(bylawNumber, title);
-  
+
   // Handle opening external URL
   const handleExternalLink = () => {
     // Log the external URL for debugging
     console.log('Opening official URL:', externalUrl);
-    
+
     // Open in new tab
     if (typeof window !== 'undefined') {
       window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
     }
-    
+
     // Show toast message
     toast.info('Opening official document', {
-      description: `Redirecting to the official Oak Bay website for Bylaw ${bylawNumber}`
+      description: `Redirecting to the official Oak Bay website for Bylaw ${bylawNumber}`,
     });
   };
-  
+
   return (
-    <div className={`flex flex-col items-center justify-center p-4 text-center ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center p-4 text-center ${className}`}
+    >
       <AlertTriangle className="mb-2 size-10 text-amber-500" />
-      
+
       <p className="mb-2 text-muted-foreground">
-        {error ? 
-          `Error loading PDF: ${error.message}` : 
-          `Unable to display PDF for ${formattedTitle}`
-        }
+        {error
+          ? `Error loading PDF: ${error.message}`
+          : `Unable to display PDF for ${formattedTitle}`}
       </p>
-      
+
       <div className="flex gap-2">
         {onRetry && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRetry}
-          >
+          <Button variant="outline" size="sm" onClick={onRetry}>
             Try Again
           </Button>
         )}
-        
-        <Button
-          variant="default"
-          onClick={handleExternalLink}
-        >
+
+        <Button variant="default" onClick={handleExternalLink}>
           <ExternalLink size={16} className="mr-2" />
           View on Official Website
         </Button>

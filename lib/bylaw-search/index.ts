@@ -107,33 +107,12 @@ export async function searchBylaws(
   query: string,
   filter?: Partial<ChunkMetadata>,
 ): Promise<Array<BylawSearchResult>> {
-  // Use mock data if MOCK_VECTOR_SEARCH is enabled (for CI and testing)
-  if (process.env.MOCK_VECTOR_SEARCH === 'true') {
-    console.log('🧪 Using mock vector search data (MOCK_VECTOR_SEARCH=true)');
-    // Return mock results immediately
-    return mockBylawData
-      .filter((item) => item.text.toLowerCase().includes(query.toLowerCase()))
-      .filter((item) => {
-        if (!filter) return true;
-        return Object.entries(filter).every(([key, value]) => {
-          const typedKey = key as keyof typeof item.metadata;
-          return item.metadata[typedKey] === value;
-        });
-      })
-      .slice(0, 5)
-      .map((chunk) => ({
-        text: chunk.text,
-        metadata: chunk.metadata,
-        score: 0.85,
-      }));
-  }
+  // We're not using mock data for the demo
 
   // Try to use Pinecone for real production environment
   try {
     // Import here to avoid circular dependencies
-    const { getPineconeIndex } = await import(
-      '../vector/pinecone-client'
-    );
+    const { getPineconeIndex } = await import('../vector/pinecone-client');
     const { OpenAIEmbeddings } = await import('@langchain/openai');
 
     // Check if we have Pinecone credentials
@@ -199,9 +178,11 @@ export async function searchBylaws(
   try {
     const vectorStore = getVectorStore();
 
-    // First, initialize the mock vector store with our sample data if not done already
-    if (mockBylawData.length > 0) {
-      await vectorStore.addDocuments(mockBylawData);
+    // Initialize with real data 
+    const { getRealBylawData } = await import('../vector/search-unified');
+    const realData = await getRealBylawData();
+    if (realData.length > 0) {
+      await vectorStore.addDocuments(realData);
     }
 
     // Search using mock vector store
@@ -209,249 +190,64 @@ export async function searchBylaws(
   } catch (error) {
     console.error('Error using mock vector store:', error);
 
-    // Final fallback: just filter mock data directly
-    return mockBylawData
-      .filter((item) => item.text.toLowerCase().includes(query.toLowerCase()))
-      .filter((item) => {
-        if (!filter) return true;
-        return Object.entries(filter).every(([key, value]) => {
-          const typedKey = key as keyof typeof item.metadata;
-          return item.metadata[typedKey] === value;
-        });
-      })
-      .slice(0, 5)
-      .map((chunk) => ({
-        text: chunk.text,
-        metadata: chunk.metadata,
-        score: 0.85, // Mock relevance score
-      }));
+    // Final fallback: use real file system data as fallback
+    try {
+      const fs = require('node:fs');
+      const path = require('node:path');
+      
+      // Get paths to actual bylaw PDF files
+      const pdfDirectory = path.join(process.cwd(), 'public', 'pdfs');
+      
+      // Check if directory exists
+      if (!fs.existsSync(pdfDirectory)) {
+        console.error(`PDF directory not found: ${pdfDirectory}`);
+        return [];
+      }
+      
+      // Get list of PDF files
+      const pdfFiles = fs.readdirSync(pdfDirectory)
+        .filter((file: string) => file.toLowerCase().endsWith('.pdf'))
+        .map((file: string) => ({
+          filename: file,
+          bylawNumber: file.match(/(\d{4})/) ? file.match(/(\d{4})/)[1] : '',
+          title: file.replace(/\.pdf$/i, '').replace(/-/g, ' ').trim(),
+        }));
+        
+      // Filter by query
+      const queryLower = query.toLowerCase();
+      return pdfFiles
+        .filter((file: any) => 
+          file.filename.toLowerCase().includes(queryLower) ||
+          (file.title?.toLowerCase().includes(queryLower))
+        )
+        .slice(0, 5)
+        .map((file: any, index: number) => ({
+          text: `Bylaw ${file.bylawNumber || 'Unknown'}: ${file.title || file.filename}`,
+          metadata: {
+            bylawNumber: file.bylawNumber || 'Unknown',
+            title: file.title || file.filename,
+            section: '',
+            category: 'general',
+            filename: file.filename,
+            url: `/pdfs/${file.filename}`
+          },
+          score: 0.8 - (index * 0.1), // Simple relevance score
+        }));
+    } catch (finalError) {
+      console.error('Fatal error in bylaw search, returning empty results:', finalError);
+      return []; // At the very end, return empty results rather than crash
+    }
   }
 }
 
-// Example mock data
-export const mockBylawData = [
-  {
-    text: 'No person shall make or cause to be made any noise or sound within the geographical limits of The Corporation of the District of Oak Bay which is liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '3(1)',
-      sectionTitle: 'General Noise Prohibition',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'No owner, tenant or occupier of real property within the geographical limits of The Corporation of the District of Oak Bay shall allow that property to be used so that a noise or sound which originates from that property disturbs or tends to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '3(2)',
-      sectionTitle: 'Property Owner Responsibility',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'On Saturday, Sunday or a holiday, the operation of a leaf blower at a time outside the hours of 9:00 a.m. to 5:00 p.m. is prohibited.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '4(5)(a)',
-      sectionTitle: 'Leaf Blower Restrictions - Weekends and Holidays',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'From Monday through Friday, excluding holidays, the operation of a leaf blower at a time outside the hours of 8:00 a.m. to 8:00 p.m. is prohibited.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '4(5)(b)',
-      sectionTitle: 'Leaf Blower Restrictions - Weekdays',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 7:00 a.m. and 7:00 p.m. on each day except Sunday if such work is authorized by a permit which is not a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '5(7)(a)',
-      sectionTitle: 'Construction Hours - Regular Permits',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'The erection, demolition, construction, reconstruction, alteration or repair of any building or other structure is permitted between the hours of 9:00 a.m. and 5:00 p.m. on each day except Sunday if such work is authorized pursuant to a renewal permit, as defined in the Building and Plumbing Bylaw, 2005.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '5(7)(b)',
-      sectionTitle: 'Construction Hours - Renewal Permits',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'Any person who violates any provision of this Bylaw is guilty of an offence and liable upon summary conviction to a fine of not more than One Thousand Dollars ($1,000.00). For the purpose of this clause an offence shall be deemed committed upon each day during or on which a violation occurs or continues.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '7',
-      sectionTitle: 'Penalties',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'The minimum lot area for a single family dwelling shall be 695 square metres (7,481 square feet).',
-    metadata: {
-      bylawNumber: '3531',
-      title: 'Zoning Bylaw',
-      section: '5.1',
-      sectionTitle: 'Minimum Lot Size',
-      dateEnacted: '1986-05-12',
-      category: 'zoning',
-      lastUpdated: '2024-08-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'August 30, 2024',
-    },
-  },
-  {
-    text: 'No building shall exceed a height of 7.32 metres (24 feet).',
-    metadata: {
-      bylawNumber: '3531',
-      title: 'Zoning Bylaw',
-      section: '6.5.1',
-      sectionTitle: 'Building Height',
-      dateEnacted: '1986-05-12',
-      category: 'zoning',
-      lastUpdated: '2024-08-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'August 30, 2024',
-    },
-  },
-  {
-    text: 'No more than one (1) secondary suite shall be permitted in any single family dwelling.',
-    metadata: {
-      bylawNumber: '3531',
-      title: 'Zoning Bylaw',
-      section: '5.7',
-      sectionTitle: 'Secondary Suite Regulations',
-      dateEnacted: '1986-05-12',
-      category: 'zoning',
-      lastUpdated: '2024-08-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'August 30, 2024',
-    },
-  },
-  {
-    text: 'No person shall permit a dog to be on any street or public place or in any public building unless the dog is kept on a leash not exceeding 6 feet in length and is under the immediate control of a competent person.',
-    metadata: {
-      bylawNumber: '4013',
-      title: 'Animal Control Bylaw, 1999',
-      section: '4',
-      sectionTitle: 'Dogs At Large',
-      dateEnacted: '1999-06-20',
-      category: 'animals',
-      lastUpdated: '2022-02-15T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'February 2022',
-    },
-  },
-  {
-    text: 'Every application for a licence shall be accompanied by a licence fee in the amount of $30.00 for each dog that is neutered or spayed, or $45.00 for each dog that is not neutered or spayed.',
-    metadata: {
-      bylawNumber: '4013',
-      title: 'Animal Control Bylaw, 1999',
-      section: '7',
-      sectionTitle: 'Dog Licence Fee',
-      dateEnacted: '1999-06-20',
-      category: 'animals',
-      lastUpdated: '2022-02-15T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'February 2022',
-    },
-  },
-  {
-    text: 'No person shall permit a dog to be on any public beach, whether on a leash or not, in the area between the westerly municipal boundary of The Corporation and the easterly boundary of Lot 1, Section 46, Plan 2193 (known as the "Oak Bay Marina") between May 1 and September 30 in any year.',
-    metadata: {
-      bylawNumber: '4013',
-      title: 'Animal Control Bylaw, 1999',
-      section: '9',
-      sectionTitle: 'Dog Beach Restrictions',
-      dateEnacted: '1999-06-20',
-      category: 'animals',
-      lastUpdated: '2022-02-15T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'February 2022',
-    },
-  },
-  {
-    text: 'Except as authorized by a Permit issued under this Bylaw, no person shall cut, remove or damage any Protected Tree.',
-    metadata: {
-      bylawNumber: '4742',
-      title: 'Tree Protection Bylaw, 2020',
-      section: '3.1',
-      sectionTitle: 'Protected Tree Removal Prohibition',
-      dateEnacted: '2020-03-15',
-      category: 'trees',
-      lastUpdated: '2020-12-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'December 2020',
-    },
-  },
-  {
-    text: 'Protected Tree means any of the following: (a) any tree with a DBH of 60 cm or greater; (b) an Arbutus, Dogwood, Garry Oak, or Western White Pine tree with a DBH of 10 cm or greater; (c) a Western Red Cedar or Big Leaf Maple tree with a DBH of 30 cm or greater.',
-    metadata: {
-      bylawNumber: '4742',
-      title: 'Tree Protection Bylaw, 2020',
-      section: '2.1',
-      sectionTitle: 'Protected Tree Definition',
-      dateEnacted: '2020-03-15',
-      category: 'trees',
-      lastUpdated: '2020-12-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'December 2020',
-    },
-  },
-  {
-    text: 'A person who violates any provision of this Bylaw commits an offence and upon conviction is liable to a fine not exceeding $10,000.',
-    metadata: {
-      bylawNumber: '4742',
-      title: 'Tree Protection Bylaw, 2020',
-      section: '10.1',
-      sectionTitle: 'Penalties',
-      dateEnacted: '2020-03-15',
-      category: 'trees',
-      lastUpdated: '2020-12-30T00:00:00Z',
-      isConsolidated: true,
-      consolidatedDate: 'December 2020',
-    },
-  },
-];
+// Use real bylaw data, not mock data
+export async function getBylawData() {
+  try {
+    // Attempt to load real data from verified-bylaw-answers.json
+    const { getRealBylawData } = await import('../vector/search-unified');
+    return await getRealBylawData();
+  } catch (error) {
+    console.error('Error loading bylaw data:', error);
+    return [];
+  }
+}

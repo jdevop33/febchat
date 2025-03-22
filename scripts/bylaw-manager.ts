@@ -20,29 +20,38 @@ program
   .description('Run the full bylaw management pipeline')
   .action(async () => {
     try {
-      console.log('╔══════════════════════════════════════════════════════════╗');
-      console.log('║                FEBCHAT BYLAW MANAGER                     ║');
-      console.log('║            Full Pipeline Processing                      ║');
-      console.log('╚══════════════════════════════════════════════════════════╝');
-      
+      console.log(
+        '╔══════════════════════════════════════════════════════════╗',
+      );
+      console.log(
+        '║                FEBCHAT BYLAW MANAGER                     ║',
+      );
+      console.log(
+        '║            Full Pipeline Processing                      ║',
+      );
+      console.log(
+        '╚══════════════════════════════════════════════════════════╝',
+      );
+
       // 1. Scrape bylaw data
       console.log('\n📋 Step 1: Scraping bylaw data from Oak Bay website...');
       await execAsync('ts-node scripts/scrape-bylaw-urls.ts');
-      
+
       // 2. Download PDFs
       console.log('\n📥 Step 2: Downloading bylaw PDFs...');
       await execAsync('ts-node scripts/download-bylaws.ts');
-      
+
       // 3. Upload to Vercel Blob (in production)
       console.log('\n☁️  Step 3: Uploading PDFs to Vercel Blob Storage...');
       if (process.env.NODE_ENV === 'production') {
-        await execAsync('ts-node -e "import { uploadAllPdfs } from \'./lib/storage/vercel-blob\'; uploadAllPdfs();"');
+        await execAsync(
+          'ts-node -e "import { uploadAllPdfs } from \'./lib/storage/vercel-blob\'; uploadAllPdfs();"',
+        );
       } else {
         console.log('   Skipping upload (not in production environment)');
       }
-      
+
       console.log('\n✅ Pipeline completed successfully!');
-      
     } catch (error) {
       console.error('\n❌ Error executing pipeline:', error);
       process.exit(1);
@@ -84,12 +93,16 @@ program
   .action(async () => {
     try {
       if (process.env.NODE_ENV !== 'production') {
-        console.log('⚠️ Not in production environment. Set NODE_ENV=production to enable upload.');
+        console.log(
+          '⚠️ Not in production environment. Set NODE_ENV=production to enable upload.',
+        );
         console.log('   To force upload, use --force option.');
         return;
       }
-      
-      await execAsync('ts-node -e "import { uploadAllPdfs } from \'./lib/storage/vercel-blob\'; uploadAllPdfs();"');
+
+      await execAsync(
+        'ts-node -e "import { uploadAllPdfs } from \'./lib/storage/vercel-blob\'; uploadAllPdfs();"',
+      );
       console.log('✅ Upload completed successfully!');
     } catch (error) {
       console.error('❌ Error uploading PDFs:', error);

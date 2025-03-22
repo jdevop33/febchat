@@ -1,4 +1,9 @@
-import type { Attachment, ChatRequestOptions, CreateMessage, Message } from 'ai';
+import type {
+  Attachment,
+  ChatRequestOptions,
+  CreateMessage,
+  Message,
+} from 'ai';
 import type { Dispatch, SetStateAction } from 'react';
 import type { Vote } from '@/lib/db/schema';
 

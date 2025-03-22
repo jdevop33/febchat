@@ -169,15 +169,17 @@ export async function POST(request: Request) {
       // Add more detailed error logging
       console.log(`Chat API: Attempting to get chat with ID: ${id}`);
       chat = await getChatById({ id });
-      
+
       if (!chat) {
-        console.log(`Chat API: Chat not found, creating new chat with ID: ${id}`);
+        console.log(
+          `Chat API: Chat not found, creating new chat with ID: ${id}`,
+        );
         try {
           const title = await generateTitleFromUserMessage({
             message: userMessage,
           });
           console.log(`Chat API: Generated title: "${title}"`);
-          
+
           console.log(`Chat API: Saving new chat with ID: ${id}`);
           await saveChat({ id, userId: session.user.id, title });
           console.log(`Chat API: New chat created successfully`);
@@ -193,43 +195,37 @@ export async function POST(request: Request) {
     } catch (chatError) {
       console.error('Chat API: Error getting/creating chat:', chatError);
       // Include more detailed error information in development
-      const errorDetails = process.env.NODE_ENV === 'development' 
-        ? `Error: ${chatError instanceof Error ? chatError.message : String(chatError)}`
-        : 'Error accessing chat data';
-      
-      return createErrorResponse(
-        'Database error',
-        errorDetails,
-        500,
-      );
+      const errorDetails =
+        process.env.NODE_ENV === 'development'
+          ? `Error: ${chatError instanceof Error ? chatError.message : String(chatError)}`
+          : 'Error accessing chat data';
+
+      return createErrorResponse('Database error', errorDetails, 500);
     }
 
     // Save user message
     try {
       console.log(`Chat API: Saving user message to chat ID: ${id}`);
-      const messageToSave = { 
-        ...userMessage, 
-        createdAt: new Date(), 
-        chatId: id 
+      const messageToSave = {
+        ...userMessage,
+        createdAt: new Date(),
+        chatId: id,
       };
-      
+
       await saveMessages({
         messages: [messageToSave],
       });
       console.log('Chat API: User message saved successfully');
     } catch (saveError) {
       console.error('Chat API: Error saving user message:', saveError);
-      
+
       // Include more detailed error information in development
-      const errorDetails = process.env.NODE_ENV === 'development' 
-        ? `Error: ${saveError instanceof Error ? saveError.message : String(saveError)}`
-        : 'Error saving message data';
-      
-      return createErrorResponse(
-        'Database error',
-        errorDetails,
-        500,
-      );
+      const errorDetails =
+        process.env.NODE_ENV === 'development'
+          ? `Error: ${saveError instanceof Error ? saveError.message : String(saveError)}`
+          : 'Error saving message data';
+
+      return createErrorResponse('Database error', errorDetails, 500);
     }
 
     // Create message ID for later saving

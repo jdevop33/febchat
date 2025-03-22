@@ -31,16 +31,20 @@ jest.mock('./enhanced-markdown', () => {
       // constant VALIDATED_BYLAWS which we can't directly modify
       // So we mock the component to capture the includes call
       return originalModule.EnhancedMarkdown(props);
-    }
+    },
   };
 });
 
 describe('EnhancedMarkdown', () => {
   it('should render regular markdown when no bylaw references exist', () => {
-    render(<EnhancedMarkdown>This is regular text with no bylaw references.</EnhancedMarkdown>);
-    
+    render(
+      <EnhancedMarkdown>
+        This is regular text with no bylaw references.
+      </EnhancedMarkdown>,
+    );
+
     expect(screen.getByTestId('markdown')).toHaveTextContent(
-      'This is regular text with no bylaw references.'
+      'This is regular text with no bylaw references.',
     );
   });
 
@@ -48,10 +52,11 @@ describe('EnhancedMarkdown', () => {
     // This test relies on 4742 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
-        According to Tree Protection Bylaw (No. 4742), you need a permit to remove certain trees.
-      </EnhancedMarkdown>
+        According to Tree Protection Bylaw (No. 4742), you need a permit to
+        remove certain trees.
+      </EnhancedMarkdown>,
     );
-    
+
     // This will pass as long as 4742 is in the hardcoded array
     expect(screen.getByTestId('bylaw-citation-4742')).toBeInTheDocument();
     expect(screen.getByTestId('markdown')).toBeInTheDocument();
@@ -61,10 +66,11 @@ describe('EnhancedMarkdown', () => {
     // This test relies on 3210 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
-        According to Anti-Noise Bylaw No. 3210, Section 5(7)(a), construction is only permitted between 7:00 a.m. and 7:00 p.m.
-      </EnhancedMarkdown>
+        According to Anti-Noise Bylaw No. 3210, Section 5(7)(a), construction is
+        only permitted between 7:00 a.m. and 7:00 p.m.
+      </EnhancedMarkdown>,
     );
-    
+
     // This will pass as long as 3210 is in the hardcoded array
     expect(screen.getByTestId('bylaw-citation-3210')).toBeInTheDocument();
   });
@@ -73,10 +79,11 @@ describe('EnhancedMarkdown', () => {
     // This test relies on 4247 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
-        According to the Building and Plumbing Bylaw, you need permits for structural changes.
-      </EnhancedMarkdown>
+        According to the Building and Plumbing Bylaw, you need permits for
+        structural changes.
+      </EnhancedMarkdown>,
     );
-    
+
     // This will pass as long as 4247 is in the hardcoded array and the name mapping works
     expect(screen.getByTestId('bylaw-citation-4247')).toBeInTheDocument();
   });

@@ -3,7 +3,11 @@
 import React from 'react';
 import { Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { formatCitation } from '@/lib/utils/citation-formatter';
 
@@ -28,7 +32,7 @@ export function CitationFormatter({
   effectiveDate,
   excerpt,
   citationFormat,
-  setCitationFormat
+  setCitationFormat,
 }: CitationFormatterProps) {
   const copyToClipboard = () => {
     // Format citation using the utility function
@@ -40,14 +44,15 @@ export function CitationFormatter({
         isConsolidated,
         consolidatedDate,
         effectiveDate,
-        excerpt
+        excerpt,
       },
-      citationFormat
+      citationFormat,
     );
 
     // Check if navigator is available (only in browser context)
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(content)
+      navigator.clipboard
+        .writeText(content)
         .then(() => {
           toast.success(
             `${citationFormat.charAt(0).toUpperCase() + citationFormat.slice(1)} citation copied to clipboard`,
@@ -70,7 +75,9 @@ export function CitationFormatter({
         <select
           className="h-7 rounded-md border border-input bg-transparent px-1 py-0 text-xs"
           value={citationFormat}
-          onChange={(e) => setCitationFormat(e.target.value as 'standard' | 'legal' | 'apa')}
+          onChange={(e) =>
+            setCitationFormat(e.target.value as 'standard' | 'legal' | 'apa')
+          }
           onClick={(e) => e.stopPropagation()}
         >
           <option value="standard">Standard</option>

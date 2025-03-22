@@ -10,7 +10,9 @@ export interface EmbeddingModel {
 }
 
 // Search processing types
-export type ProcessBatchedQueriesFunction = (queries: SearchQuery[]) => Promise<SearchResult[][]>
+export type ProcessBatchedQueriesFunction = (
+  queries: SearchQuery[],
+) => Promise<SearchResult[][]>;
 
 // Re-export base types
 export type { BylawSearchOptions, BylawSearchResult };

@@ -331,7 +331,7 @@ export const logger = {
       eventType: 'api',
       severity: 'info',
       message,
-      data
+      data,
     });
   },
   warn: (message: string, data?: any) => {
@@ -340,7 +340,7 @@ export const logger = {
       eventType: 'api',
       severity: 'warn',
       message,
-      data
+      data,
     });
   },
   debug: (message: string, data?: any) => {
@@ -349,7 +349,7 @@ export const logger = {
       eventType: 'api',
       severity: 'debug',
       message,
-      data
+      data,
     });
-  }
+  },
 };

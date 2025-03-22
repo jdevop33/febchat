@@ -13,7 +13,7 @@ export function CitationMetadata({
   effectiveDate,
   isConsolidated,
   consolidatedDate,
-  formattedSection
+  formattedSection,
 }: CitationMetadataProps) {
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">

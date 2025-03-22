@@ -93,7 +93,7 @@ export async function extractFromPDF(
         : {}),
       originalFilename: filename,
       lastUpdated: new Date().toISOString(),
-      metadataSourceStr: JSON.stringify(metadataSourceInfo) // For debugging, converted to string
+      metadataSourceStr: JSON.stringify(metadataSourceInfo), // For debugging, converted to string
     };
 
     return {

@@ -1,11 +1,6 @@
 import { formatDistance } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useDebounceCallback, useWindowSize } from 'usehooks-ts';
 import type { Document } from '@/lib/db/schema';
@@ -16,9 +11,7 @@ import { useArtifact } from '@/hooks/use-artifact';
 import { useSidebar } from '@/components/ui/sidebar';
 
 // Import types
-import type { 
-  ArtifactProps, 
-} from '@/types/artifacts/artifact-types';
+import type { ArtifactProps } from '@/types/artifacts/artifact-types';
 
 // Import artifacts
 import { imageArtifact } from '@/artifacts/image/client';

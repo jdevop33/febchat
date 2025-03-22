@@ -5,10 +5,11 @@ This document outlines the plan for addressing duplicate code and functionality 
 ## 1. Duplicate Hooks
 
 ### `useScrollToBottom` Hook
+
 - **Issue**: Identical implementation in two locations:
   - `/home/user/febchat/lib/hooks/use-scroll-to-bottom.ts`
   - `/home/user/febchat/components/use-scroll-to-bottom.ts`
-- **Solution**: 
+- **Solution**:
   - Keep the implementation in `/lib/hooks/use-scroll-to-bottom.ts`
   - Update all imports to use the central implementation
   - Delete the duplicate implementation in components directory
@@ -16,6 +17,7 @@ This document outlines the plan for addressing duplicate code and functionality 
 ## 2. Vector Search Implementation
 
 ### API Batching
+
 - **Issue**: Duplicate batching logic in:
   - `/home/user/febchat/lib/utils/api-batching.ts`
   - `/home/user/febchat/lib/vector/api-batching.ts`
@@ -25,6 +27,7 @@ This document outlines the plan for addressing duplicate code and functionality 
   - Update imports in all files
 
 ### Embedding Models
+
 - **Issue**: Duplicate model logic in:
   - `/home/user/febchat/lib/vector/embedding-models.ts`
   - `/home/user/febchat/lib/vector/search/embeddings.ts`
@@ -34,6 +37,7 @@ This document outlines the plan for addressing duplicate code and functionality 
   - Add deprecation notice to encourage use of the new location
 
 ### Search Services
+
 - **Issue**: Multiple search service implementations:
   - `/home/user/febchat/lib/vector/search-service.ts`
   - `/home/user/febchat/lib/vector/search/search-service.ts`
@@ -45,6 +49,7 @@ This document outlines the plan for addressing duplicate code and functionality 
 ## 3. Editor Functions
 
 ### Text and Sheet Editor Functions
+
 - **Issue**: Duplicate `areEqual` function in:
   - `text-editor.tsx`
   - `sheet-editor.tsx`
@@ -53,14 +58,16 @@ This document outlines the plan for addressing duplicate code and functionality 
   - Import the shared function in both components
 
 ### Input Handling Functions
+
 - **Issue**: Duplicate `handleInput` function in:
   - `multimodal-input.tsx`
-  - `message-editor.tsx` 
+  - `message-editor.tsx`
 - **Solution**:
   - Create a shared input handler in `/lib/editor/functions/input-handler.tsx`
   - Import the shared function in both components
 
 ### Form Submission Logic
+
 - **Issue**: Duplicate `handleSubmit` in:
   - `register/page.tsx`
   - `login/page.tsx`
@@ -71,6 +78,7 @@ This document outlines the plan for addressing duplicate code and functionality 
 ## 4. Document and Artifact Components
 
 ### Document Components
+
 - **Issue**: Duplication between:
   - `/components/document.tsx`
   - `/components/documents/document.tsx`
@@ -80,6 +88,7 @@ This document outlines the plan for addressing duplicate code and functionality 
   - Update all imports to use the new location
 
 ### Artifact Components
+
 - **Issue**: Duplication between:
   - `/components/artifact.tsx`
   - `/components/artifacts/artifact.tsx`

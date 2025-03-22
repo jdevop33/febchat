@@ -13,6 +13,7 @@ This updated guide provides instructions for deploying FebChat to Vercel with pr
 Set the following environment variables in your Vercel project settings:
 
 ### Database Configuration
+
 ```
 DATABASE_URL=postgres://user:password@host:port/database
 POSTGRES_URL=postgres://user:password@host:port/database
@@ -21,6 +22,7 @@ POSTGRES_URL_NON_POOLING=postgres://user:password@host:port/database
 ```
 
 ### Authentication
+
 ```
 NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=https://your-app-url.vercel.app
@@ -28,12 +30,14 @@ AUTH_SECRET=your-auth-secret
 ```
 
 ### AI Models
+
 ```
 ANTHROPIC_API_KEY=your-anthropic-key
 OPENAI_API_KEY=your-openai-key
 ```
 
 ### Pinecone Vector Search
+
 ```
 PINECONE_API_KEY=your-pinecone-key
 PINECONE_ENVIRONMENT=us-east-1
@@ -42,6 +46,7 @@ EMBEDDING_PROVIDER=llamaindex
 ```
 
 ### Vercel Blob Storage
+
 ```
 BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token
 ```
@@ -49,6 +54,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token
 ## Database Integration Steps
 
 1. **Setup Vercel Postgres**
+
    - Go to your Vercel project dashboard
    - Select "Storage" from the menu
    - Click "Connect Database"
@@ -82,10 +88,12 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token
 If you encounter database deployment issues:
 
 1. **Check database connection**:
+
    - Verify all database environment variables are correct
    - Make sure your database is accessible from Vercel's servers
 
 2. **Database initialization**:
+
    - The app now uses a centralized database client in `/lib/db/index.ts`
    - This client handles different environments automatically
    - It provides fallbacks for build-time and error scenarios
@@ -110,11 +118,13 @@ After deploying, verify that:
 Recent updates have simplified the database configuration:
 
 1. **Centralized Database Client**:
+
    - Single database client in `/lib/db/index.ts`
    - Automatic handling of different environments
    - Fallback mechanisms for resilience
 
 2. **Build Process**:
+
    - Updated build script with better error handling
    - Smarter detection of environment variables
    - Fallback mechanisms for build phase

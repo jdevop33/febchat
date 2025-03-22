@@ -70,7 +70,10 @@ export function formatSection(section: string, title?: string | null): string {
 /**
  * Get section string for a specific citation format
  */
-export function getCitationSectionString(section: string, format: 'standard' | 'legal' | 'apa'): string {
+export function getCitationSectionString(
+  section: string,
+  format: 'standard' | 'legal' | 'apa',
+): string {
   // For legal citations, use the section symbol with normalized section
   if (format === 'legal') {
     return `§ ${normalizeSection(section)}`;
@@ -83,7 +86,10 @@ export function getCitationSectionString(section: string, format: 'standard' | '
 /**
  * Get consolidation info string
  */
-export function getConsolidationInfo(isConsolidated: boolean, consolidatedDate?: string): string {
+export function getConsolidationInfo(
+  isConsolidated: boolean,
+  consolidatedDate?: string,
+): string {
   if (isConsolidated && consolidatedDate) {
     return ` (Consolidated to ${consolidatedDate})`;
   } else if (isConsolidated) {
@@ -97,29 +103,40 @@ export function getConsolidationInfo(isConsolidated: boolean, consolidatedDate?:
  */
 export function formatCitation(
   params: {
-    bylawNumber: string,
-    title: string,
-    section: string,
-    isConsolidated?: boolean,
-    consolidatedDate?: string,
-    effectiveDate?: string,
-    excerpt?: string
+    bylawNumber: string;
+    title: string;
+    section: string;
+    isConsolidated?: boolean;
+    consolidatedDate?: string;
+    effectiveDate?: string;
+    excerpt?: string;
   },
-  format: 'standard' | 'legal' | 'apa' = 'standard'
+  format: 'standard' | 'legal' | 'apa' = 'standard',
 ): string {
-  const { bylawNumber, title, section, isConsolidated = false, consolidatedDate, effectiveDate, excerpt } = params;
-  
+  const {
+    bylawNumber,
+    title,
+    section,
+    isConsolidated = false,
+    consolidatedDate,
+    effectiveDate,
+    excerpt,
+  } = params;
+
   // Get consolidation info string
-  const consolidationInfo = getConsolidationInfo(isConsolidated, consolidatedDate);
-  
+  const consolidationInfo = getConsolidationInfo(
+    isConsolidated,
+    consolidatedDate,
+  );
+
   // Format citation based on selected format
   switch (format) {
     case 'legal':
       return `Oak Bay Bylaw No. ${bylawNumber}${consolidationInfo}, § ${section} (${effectiveDate || 'n.d.'}).`;
-      
+
     case 'apa':
       return `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${title} [Bylaw No. ${bylawNumber}${consolidationInfo}], ${getCitationSectionString(section, 'apa')}.`;
-      
+
     case 'standard':
     default:
       return `${title}${consolidationInfo}, ${getCitationSectionString(section, 'standard')}${excerpt ? `: ${excerpt}` : ''}`;

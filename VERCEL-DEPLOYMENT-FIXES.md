@@ -4,11 +4,11 @@
 
 Add these environment variables in your Vercel project settings to ensure proper authentication and API functionality:
 
-| Variable | Description | Example Value |
-|----------|-------------|---------------|
-| `NEXTAUTH_SECRET` | Secret key for NextAuth.js sessions | Generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Production URL of your application | `https://your-app-name.vercel.app` |
-| `AUTH_SECRET` | Alternative auth secret (should match NEXTAUTH_SECRET) | Same as NEXTAUTH_SECRET |
+| Variable          | Description                                            | Example Value                           |
+| ----------------- | ------------------------------------------------------ | --------------------------------------- |
+| `NEXTAUTH_SECRET` | Secret key for NextAuth.js sessions                    | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL`    | Production URL of your application                     | `https://your-app-name.vercel.app`      |
+| `AUTH_SECRET`     | Alternative auth secret (should match NEXTAUTH_SECRET) | Same as NEXTAUTH_SECRET                 |
 
 ## Authentication Configuration
 

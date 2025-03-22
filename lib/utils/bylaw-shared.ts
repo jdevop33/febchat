@@ -1,6 +1,6 @@
 /**
  * Shared bylaw utilities for both client and server environments
- * 
+ *
  * This provides a single source of truth for bylaw-related utility functions
  * that can be used in both client and server contexts.
  */
@@ -15,12 +15,12 @@ export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
   try {
     // Import here to avoid circular dependency issues
     const { knownBylawUrls } = require('./bylaw-maps');
-    
+
     // If we have a known URL for this bylaw, use it
     if (knownBylawUrls?.[bylawNumber]) {
       return knownBylawUrls[bylawNumber];
     }
-    
+
     // Otherwise, use the standard pattern
     return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
   } catch (error) {
@@ -44,7 +44,7 @@ export function getBestPdfUrl(bylawNumber: string, title?: string): string {
   // TEMPORARILY DISABLED PDF URL MAPPING - FOR TESTING
   // Original implementation:
   // return getExternalPdfUrl(bylawNumber, title);
-  
+
   // Return a placeholder for testing
   return `/pdfs/placeholder.pdf`;
 }
@@ -122,7 +122,7 @@ export function findSectionPage(bylawNumber: string, section: string): number {
   if (sectionPageMapping[bylawNumber]?.[normalizedSection]) {
     return sectionPageMapping[bylawNumber][normalizedSection];
   }
-  
+
   // Fallback to page 1
   return 1;
 }

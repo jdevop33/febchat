@@ -2,10 +2,15 @@ import { memo } from 'react';
 import { toast } from 'sonner';
 
 import { useArtifact } from '@/hooks/use-artifact';
-import { FileIcon, LoaderIcon, MessageIcon, PencilEditIcon } from '@/components/icons';
-import type { 
+import {
+  FileIcon,
+  LoaderIcon,
+  MessageIcon,
+  PencilEditIcon,
+} from '@/components/icons';
+import type {
   DocumentToolResultProps,
-  DocumentToolCallProps
+  DocumentToolCallProps,
 } from '@/types/documents/document-types';
 
 const getActionText = (

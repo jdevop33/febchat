@@ -1,6 +1,6 @@
 /**
  * Messages components module
- * 
+ *
  * This module exports all message-related components for easy imports
  */
 
@@ -11,9 +11,9 @@ export { MessageReasoning } from '../message-reasoning';
 export { MessageEditor } from '../message-editor';
 
 // Types
-export type { 
+export type {
   MessageProps,
   MessageEditorProps,
   MessageReasoningProps,
-  MessageActionsProps
+  MessageActionsProps,
 } from '@/types/messages/message-types';

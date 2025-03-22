@@ -6,7 +6,8 @@
  * and index them into a persistent vector database.
  */
 
-import { getVectorStore, mockBylawData } from './index';
+import { getVectorStore } from './index';
+import { getRealBylawData } from '../vector/search-unified';
 import type { BylawChunk } from './types';
 import { getPineconeIndex } from '../vector/pinecone-client';
 import { OpenAIEmbeddings } from '@langchain/openai';
@@ -38,8 +39,8 @@ export async function initializeBylawKnowledgeBase() {
         if (stats.totalRecordCount === 0) {
           console.log('Pinecone index is empty, loading sample data...');
 
-          // Convert mock data into proper chunks
-          const chunks: BylawChunk[] = mockBylawData;
+          // Get real bylaw data instead of mock data
+          const chunks: BylawChunk[] = await getRealBylawData();
 
           // Generate embeddings for chunks
           console.log(`Generating embeddings for ${chunks.length} chunks...`);
@@ -82,8 +83,8 @@ export async function initializeBylawKnowledgeBase() {
     // Create a new vector store
     const vectorStore = getVectorStore();
 
-    // Convert mock data into proper chunks
-    const chunks: BylawChunk[] = mockBylawData;
+    // Get real bylaw data
+    const chunks: BylawChunk[] = await getRealBylawData();
 
     // Add chunks to the vector store
     await vectorStore.addDocuments(chunks);

@@ -14,7 +14,7 @@ export function useChatVisibility({
   initialVisibility: VisibilityType;
 }) {
   const { mutate } = useSWRConfig();
-  
+
   // FIXED: Don't access cache directly, use useSWR with fallback
   const { data: history = [] } = useSWR<Array<Chat>>('/api/history', null, {
     fallbackData: [],
@@ -57,12 +57,12 @@ export function useChatVisibility({
         },
         { revalidate: false },
       );
-      
+
       // Server action to persist the change
       updateChatVisibility({
         chatId: chatId,
         visibility: updatedVisibilityType,
-      }).catch(err => {
+      }).catch((err) => {
         console.error('Failed to update chat visibility:', err);
       });
     } catch (error) {

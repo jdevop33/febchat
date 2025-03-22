@@ -23,9 +23,13 @@ type Selector<T> = (state: UIArtifact) => T;
 
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
   // Apply default value directly in the destructuring to ensure it's never undefined
-  const { data: localArtifact = initialArtifactData } = useSWR<UIArtifact>('artifact', null, {
-    fallbackData: initialArtifactData,
-  });
+  const { data: localArtifact = initialArtifactData } = useSWR<UIArtifact>(
+    'artifact',
+    null,
+    {
+      fallbackData: initialArtifactData,
+    },
+  );
 
   const selectedValue = useMemo(() => {
     // Additional safety check
@@ -38,13 +42,12 @@ export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
 
 export function useArtifact() {
   // Use default value in destructuring for safety
-  const { data: localArtifact = initialArtifactData, mutate: setLocalArtifact } = useSWR<UIArtifact>(
-    'artifact',
-    null,
-    {
-      fallbackData: initialArtifactData,
-    },
-  );
+  const {
+    data: localArtifact = initialArtifactData,
+    mutate: setLocalArtifact,
+  } = useSWR<UIArtifact>('artifact', null, {
+    fallbackData: initialArtifactData,
+  });
 
   const artifact = useMemo(() => {
     return localArtifact || initialArtifactData;
@@ -73,15 +76,17 @@ export function useArtifact() {
   );
 
   // Default to empty object to avoid undefined
-  const { data: localArtifactMetadata = null, mutate: setLocalArtifactMetadata } =
-    useSWR<any>(
-      () =>
-        artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
-      null,
-      {
-        fallbackData: null,
-      },
-    );
+  const {
+    data: localArtifactMetadata = null,
+    mutate: setLocalArtifactMetadata,
+  } = useSWR<any>(
+    () =>
+      artifact.documentId ? `artifact-metadata-${artifact.documentId}` : null,
+    null,
+    {
+      fallbackData: null,
+    },
+  );
 
   return useMemo(
     () => ({

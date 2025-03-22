@@ -1,6 +1,6 @@
 /**
  * Centralized database client for the application
- * 
+ *
  * This file provides a unified way to access the database from anywhere in the application.
  * It handles different environments and database providers.
  */
@@ -17,7 +17,9 @@ const isProduction = env.NODE_ENV === 'production';
 const isBuildPhase = env.NEXT_PHASE === 'build';
 
 // Logging for initialization
-console.log(`DB: Initializing database client (${isProduction ? 'production' : 'development'})`);
+console.log(
+  `DB: Initializing database client (${isProduction ? 'production' : 'development'})`,
+);
 
 // Define database client (singleton pattern)
 let db: ReturnType<typeof drizzle>;
@@ -38,11 +40,11 @@ if (isBuildPhase) {
       console.error('DB: ❌ Vercel Postgres client is not available');
       throw new Error('Vercel Postgres client is undefined');
     }
-    
+
     // Use Vercel's PostgreSQL client
     console.log('DB: Initializing with Vercel Postgres integration');
     db = drizzle(vercelDb, { schema });
-    
+
     // Test connection (in any environment except build, to catch issues early)
     if (!isBuildPhase) {
       // We'll use a self-executing async function to test the connection
@@ -51,28 +53,40 @@ if (isBuildPhase) {
         try {
           // Use a timeout to prevent hanging
           const connectionPromise = vercelDb.query('SELECT 1 as connected');
-          const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Database connection timeout')), 5000)
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Database connection timeout')),
+              5000,
+            ),
           );
-          
+
           await Promise.race([connectionPromise, timeoutPromise]);
           console.log('DB: ✅ Successfully connected to database');
         } catch (connError) {
           console.error('DB: ❌ Failed to connect to database:', connError);
           // Log environment variables status (not the values) for debugging
           console.error('DB: Environment variables check:');
-          console.error('DB: - POSTGRES_URL:', env.POSTGRES_URL ? 'Set' : 'Not set');
-          console.error('DB: - DATABASE_URL:', env.DATABASE_URL ? 'Set' : 'Not set');
-          console.error('DB: - POSTGRES_USER:', env.POSTGRES_USER ? 'Set' : 'Not set');
+          console.error(
+            'DB: - POSTGRES_URL:',
+            env.POSTGRES_URL ? 'Set' : 'Not set',
+          );
+          console.error(
+            'DB: - DATABASE_URL:',
+            env.DATABASE_URL ? 'Set' : 'Not set',
+          );
+          console.error(
+            'DB: - POSTGRES_USER:',
+            env.POSTGRES_USER ? 'Set' : 'Not set',
+          );
           console.error('DB: - NODE_ENV:', env.NODE_ENV || 'Not set');
         }
-      })().catch(error => {
+      })().catch((error) => {
         console.error('DB: Failed to test database connection:', error);
       });
     }
   } catch (error) {
     console.error('DB: ❌ Error initializing database client:', error);
-    
+
     // Provide a more robust fallback mock client
     console.warn('DB: Using fallback mock database client');
     db = {

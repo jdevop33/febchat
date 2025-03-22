@@ -27,6 +27,7 @@ pnpm pdfs:upload
 ```
 
 The scripts maintain a centralized bylaw mapping in `lib/utils/bylaw-maps.ts` that contains:
+
 - URLs to official PDFs on the Oak Bay website
 - Bylaw title mapping for consistent references
 - List of validated bylaw numbers
@@ -37,12 +38,14 @@ The scripts maintain a centralized bylaw mapping in `lib/utils/bylaw-maps.ts` th
 
 Since the app is already hosted on Vercel, using Vercel Blob Storage would be the simplest integration:
 
-- **Setup**: 
+- **Setup**:
+
   ```bash
   pnpm add @vercel/blob
   ```
 
 - **Usage**:
+
   ```typescript
   import { put } from '@vercel/blob';
 
@@ -65,14 +68,16 @@ Since the app is already hosted on Vercel, using Vercel Blob Storage would be th
 If you prefer GCP:
 
 - **Setup**:
+
   ```bash
   pnpm add @google-cloud/storage
   ```
 
 - **Usage**:
+
   ```typescript
   import { Storage } from '@google-cloud/storage';
-  
+
   const storage = new Storage();
   const bucket = storage.bucket('bylaws-bucket');
 
@@ -89,7 +94,7 @@ If you prefer GCP:
   const file = bucket.file(`bylaws/${bylawNumber}.pdf`);
   const [url] = await file.getSignedUrl({
     action: 'read',
-    expires: '03-01-2500',  // Far future
+    expires: '03-01-2500', // Far future
   });
   ```
 
@@ -103,25 +108,29 @@ If you prefer GCP:
 Only if you need AWS-specific features:
 
 - **Setup**:
+
   ```bash
   pnpm add @aws-sdk/client-s3
   ```
 
 - **Usage**:
+
   ```typescript
   import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-  
+
   const client = new S3Client({ region: 'us-west-2' });
-  
+
   // Upload a PDF
-  await client.send(new PutObjectCommand({
-    Bucket: 'bylaws-bucket',
-    Key: `bylaws/${bylawNumber}.pdf`,
-    Body: fileBuffer,
-    ContentType: 'application/pdf',
-    ACL: 'public-read',
-  }));
-  
+  await client.send(
+    new PutObjectCommand({
+      Bucket: 'bylaws-bucket',
+      Key: `bylaws/${bylawNumber}.pdf`,
+      Body: fileBuffer,
+      ContentType: 'application/pdf',
+      ACL: 'public-read',
+    }),
+  );
+
   // URL structure
   const url = `https://bylaws-bucket.s3.amazonaws.com/bylaws/${bylawNumber}.pdf`;
   ```
@@ -134,14 +143,17 @@ Only if you need AWS-specific features:
 ## Implementation Recommendations
 
 1. **Modify the utility functions**:
+
    - Update `getExternalPdfUrl` to fetch from cloud storage
    - Keep the abstraction layer as-is for flexibility
 
 2. **Consider a caching strategy**:
+
    - Cache PDF metadata and common details
    - Avoid redundant storage API calls
 
 3. **Optimize PDF display**:
+
    - Implement lazy loading
    - Consider maintaining multiple versions (thumbnail, optimized)
 
@@ -153,6 +165,7 @@ Only if you need AWS-specific features:
 ## PDF Processing Enhancements
 
 We've implemented an `EnhancedMarkdown` component that automatically:
+
 1. Detects bylaw references in AI-generated text
 2. Converts them to interactive `BylawCitation` components
 3. Links directly to the relevant PDF files

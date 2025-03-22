@@ -7,32 +7,38 @@ Based on the code audit, dependency analysis, and project evaluation, here's a c
 ### Completed
 
 ✅ Created directory structure for new architecture
+
 - Created `/lib/api`, `/lib/pdf`, `/lib/vector` directories
 - Created `/components/bylaw`, `/components/chat`, `/components/shared` directories
 
 ✅ Started moving files to appropriate locations
+
 - Moved bylaw processing code to `/lib/pdf`
-- Moved vector search functionality to `/lib/vector` 
+- Moved vector search functionality to `/lib/vector`
 - Moved hooks to `/hooks` directory
 - Started organizing components into categories
 
 ✅ Refactored duplicate functionality
+
 - Created centralized `useDebounce` utility in `/lib/utils/debounce.ts`
 - Updated component-optimization.ts and use-optimized-api.ts to use the shared utility
 
 ✅ Created API client structure
+
 - Created `/lib/api/index.ts` as the main entry point
 - Created `/lib/api/chat-api.ts` with chat API functionality
 - Created `/lib/api/bylaw-api.ts` with bylaw API functionality
 - Created `/lib/api/auth-api.ts` with authentication functionality
 
 ✅ Completed dependency analysis
+
 - Identified circular dependencies between components
 - Located high complexity modules
 - Found potentially unused modules
 - Created detailed refactoring checklist
 
 ✅ Created architecture documentation
+
 - Created `/ARCHITECTURE.md` explaining the new structure
 - Added recommendations for resolving circular dependencies
 
@@ -51,6 +57,7 @@ Based on the code audit, dependency analysis, and project evaluation, here's a c
 ### 1. Create New Directory Structure
 
 Create the following structure if not already present:
+
 - `/lib/api` - For API client code
 - `/lib/db` - For database operations (already exists)
 - `/lib/vector` - For vector search functionality
@@ -59,9 +66,11 @@ Create the following structure if not already present:
 ### 2. File Movements
 
 #### App Directory (Keep as is)
+
 - Keep all `/app` files in their current location for Next.js App Router compliance
 
 #### Components Directory
+
 - Keep all UI components in `/components`
 - Organize into subdirectories if needed:
   - `/components/ui` (already exists)
@@ -70,6 +79,7 @@ Create the following structure if not already present:
   - `/components/shared` (for shared components)
 
 #### Lib Directory
+
 - Move vector search functionality to `/lib/vector`:
   - `/lib/bylaw-search` → `/lib/vector`
   - `/lib/vector-search` → `/lib/vector`
@@ -81,21 +91,25 @@ Create the following structure if not already present:
 - Keep utility functions in `/lib/utils`
 
 #### Hooks Directory
+
 - Move all hooks to `/hooks`:
   - `/lib/hooks/*` → `/hooks`
   - `/components/use-*.ts` → `/hooks`
 
 #### Types Directory
+
 - Create comprehensive type definitions in `/types`:
   - Move `/types/langchain.d.ts`, `/types/minimist.d.ts` to `/types`
   - Extract type definitions from other files when appropriate
 
 #### Scripts Directory
+
 - Keep utility scripts in `/scripts`
 
 ### 3. Remove Unused Files
 
 Based on the code audit, consider removing or documenting these unused files:
+
 - `/components/visibility-selector.tsx`
 - `/components/sign-out-form.tsx`
 - `/components/model-selector.tsx`
@@ -106,8 +120,9 @@ Based on the code audit, consider removing or documenting these unused files:
 ### 4. Refactor Duplicate Functionality
 
 Refactor these duplicated functions identified in the audit:
+
 - `areEqual` in `/components/text-editor.tsx` and `/components/sheet-editor.tsx`
-- `handleInput` in `/components/multimodal-input.tsx` and `/components/message-editor.tsx` 
+- `handleInput` in `/components/multimodal-input.tsx` and `/components/message-editor.tsx`
 - `debouncedFn` in `/lib/utils/component-optimization.ts` and `/lib/hooks/use-optimized-api.ts`
 - `handleSubmit` in `/app/(auth)/register/page.tsx` and `/app/(auth)/login/page.tsx`
 
@@ -128,13 +143,15 @@ components/artifact.tsx → components/artifact-messages.tsx → components/mess
 Implementation steps:
 
 1. Create type files in `/types/artifacts` and `/types/documents`:
+
    - `types/artifacts/artifact-types.ts` (shared interfaces for artifacts)
    - `types/messages/message-types.ts` (shared interfaces for messages)
    - `types/documents/document-types.ts` (shared interfaces for documents)
 
 2. Directory restructuring:
+
    - Create `/components/artifacts/` directory
-   - Create `/components/documents/` directory 
+   - Create `/components/documents/` directory
    - Create `/components/messages/` directory
 
 3. Component refactoring (in order):
@@ -153,6 +170,7 @@ lib/editor/config.ts → lib/editor/functions.tsx → lib/editor/config.ts
 Implementation steps:
 
 1. Create the directory structure:
+
    - Create `/lib/editor/types/` directory
    - Create `/lib/editor/config/` directory
    - Create `/lib/editor/functions/` directory
@@ -160,8 +178,9 @@ Implementation steps:
 2. Extract common types to `/lib/editor/types/editor-types.ts`
 
 3. Split configuration file:
+
    - Move constants to `/lib/editor/config/constants.ts`
-   - Move types to `/lib/editor/types/config-types.ts` 
+   - Move types to `/lib/editor/types/config-types.ts`
 
 4. Refactor functions file:
    - Move editor functions to `/lib/editor/functions/editor-functions.tsx`
@@ -180,16 +199,19 @@ Implementation steps:
 ## Implementation Sequence
 
 1. **Phase 1: Breaking Circular Dependencies** (2-3 days)
-   - Extract shared types to dedicated files 
+
+   - Extract shared types to dedicated files
    - Refactor artifact and document components
    - Restructure editor configuration and functions
 
 2. **Phase 2: Component Reorganization** (2-3 days)
+
    - Move components to appropriate directories
    - Update import paths throughout the codebase
    - Create index files for component directories
 
 3. **Phase 3: High Complexity Module Refactoring** (3-4 days)
+
    - Split large components into smaller, focused ones
    - Reduce dependencies in identified complex modules
    - Create proper abstractions and interfaces

@@ -1,6 +1,6 @@
 /**
  * Debounce utility for React hooks
- * 
+ *
  * This utility provides hooks for debouncing function calls and values,
  * useful for search inputs, window resize handlers, and other high-frequency events.
  */
@@ -11,14 +11,14 @@ import { useCallback, useRef, useEffect, useState } from 'react';
  * A hook that returns a debounced version of the passed function.
  * The debounced function will only be called after the specified delay
  * has elapsed since the last time it was invoked.
- * 
+ *
  * @param fn The function to debounce
  * @param wait The delay in milliseconds (default: 300ms)
  * @returns The debounced function
  */
 export function useDebounce<T extends (...args: any[]) => any>(
-  fn: T, 
-  wait = 300
+  fn: T,
+  wait = 300,
 ): T {
   const timeout = useRef<NodeJS.Timeout>();
   const fnRef = useRef(fn);
@@ -46,7 +46,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
 
 /**
  * Creates a debounced version of a value
- * 
+ *
  * @param value The value to debounce
  * @param delay The debounce delay in milliseconds
  * @returns The debounced value
@@ -64,22 +64,22 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
 
 /**
  * A regular (non-hook) debounce function for use outside of React components
- * 
+ *
  * @param fn The function to debounce
  * @param wait The delay in milliseconds (default: 300ms)
  * @returns The debounced function
  */
 export function debounce<T extends (...args: any[]) => any>(
-  fn: T, 
-  wait = 300
+  fn: T,
+  wait = 300,
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout | undefined;
-  
+
   return function debouncedFn(...args: Parameters<T>): void {
     if (timeout) {
       clearTimeout(timeout);
     }
-    
+
     timeout = setTimeout(() => {
       fn(...args);
     }, wait);

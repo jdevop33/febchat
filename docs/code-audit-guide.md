@@ -7,14 +7,17 @@ This guide explains how to use the code audit tool to analyze your codebase and 
 The code audit script provides insights into your codebase by:
 
 1. **Identifying unused files and components**
+
    - Detects files that aren't imported anywhere in the project
    - Highlights potential dead code that can be removed
 
 2. **Measuring code coverage**
+
    - Estimates which files lack test coverage
    - Provides a percentage of code coverage across the codebase
 
 3. **Detecting duplicate functionality**
+
    - Finds similar function implementations across different files
    - Suggests opportunities for code consolidation
 

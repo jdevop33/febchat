@@ -24,21 +24,21 @@ export type DataStreamDelta = {
 
 export function DataStreamHandler({ id }: { id: string }) {
   // Fix destructuring error: directly capture all values from useChat instead of accessing .data later
-  const { 
+  const {
     data = [], // Provide empty array default to avoid undefined
     messages,
     append,
     reload,
-    isLoading
+    isLoading,
   } = useChat({ id, api: '/api/chat' });
-  
+
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
     // Directly use data from destructured useChat result with fallback
     const dataStream = Array.isArray(data) ? data : [];
-    
+
     // Additional safety check
     if (dataStream.length === 0) return;
 

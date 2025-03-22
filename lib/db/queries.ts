@@ -9,23 +9,10 @@ import db from './index';
 import * as schema from './schema';
 
 // Extract schema objects for more readable queries
-const {
-  user,
-  chat,
-  message,
-  vote,
-  document,
-  suggestion
-} = schema;
+const { user, chat, message, vote, document, suggestion } = schema;
 
 // Export types for use in other files
-export type {
-  User,
-  Chat,
-  Message,
-  Document,
-  Suggestion
-} from './schema';
+export type { User, Chat, Message, Document, Suggestion } from './schema';
 
 /**
  * Database operation error with contextual information
@@ -161,7 +148,11 @@ export async function getChatById({ id }: { id: string }) {
 /**
  * Save messages to the database
  */
-export async function saveMessages({ messages }: { messages: Array<schema.Message> }) {
+export async function saveMessages({
+  messages,
+}: {
+  messages: Array<schema.Message>;
+}) {
   if (!messages.length) {
     return; // Nothing to save
   }

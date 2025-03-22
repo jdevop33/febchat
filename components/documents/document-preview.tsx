@@ -16,15 +16,20 @@ import { useArtifact } from '@/hooks/use-artifact';
 import type { Document } from '@/lib/db/schema';
 
 // Import types
-import type { 
+import type {
   DocumentPreviewProps,
   HitboxLayerProps,
   DocumentHeaderProps,
-  LoadingSkeletonProps 
+  LoadingSkeletonProps,
 } from '@/types/documents/document-types';
 
 // Import components
-import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from '@/components/icons';
+import {
+  FileIcon,
+  FullscreenIcon,
+  ImageIcon,
+  LoaderIcon,
+} from '@/components/icons';
 import { InlineDocumentSkeleton } from '@/components/document-skeleton';
 import { Editor } from '@/components/text-editor';
 import { DocumentToolCall, DocumentToolResult } from './document';

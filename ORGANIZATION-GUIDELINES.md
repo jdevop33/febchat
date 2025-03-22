@@ -5,6 +5,7 @@ This document outlines the standardized organization structure for the FebChat p
 ## Directory Structure
 
 ### Components
+
 Organize components by feature and functionality:
 
 - **components/ui/**: Reusable UI components (buttons, inputs, cards, etc.)
@@ -22,6 +23,7 @@ Organize components by feature and functionality:
 - **lib/api/**: API client utilities
 
 ### Server-Side
+
 - **app/api/**: API route handlers
 - **lib/db/**: Database models and queries
 
@@ -35,6 +37,7 @@ Organize components by feature and functionality:
   4. Styles
 
 Example:
+
 ```tsx
 // External dependencies
 import React from 'react';

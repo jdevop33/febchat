@@ -7,9 +7,7 @@ import { FileSearch } from 'lucide-react';
 import { toast } from 'sonner';
 import { PdfViewerModal } from '@/components/pdf-viewer-modal';
 import { CitationFeedback } from '@/components/citation-feedback';
-import {
-  VALIDATED_BYLAWS,
-} from '@/lib/utils/bylaw-maps-client';
+import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-maps-client';
 
 // Import the smaller components
 import { CitationHeader } from './citation-header';
@@ -63,7 +61,7 @@ export function BylawCitation({
   const [citationFormat, setCitationFormat] = useState<
     'standard' | 'legal' | 'apa'
   >('standard');
-  
+
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
   const formattedSection = formatSection(section, sectionTitle);
 
@@ -74,17 +72,34 @@ export function BylawCitation({
       setValidBylaw(true);
       return;
     }
-    
+
     // Fallback validation list if imports fail
     const fallbackValidBylaws = [
-      "3210", "3531", "4100", "4247", "4742", "4849", 
-      "4861", "4891", "4892", "3578", "4672", "3545", 
-      "4371", "4183", "3946", "4013"
+      '3210',
+      '3531',
+      '4100',
+      '4247',
+      '4742',
+      '4849',
+      '4861',
+      '4891',
+      '4892',
+      '3578',
+      '4672',
+      '3545',
+      '4371',
+      '4183',
+      '3946',
+      '4013',
     ];
-    
+
     try {
       // First check if the import worked correctly
-      if (typeof VALIDATED_BYLAWS !== 'undefined' && Array.isArray(VALIDATED_BYLAWS) && VALIDATED_BYLAWS.length > 0) {
+      if (
+        typeof VALIDATED_BYLAWS !== 'undefined' &&
+        Array.isArray(VALIDATED_BYLAWS) &&
+        VALIDATED_BYLAWS.length > 0
+      ) {
         // Check against our known list
         setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
       } else if (fallbackValidBylaws.includes(bylawNumber)) {
@@ -93,7 +108,9 @@ export function BylawCitation({
         setValidBylaw(true);
       } else {
         // Fallback to basic validation - assume bylaw is valid if number is provided
-        console.warn('No validation lists available, falling back to basic validation');
+        console.warn(
+          'No validation lists available, falling back to basic validation',
+        );
         setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
       }
     } catch (error) {
@@ -160,7 +177,7 @@ export function BylawCitation({
   const handleViewExternalPdf = () => {
     // Simplified for testing
     console.log('PDF viewer temporarily disabled for testing');
-    
+
     // Open generic URL in new tab
     if (typeof window !== 'undefined') {
       window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
@@ -170,7 +187,7 @@ export function BylawCitation({
   const handleViewOfficialSite = () => {
     // Log the action for debugging
     console.log('Opening official site (simplified for testing)');
-    
+
     if (typeof window !== 'undefined') {
       window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
     }
@@ -178,12 +195,9 @@ export function BylawCitation({
 
   const handleExportReport = () => {
     // Generate a citation verification report
-    toast.success(
-      'Citation verification report downloading...',
-      {
-        description: `Generating verification report for Bylaw ${bylawNumber}, Section ${section}`,
-      },
-    );
+    toast.success('Citation verification report downloading...', {
+      description: `Generating verification report for Bylaw ${bylawNumber}, Section ${section}`,
+    });
 
     // Create a citation verification record (simplified for testing)
     const verificationData = {
@@ -199,28 +213,26 @@ export function BylawCitation({
     };
 
     // Log verification to console (in production, this would be saved)
-    console.log(
-      'Citation verification details:',
-      verificationData,
-    );
+    console.log('Citation verification details:', verificationData);
 
     // Show success after a delay to simulate report generation
     setTimeout(() => {
       toast.success('Citation verified', {
-        description:
-          'The citation verification report has been downloaded',
+        description: 'The citation verification report has been downloaded',
       });
     }, 1500);
   };
 
   // Fallback rendering in case of errors
   if (!bylawNumber) {
-    console.warn("BylawCitation: Missing bylaw number", { props: { bylawNumber, section, title } });
+    console.warn('BylawCitation: Missing bylaw number', {
+      props: { bylawNumber, section, title },
+    });
     return (
-      <CitationFallback 
-        bylawNumber="unknown" 
-        formattedTitle="Unknown Bylaw" 
-        error={new Error("Missing bylaw number")}
+      <CitationFallback
+        bylawNumber="unknown"
+        formattedTitle="Unknown Bylaw"
+        error={new Error('Missing bylaw number')}
       />
     );
   }
@@ -233,12 +245,14 @@ export function BylawCitation({
           <Card
             className={cn(
               'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
-              'group relative hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700 transition-all duration-200',
+              'group relative transition-all duration-200 hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700',
               !validBylaw &&
                 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
               className,
             )}
-            onClick={() => (validBylaw ? setIsPdfOpen(true) : handlePdfNotFound())}
+            onClick={() =>
+              validBylaw ? setIsPdfOpen(true) : handlePdfNotFound()
+            }
             data-testid={`bylaw-citation-${bylawNumber}-${section}`}
             data-bylaw-number={bylawNumber}
             data-section={section}
@@ -246,14 +260,14 @@ export function BylawCitation({
           >
             {/* PDF indicator icon & helper text */}
             <div className="absolute right-3 top-3 flex items-center gap-2">
-              <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 shadow-sm opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
+              <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 opacity-0 shadow-sm transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
                 Click to view PDF
               </span>
               <div className="rounded-full bg-blue-100 p-1 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-300">
                 <FileSearch size={16} />
               </div>
             </div>
-            
+
             <CardContent className="pt-4">
               <div className="flex items-start justify-between">
                 {/* Title and verification status */}
@@ -264,7 +278,7 @@ export function BylawCitation({
                   validBylaw={validBylaw}
                   onViewPdf={handleViewPdf}
                 />
-                
+
                 {/* Metadata display */}
                 <CitationMetadata
                   effectiveDate={effectiveDate}
@@ -336,15 +350,15 @@ export function BylawCitation({
     } catch (error) {
       console.error('Error rendering BylawCitation:', error);
       return (
-        <CitationFallback 
-          bylawNumber={bylawNumber} 
-          formattedTitle={formattedTitle} 
-          error={error instanceof Error ? error : new Error("Unknown error")}
+        <CitationFallback
+          bylawNumber={bylawNumber}
+          formattedTitle={formattedTitle}
+          error={error instanceof Error ? error : new Error('Unknown error')}
         />
       );
     }
   };
-  
+
   // Use the safe rendering function
   return safeRender();
 }

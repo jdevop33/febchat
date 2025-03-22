@@ -23,23 +23,23 @@ interface ErrorBoundaryProps {
 
 function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
   const [hasError, setHasError] = useState(false);
-  
+
   useEffect(() => {
     const errorHandler = () => {
       setHasError(true);
     };
-    
+
     window.addEventListener('error', errorHandler);
-    
+
     return () => {
       window.removeEventListener('error', errorHandler);
     };
   }, []);
-  
+
   if (hasError) {
     return <>{fallback}</>;
   }
-  
+
   return <>{children}</>;
 }
 
@@ -88,34 +88,35 @@ export function Chat({
     // Default error messages
     let errorMessage = 'An error occurred, please try again!';
     let errorDescription = 'The system is experiencing technical difficulties.';
-    
+
     // Check if error is from PDF viewer or bylaw citation
-    const isPdfOrBylawError = 
-      (error instanceof Error && 
-        (error.message.includes('PDF') || 
-         error.message.includes('bylaw') || 
-         error.message.includes('iframe') ||
-         error.message.includes('citation'))) ||
-      (typeof error === 'string' && 
-        (error.includes('PDF') || 
-         error.includes('bylaw') || 
-         error.includes('iframe') ||
-         error.includes('citation')));
-    
+    const isPdfOrBylawError =
+      (error instanceof Error &&
+        (error.message.includes('PDF') ||
+          error.message.includes('bylaw') ||
+          error.message.includes('iframe') ||
+          error.message.includes('citation'))) ||
+      (typeof error === 'string' &&
+        (error.includes('PDF') ||
+          error.includes('bylaw') ||
+          error.includes('iframe') ||
+          error.includes('citation')));
+
     if (isPdfOrBylawError) {
       errorMessage = 'PDF viewer issue detected';
-      errorDescription = 'There was a problem displaying a bylaw PDF. Your conversation will continue normally.';
-      
+      errorDescription =
+        'There was a problem displaying a bylaw PDF. Your conversation will continue normally.';
+
       // Log specific error for debugging
       console.warn('PDF/Bylaw rendering error:', error);
-      
+
       // This is a UI rendering issue, not a critical error
       // Just show a toast but let the conversation continue
       toast.warning(errorMessage, {
         duration: 5000,
         description: errorDescription,
       });
-      
+
       // Return early to prevent full error display
       return;
     }
@@ -149,7 +150,7 @@ export function Chat({
     fetcher,
     {
       fallbackData: [],
-    }
+    },
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
@@ -168,8 +169,8 @@ export function Chat({
                 <p className="mb-2 text-amber-800 dark:text-amber-300">
                   There was an issue displaying some messages.
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="mt-2"
                   onClick={() => window.location.reload()}
                 >

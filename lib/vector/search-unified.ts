@@ -1,4 +1,3 @@
-
 import { getPineconeIndex } from './pinecone-client';
 import { logger } from '../monitoring/logger';
 import type {
@@ -51,61 +50,70 @@ function cleanupCache(): void {
  */
 export async function searchBylaws(
   query: string,
-  options?: BylawSearchOptions
+  options?: BylawSearchOptions,
 ): Promise<BylawSearchResult[]> {
   // Start performance tracking
   const startTime = Date.now();
-  
+
   try {
     // Check cache first if enabled
     if (options?.useCache !== false) {
       const cacheKey = generateCacheKey(query, options);
       const cachedResult = searchCache.get(cacheKey);
-      
+
       if (cachedResult && isCacheValid(cachedResult)) {
-        logger.info(`Cache hit for query: "${query}" (${Date.now() - startTime}ms)`);
+        logger.info(
+          `Cache hit for query: "${query}" (${Date.now() - startTime}ms)`,
+        );
         return cachedResult.results;
       }
     }
-    
+
     // Get search parameters
     const limit = options?.limit || 5;
     const filters = options?.filters;
     const minScore = options?.minScore || 0.6;
-    
-    // Check for mock mode first (for tests and development)
-    if (process.env.MOCK_VECTOR_SEARCH === 'true') {
-      const results = await performMockSearch(query, filters, limit);
-      return results;
-    }
-    
+
+    // We don't want to use mock search for demo day
+    // Remove mock mode code to ensure we're using real data
+
     // Try Pinecone search first (production path)
     try {
       if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
-        const results = await performPineconeSearch(query, filters, limit, minScore);
-        
+        const results = await performPineconeSearch(
+          query,
+          filters,
+          limit,
+          minScore,
+        );
+
         // Cache results if caching is enabled
         if (options?.useCache !== false) {
           const cacheKey = generateCacheKey(query, options);
           searchCache.set(cacheKey, {
             results,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
-          
+
           // Clean up expired cache entries periodically
-          if (Math.random() < 0.1) { // 10% chance to clean up on each search
+          if (Math.random() < 0.1) {
+            // 10% chance to clean up on each search
             cleanupCache();
           }
         }
-        
+
         logger.info(`Pinecone search completed in ${Date.now() - startTime}ms`);
         return results;
       }
     } catch (error) {
-      const errorObj = error instanceof Error ? error : new Error(String(error));
-      logger.error(errorObj, 'Pinecone search failed, falling back to keyword search');
+      const errorObj =
+        error instanceof Error ? error : new Error(String(error));
+      logger.error(
+        errorObj,
+        'Pinecone search failed, falling back to keyword search',
+      );
     }
-    
+
     // Fall back to keyword search if Pinecone fails or isn't configured
     const keywordResults = await performKeywordSearch(query, filters, limit);
     logger.info(`Keyword search completed in ${Date.now() - startTime}ms`);
@@ -124,23 +132,23 @@ async function performPineconeSearch(
   query: string,
   filters?: BylawSearchFilters | Record<string, any>,
   limit = 5,
-  minScore = 0.6
+  minScore = 0.6,
 ): Promise<BylawSearchResult[]> {
   logger.info(`Performing Pinecone search for: "${query}"`);
-  
+
   // Get Pinecone index
   const index = getPineconeIndex();
-  
+
   // Get embeddings model based on environment configuration
   const embeddings = getEmbeddingsModel(
-    process.env.EMBEDDING_PROVIDER === 'openai' 
-      ? EmbeddingProvider.OPENAI 
-      : EmbeddingProvider.LLAMAINDEX
+    process.env.EMBEDDING_PROVIDER === 'openai'
+      ? EmbeddingProvider.OPENAI
+      : EmbeddingProvider.LLAMAINDEX,
   );
-  
+
   // Generate embedding for query
   const queryEmbedding = await embeddings.embedQuery(query);
-  
+
   // Build filter if provided
   const pineconeFilter = filters
     ? Object.entries(filters).reduce(
@@ -154,10 +162,10 @@ async function performPineconeSearch(
           }
           return acc;
         },
-        {} as Record<string, any>
+        {} as Record<string, any>,
       )
     : undefined;
-  
+
   // Search Pinecone
   const results = await index.query({
     vector: queryEmbedding,
@@ -165,20 +173,20 @@ async function performPineconeSearch(
     includeMetadata: true,
     filter: pineconeFilter ? { $and: [pineconeFilter] } : undefined,
   });
-  
+
   logger.info(`Pinecone returned ${results.matches?.length || 0} results`);
-  
+
   // Format and filter results
   const formattedResults = (results.matches || [])
-    .filter(match => (match.score || 0) >= minScore) // Filter by minimum score
+    .filter((match) => (match.score || 0) >= minScore) // Filter by minimum score
     .slice(0, limit) // Limit results
-    .map(match => ({
+    .map((match) => ({
       text: match.metadata?.text as string,
       metadata: match.metadata as ChunkMetadata,
       score: match.score || 0,
       id: match.id,
     }));
-    
+
   return formattedResults;
 }
 
@@ -188,89 +196,117 @@ async function performPineconeSearch(
 async function performKeywordSearch(
   query: string,
   filters?: BylawSearchFilters | Record<string, any>,
-  limit = 5
+  limit = 5,
 ): Promise<BylawSearchResult[]> {
   logger.info(`Performing keyword search for: "${query}"`);
+
+  // For the real demo, we should use actual database queries instead of mock data
+  logger.warn('Keyword search fallback is being used - results may be limited');
   
-  // Simple keyword matching on mock data
-  const queryLower = query.toLowerCase();
-  
-  // Filter by query text
-  let results = mockBylawData.filter(item => 
-    item.text.toLowerCase().includes(queryLower)
-  );
-  
-  // Apply additional filters if provided
-  if (filters) {
-    results = results.filter(item => {
-      return Object.entries(filters).every(([key, value]) => {
-        const typedKey = key as keyof typeof item.metadata;
-        
-        // Handle array values as OR conditions
-        if (Array.isArray(value)) {
-          return value.includes(item.metadata[typedKey]);
-        }
-        
-        // Handle single values as exact match
-        return item.metadata[typedKey] === value;
-      });
-    });
+  try {
+    // Read actual bylaw data from files - more reliable than mock data
+    const fs = require('node:fs');
+    const path = require('node:path');
+    
+    // Get paths to actual bylaw PDF files
+    const pdfDirectory = path.join(process.cwd(), 'public', 'pdfs');
+    
+    // Check if directory exists
+    if (!fs.existsSync(pdfDirectory)) {
+      logger.error(`PDF directory not found: ${pdfDirectory}`);
+      return [];
+    }
+    
+    // Get list of PDF files
+    const pdfFiles = fs.readdirSync(pdfDirectory)
+      .filter((file: string) => file.toLowerCase().endsWith('.pdf'))
+      .map((file: string) => ({
+        filename: file,
+        bylawNumber: extractBylawNumber(file),
+        title: formatBylawTitle(file),
+      }));
+      
+    // Filter by query
+    const queryLower = query.toLowerCase();
+    const matchingFiles = pdfFiles
+      .filter((file: any) => 
+        file.filename.toLowerCase().includes(queryLower) ||
+        (file.title?.toLowerCase().includes(queryLower))
+      )
+      .slice(0, limit);
+      
+    // Convert to search results
+    return matchingFiles.map((file: any, index: number) => ({
+      text: `Bylaw ${file.bylawNumber || 'Unknown'}: ${file.title || file.filename}`,
+      metadata: {
+        bylawNumber: file.bylawNumber || 'Unknown',
+        title: file.title || file.filename,
+        section: '',
+        filename: file.filename,
+        url: `/pdfs/${file.filename}`
+      },
+      score: 0.8 - (index * 0.1), // Simple relevance score
+      id: `file-${index}`
+    }));
+  } catch (error) {
+    logger.error('Error in keyword search fallback:', error);
+    return [];
   }
   
-  // Return top results with mock relevance scores
-  return results
-    .slice(0, limit)
-    .map((chunk, index) => ({
-      text: chunk.text,
-      metadata: chunk.metadata,
-      score: 0.9 - (index * 0.05), // Mock decreasing relevance scores
-      id: `mock-${index}`,
-    }));
+  // Helper function to extract bylaw number from filename
+  function extractBylawNumber(filename: string): string | null {
+    const match = filename.match(/(\d{4})/);
+    return match ? match[1] : null;
+  }
+  
+  // Helper function to format bylaw title
+  function formatBylawTitle(filename: string): string {
+    return filename
+      .replace(/\.pdf$/i, '')
+      .replace(/-/g, ' ')
+      .replace(/\d{4}/, '')
+      .trim();
+  }
 }
 
 /**
- * Perform mock search for testing/development
+ * Helper function to get real bylaw data
  */
-async function performMockSearch(
-  query: string,
-  filters?: BylawSearchFilters | Record<string, any>,
-  limit = 5
-): Promise<BylawSearchResult[]> {
-  logger.info(`Using mock search data for: "${query}"`);
-  
-  // Simple filtering of mock data
-  return performKeywordSearch(query, filters, limit);
+export async function getRealBylawData(): Promise<BylawChunk[]> {
+  try {
+    // Attempt to load from verified bylaw answers file
+    const fs = require('node:fs');
+    const path = require('node:path');
+    
+    const verifiedDataPath = path.join(process.cwd(), 'data', 'verified-bylaw-answers.json');
+    
+    if (fs.existsSync(verifiedDataPath)) {
+      const verifiedData = JSON.parse(fs.readFileSync(verifiedDataPath, 'utf8'));
+      
+      if (Array.isArray(verifiedData) && verifiedData.length > 0) {
+        logger.info(`Loaded ${verifiedData.length} verified bylaw entries from file`);
+        
+        // Convert to BylawChunk format
+        return verifiedData.map((item: any) => ({
+          text: item.text || item.content || item.answer || '',
+          metadata: {
+            bylawNumber: item.bylawNumber || '',
+            title: item.title || '',
+            section: item.section || '',
+            sectionTitle: item.sectionTitle || '',
+            category: item.category || '',
+            url: item.url || '',
+            filename: item.filename || '',
+          },
+        }));
+      }
+    }
+    
+    // Fallback to empty array if no verified data
+    logger.warn('No verified bylaw data found, using empty dataset');
+    return [];
+  } catch (error) {
+    logger.error('Error loading real bylaw data:', error);
+    return [];
+  }
 }
-
-// Mock data for development and testing
-export const mockBylawData: BylawChunk[] = [
-  {
-    text: 'No person shall make or cause to be made any noise or sound within the geographical limits of The Corporation of the District of Oak Bay which is liable to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '3(1)',
-      sectionTitle: 'General Noise Prohibition',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  {
-    text: 'No owner, tenant or occupier of real property within the geographical limits of The Corporation of the District of Oak Bay shall allow that property to be used so that a noise or sound which originates from that property disturbs or tends to disturb the quiet, peace, rest, enjoyment, comfort or convenience of individuals or the public.',
-    metadata: {
-      bylawNumber: '3210',
-      title: 'Anti-Noise Bylaw, 1977',
-      section: '3(2)',
-      sectionTitle: 'Property Owner Responsibility',
-      dateEnacted: '1977-06-06',
-      category: 'noise',
-      lastUpdated: '2013-09-30',
-      isConsolidated: true,
-      consolidatedDate: 'September 30, 2013',
-    },
-  },
-  // Additional mock data omitted for brevity - will be included in actual implementation
-];

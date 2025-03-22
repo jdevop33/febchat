@@ -1,6 +1,6 @@
 /**
  * Documents components module
- * 
+ *
  * This module exports all document-related components for easy imports
  */
 
@@ -10,9 +10,9 @@ export { DocumentPreview } from './document-preview';
 export { InlineDocumentSkeleton } from '../document-skeleton';
 
 // Types
-export type { 
+export type {
   DocumentPreviewProps,
   DocumentToolCallProps,
   DocumentToolResultProps,
-  DocumentHeaderProps
+  DocumentHeaderProps,
 } from '@/types/documents/document-types';

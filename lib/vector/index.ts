@@ -131,9 +131,7 @@ export async function searchBylaws(
   // Try to use Pinecone for real production environment
   try {
     // Import here to avoid circular dependencies
-    const { getPineconeIndex } = await import(
-      './pinecone-client'
-    );
+    const { getPineconeIndex } = await import('./pinecone-client');
     const { OpenAIEmbeddings } = await import('@langchain/openai');
 
     // Check if we have Pinecone credentials

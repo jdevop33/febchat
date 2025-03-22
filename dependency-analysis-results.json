@@ -51,11 +51,7 @@
       "components/toolbar.tsx",
       "components/artifact.tsx"
     ],
-    [
-      "lib/editor/config.ts",
-      "lib/editor/functions.tsx",
-      "lib/editor/config.ts"
-    ]
+    ["lib/editor/config.ts", "lib/editor/functions.tsx", "lib/editor/config.ts"]
   ],
   "highDependencyModules": [
     {
@@ -398,10 +394,7 @@
       "dependenciesCount": 2,
       "importedByCount": 2,
       "complexityScore": 4,
-      "dependencies": [
-        "components/artifact.tsx",
-        "components/icons.tsx"
-      ]
+      "dependencies": ["components/artifact.tsx", "components/icons.tsx"]
     },
     {
       "module": "lib/ai/tools/index.ts",
@@ -476,9 +469,7 @@
       "dependenciesCount": 1,
       "importedByCount": 2,
       "complexityScore": 2,
-      "dependencies": [
-        "app/(auth)/auth.ts"
-      ]
+      "dependencies": ["app/(auth)/auth.ts"]
     }
   ]
 }

@@ -18,7 +18,10 @@ interface ErrorBoundaryState {
  * Root level error boundary to catch any errors in the application
  * Provides a fallback UI for graceful error handling
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -44,10 +47,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       // Default fallback UI
       return (
-        <div className="flex flex-col items-center justify-center p-6 rounded-lg border border-amber-200 bg-amber-50/40 dark:bg-amber-900/20 dark:border-amber-800/50 my-4">
-          <AlertTriangle className="w-10 h-10 text-amber-500 mb-4" />
-          <h3 className="text-lg font-medium mb-2 text-amber-800 dark:text-amber-300">Something went wrong</h3>
-          <p className="text-amber-700 dark:text-amber-400 text-sm mb-4">
+        <div className="my-4 flex flex-col items-center justify-center rounded-lg border border-amber-200 bg-amber-50/40 p-6 dark:border-amber-800/50 dark:bg-amber-900/20">
+          <AlertTriangle className="mb-4 h-10 w-10 text-amber-500" />
+          <h3 className="mb-2 text-lg font-medium text-amber-800 dark:text-amber-300">
+            Something went wrong
+          </h3>
+          <p className="mb-4 text-sm text-amber-700 dark:text-amber-400">
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
           <Button

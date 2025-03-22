@@ -7,6 +7,7 @@ This document outlines the remaining tasks to complete the restructuring of the 
 The dependency analysis has identified several circular dependencies that have been addressed:
 
 - [x] **Artifact Component Cycle**:
+
   - ✅ Created separate type definitions in `/types/artifacts/artifact-types.ts`
   - ✅ Created separate type definitions in `/types/documents/document-types.ts`
   - ✅ Created separate type definitions in `/types/messages/message-types.ts`
@@ -25,12 +26,13 @@ The dependency analysis has identified several circular dependencies that have b
 ## High Complexity Modules to Refactor
 
 Progress:
+
 - [x] `components/message.tsx` moved to `components/messages/message.tsx` with proper type imports
 - [x] `components/document-preview.tsx` moved to `components/documents/document-preview.tsx` with proper type imports
 - [x] `components/artifact.tsx` moved to `components/artifacts/artifact.tsx` with proper type imports
 - [x] `lib/vector/optimized-search-service.ts` refactored into modular structure in `lib/vector/search/`:
   - ✅ Created `lib/vector/search/types.ts` for shared types
-  - ✅ Created `lib/vector/search/embeddings.ts` for embedding functionality 
+  - ✅ Created `lib/vector/search/embeddings.ts` for embedding functionality
   - ✅ Created `lib/vector/search/utils.ts` for search utilities
   - ✅ Created `lib/vector/search/batch-processor.ts` for batch processing
   - ✅ Created `lib/vector/search/search-service.ts` for main search functionality
@@ -48,6 +50,7 @@ Progress:
 ## Component Reorganization
 
 Progress:
+
 - [x] Move artifact-related components to `/components/artifacts`
 - [x] Move document-related components to `/components/documents`
 - [x] Move message-related components to `/components/messages`

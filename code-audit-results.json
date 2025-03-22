@@ -134,9 +134,7 @@
     "components/weather": {
       "component": "components/weather",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependedOnBy": ["components/message"]
     },
     "components/visibility-selector": {
       "component": "components/visibility-selector",
@@ -157,17 +155,12 @@
         "components/icons",
         "hooks/use-artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "components/use-scroll-to-bottom": {
       "component": "components/use-scroll-to-bottom",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/messages",
-        "components/artifact-messages"
-      ]
+      "dependedOnBy": ["components/messages", "components/artifact-messages"]
     },
     "components/toolbar": {
       "component": "components/toolbar",
@@ -177,16 +170,12 @@
         "components/ui/tooltip",
         "components/artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "components/theme-provider": {
       "component": "components/theme-provider",
       "dependsOn": [],
-      "dependedOnBy": [
-        "app/layout"
-      ]
+      "dependedOnBy": ["app/layout"]
     },
     "components/text-editor": {
       "component": "components/text-editor",
@@ -195,58 +184,32 @@
         "lib/editor/functions",
         "lib/editor/suggestions"
       ],
-      "dependedOnBy": [
-        "components/document-preview",
-        "artifacts/text/client"
-      ]
+      "dependedOnBy": ["components/document-preview", "artifacts/text/client"]
     },
     "components/suggestion": {
       "component": "components/suggestion",
-      "dependsOn": [
-        "components/ui/button",
-        "lib/utils",
-        "components/icons"
-      ],
-      "dependedOnBy": [
-        "lib/editor/suggestions"
-      ]
+      "dependsOn": ["components/ui/button", "lib/utils", "components/icons"],
+      "dependedOnBy": ["lib/editor/suggestions"]
     },
     "components/suggested-actions": {
       "component": "components/suggested-actions",
-      "dependsOn": [
-        "components/ui/button"
-      ],
-      "dependedOnBy": [
-        "components/multimodal-input"
-      ]
+      "dependsOn": ["components/ui/button"],
+      "dependedOnBy": ["components/multimodal-input"]
     },
     "components/submit-button": {
       "component": "components/submit-button",
-      "dependsOn": [
-        "components/ui/button",
-        "components/icons"
-      ],
-      "dependedOnBy": [
-        "app/(auth)/register/page",
-        "app/(auth)/login/page"
-      ]
+      "dependsOn": ["components/ui/button", "components/icons"],
+      "dependedOnBy": ["app/(auth)/register/page", "app/(auth)/login/page"]
     },
     "components/sign-out-form": {
       "component": "components/sign-out-form",
-      "dependsOn": [
-        "app/(auth)/auth"
-      ],
+      "dependsOn": ["app/(auth)/auth"],
       "dependedOnBy": []
     },
     "components/sidebar-user-nav": {
       "component": "components/sidebar-user-nav",
-      "dependsOn": [
-        "components/ui/dropdown-menu",
-        "components/ui/sidebar"
-      ],
-      "dependedOnBy": [
-        "components/app-sidebar"
-      ]
+      "dependsOn": ["components/ui/dropdown-menu", "components/ui/sidebar"],
+      "dependedOnBy": ["components/app-sidebar"]
     },
     "components/sidebar-toggle": {
       "component": "components/sidebar-toggle",
@@ -256,10 +219,7 @@
         "components/ui/tooltip",
         "components/ui/sidebar"
       ],
-      "dependedOnBy": [
-        "components/chat-header",
-        "components/chat/chat-header"
-      ]
+      "dependedOnBy": ["components/chat-header", "components/chat/chat-header"]
     },
     "components/sidebar-history": {
       "component": "components/sidebar-history",
@@ -271,29 +231,17 @@
         "components/ui/sidebar",
         "components/ui/alert-dialog"
       ],
-      "dependedOnBy": [
-        "components/app-sidebar"
-      ]
+      "dependedOnBy": ["components/app-sidebar"]
     },
     "components/sheet-editor": {
       "component": "components/sheet-editor",
-      "dependsOn": [
-        "lib/utils"
-      ],
-      "dependedOnBy": [
-        "components/document-preview",
-        "artifacts/sheet/client"
-      ]
+      "dependsOn": ["lib/utils"],
+      "dependedOnBy": ["components/document-preview", "artifacts/sheet/client"]
     },
     "components/preview-attachment": {
       "component": "components/preview-attachment",
-      "dependsOn": [
-        "components/icons"
-      ],
-      "dependedOnBy": [
-        "components/multimodal-input",
-        "components/message"
-      ]
+      "dependsOn": ["components/icons"],
+      "dependedOnBy": ["components/multimodal-input", "components/message"]
     },
     "components/pdf-viewer-modal": {
       "component": "components/pdf-viewer-modal",
@@ -302,18 +250,12 @@
         "components/ui/alert-dialog",
         "lib/utils/bylaw-utils"
       ],
-      "dependedOnBy": [
-        "components/bylaw-citation"
-      ]
+      "dependedOnBy": ["components/bylaw-citation"]
     },
     "components/overview": {
       "component": "components/overview",
-      "dependsOn": [
-        "components/bylaw-welcome"
-      ],
-      "dependedOnBy": [
-        "components/messages"
-      ]
+      "dependsOn": ["components/bylaw-welcome"],
+      "dependedOnBy": ["components/messages"]
     },
     "components/multimodal-input": {
       "component": "components/multimodal-input",
@@ -325,10 +267,7 @@
         "components/ui/textarea",
         "components/suggested-actions"
       ],
-      "dependedOnBy": [
-        "components/chat",
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/chat", "components/artifact"]
     },
     "components/model-selector": {
       "component": "components/model-selector",
@@ -349,9 +288,7 @@
         "components/use-scroll-to-bottom",
         "components/overview"
       ],
-      "dependedOnBy": [
-        "components/chat"
-      ]
+      "dependedOnBy": ["components/chat"]
     },
     "components/message": {
       "component": "components/message",
@@ -370,20 +307,12 @@
         "components/message-reasoning",
         "components/bylaw-citation"
       ],
-      "dependedOnBy": [
-        "components/messages",
-        "components/artifact-messages"
-      ]
+      "dependedOnBy": ["components/messages", "components/artifact-messages"]
     },
     "components/message-reasoning": {
       "component": "components/message-reasoning",
-      "dependsOn": [
-        "components/icons",
-        "components/markdown"
-      ],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependsOn": ["components/icons", "components/markdown"],
+      "dependedOnBy": ["components/message"]
     },
     "components/message-editor": {
       "component": "components/message-editor",
@@ -392,9 +321,7 @@
         "components/ui/textarea",
         "app/(chat)/actions"
       ],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependedOnBy": ["components/message"]
     },
     "components/message-actions": {
       "component": "components/message-actions",
@@ -403,15 +330,11 @@
         "components/icons",
         "components/ui/tooltip"
       ],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependedOnBy": ["components/message"]
     },
     "components/markdown": {
       "component": "components/markdown",
-      "dependsOn": [
-        "components/code-block"
-      ],
+      "dependsOn": ["components/code-block"],
       "dependedOnBy": [
         "components/message",
         "components/message-reasoning",
@@ -420,13 +343,8 @@
     },
     "components/image-editor": {
       "component": "components/image-editor",
-      "dependsOn": [
-        "components/icons"
-      ],
-      "dependedOnBy": [
-        "components/document-preview",
-        "artifacts/image/client"
-      ]
+      "dependsOn": ["components/icons"],
+      "dependedOnBy": ["components/document-preview", "artifacts/image/client"]
     },
     "components/icons": {
       "component": "components/icons",
@@ -462,22 +380,13 @@
     },
     "components/document": {
       "component": "components/document",
-      "dependsOn": [
-        "components/icons",
-        "hooks/use-artifact"
-      ],
-      "dependedOnBy": [
-        "components/message",
-        "components/document-preview"
-      ]
+      "dependsOn": ["components/icons", "hooks/use-artifact"],
+      "dependedOnBy": ["components/message", "components/document-preview"]
     },
     "components/document-skeleton": {
       "component": "components/document-skeleton",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/document-preview",
-        "artifacts/text/client"
-      ]
+      "dependedOnBy": ["components/document-preview", "artifacts/text/client"]
     },
     "components/document-preview": {
       "component": "components/document-preview",
@@ -492,29 +401,17 @@
         "components/sheet-editor",
         "components/image-editor"
       ],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependedOnBy": ["components/message"]
     },
     "components/diffview": {
       "component": "components/diffview",
-      "dependsOn": [
-        "lib/editor/diff"
-      ],
-      "dependedOnBy": [
-        "artifacts/text/client"
-      ]
+      "dependsOn": ["lib/editor/diff"],
+      "dependedOnBy": ["artifacts/text/client"]
     },
     "components/data-stream-handler": {
       "component": "components/data-stream-handler",
-      "dependsOn": [
-        "hooks/use-artifact",
-        "components/artifact"
-      ],
-      "dependedOnBy": [
-        "app/(chat)/page",
-        "app/(chat)/chat/[id]/page"
-      ]
+      "dependsOn": ["hooks/use-artifact", "components/artifact"],
+      "dependedOnBy": ["app/(chat)/page", "app/(chat)/chat/[id]/page"]
     },
     "components/create-artifact": {
       "component": "components/create-artifact",
@@ -534,24 +431,17 @@
         "components/icons",
         "hooks/use-artifact"
       ],
-      "dependedOnBy": [
-        "artifacts/code/client"
-      ]
+      "dependedOnBy": ["artifacts/code/client"]
     },
     "components/code-editor": {
       "component": "components/code-editor",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/document-preview",
-        "artifacts/code/client"
-      ]
+      "dependedOnBy": ["components/document-preview", "artifacts/code/client"]
     },
     "components/code-block": {
       "component": "components/code-block",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/markdown"
-      ]
+      "dependedOnBy": ["components/markdown"]
     },
     "components/citation-feedback": {
       "component": "components/citation-feedback",
@@ -561,9 +451,7 @@
         "components/ui/tooltip",
         "components/ui/textarea"
       ],
-      "dependedOnBy": [
-        "components/bylaw-citation"
-      ]
+      "dependedOnBy": ["components/bylaw-citation"]
     },
     "components/chat": {
       "component": "components/chat",
@@ -574,10 +462,7 @@
         "components/multimodal-input",
         "components/messages"
       ],
-      "dependedOnBy": [
-        "app/(chat)/page",
-        "app/(chat)/chat/[id]/page"
-      ]
+      "dependedOnBy": ["app/(chat)/page", "app/(chat)/chat/[id]/page"]
     },
     "components/chat-header": {
       "component": "components/chat-header",
@@ -588,19 +473,12 @@
         "components/ui/sidebar",
         "components/sidebar-toggle"
       ],
-      "dependedOnBy": [
-        "components/chat",
-        "components/chat/chat"
-      ]
+      "dependedOnBy": ["components/chat", "components/chat/chat"]
     },
     "components/bylaw-welcome": {
       "component": "components/bylaw-welcome",
-      "dependsOn": [
-        "components/icons"
-      ],
-      "dependedOnBy": [
-        "components/overview"
-      ]
+      "dependsOn": ["components/icons"],
+      "dependedOnBy": ["components/overview"]
     },
     "components/bylaw-search-filters": {
       "component": "components/bylaw-search-filters",
@@ -624,20 +502,12 @@
         "components/pdf-viewer-modal",
         "components/citation-feedback"
       ],
-      "dependedOnBy": [
-        "components/message"
-      ]
+      "dependedOnBy": ["components/message"]
     },
     "components/auth-form": {
       "component": "components/auth-form",
-      "dependsOn": [
-        "components/ui/label",
-        "components/ui/input"
-      ],
-      "dependedOnBy": [
-        "app/(auth)/register/page",
-        "app/(auth)/login/page"
-      ]
+      "dependsOn": ["components/ui/label", "components/ui/input"],
+      "dependedOnBy": ["app/(auth)/register/page", "app/(auth)/login/page"]
     },
     "components/artifact": {
       "component": "components/artifact",
@@ -664,13 +534,8 @@
     },
     "components/artifact-messages": {
       "component": "components/artifact-messages",
-      "dependsOn": [
-        "components/message",
-        "components/use-scroll-to-bottom"
-      ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependsOn": ["components/message", "components/use-scroll-to-bottom"],
+      "dependedOnBy": ["components/artifact"]
     },
     "components/artifact-close-button": {
       "component": "components/artifact-close-button",
@@ -679,9 +544,7 @@
         "components/icons",
         "hooks/use-artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "components/artifact-actions": {
       "component": "components/artifact-actions",
@@ -691,9 +554,7 @@
         "components/ui/tooltip",
         "components/artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "components/app-sidebar": {
       "component": "components/app-sidebar",
@@ -705,9 +566,7 @@
         "components/sidebar-history",
         "components/sidebar-user-nav"
       ],
-      "dependedOnBy": [
-        "app/(chat)/layout"
-      ]
+      "dependedOnBy": ["app/(chat)/layout"]
     },
     "lib/utils": {
       "component": "lib/utils",
@@ -756,14 +615,8 @@
     },
     "lib/optimization": {
       "component": "lib/optimization",
-      "dependsOn": [
-        "lib/utils/profiler",
-        "lib/db/indexes"
-      ],
-      "dependedOnBy": [
-        "app/layout",
-        "app/api/dev/metrics/route"
-      ]
+      "dependsOn": ["lib/utils/profiler", "lib/db/indexes"],
+      "dependedOnBy": ["app/layout", "app/api/dev/metrics/route"]
     },
     "hooks/use-scroll-to-bottom": {
       "component": "hooks/use-scroll-to-bottom",
@@ -772,23 +625,17 @@
     },
     "hooks/use-optimized-api": {
       "component": "hooks/use-optimized-api",
-      "dependsOn": [
-        "lib/utils/profiler"
-      ],
+      "dependsOn": ["lib/utils/profiler"],
       "dependedOnBy": []
     },
     "hooks/use-mobile": {
       "component": "hooks/use-mobile",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/ui/sidebar"
-      ]
+      "dependedOnBy": ["components/ui/sidebar"]
     },
     "hooks/use-chat-visibility": {
       "component": "hooks/use-chat-visibility",
-      "dependsOn": [
-        "app/(chat)/actions"
-      ],
+      "dependsOn": ["app/(chat)/actions"],
       "dependedOnBy": [
         "components/visibility-selector",
         "components/sidebar-history"
@@ -821,12 +668,8 @@
     },
     "artifacts/actions": {
       "component": "artifacts/actions",
-      "dependsOn": [
-        "lib/db/queries"
-      ],
-      "dependedOnBy": [
-        "artifacts/text/client"
-      ]
+      "dependsOn": ["lib/db/queries"],
+      "dependedOnBy": ["artifacts/text/client"]
     },
     "app/layout": {
       "component": "app/layout",
@@ -839,9 +682,7 @@
     },
     "components/ui/tooltip": {
       "component": "components/ui/tooltip",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/toolbar",
         "components/sidebar-toggle",
@@ -857,9 +698,7 @@
     },
     "components/ui/textarea": {
       "component": "components/ui/textarea",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/multimodal-input",
         "components/message-editor",
@@ -868,12 +707,8 @@
     },
     "components/ui/skeleton": {
       "component": "components/ui/skeleton",
-      "dependsOn": [
-        "lib/utils"
-      ],
-      "dependedOnBy": [
-        "components/ui/sidebar"
-      ]
+      "dependsOn": ["lib/utils"],
+      "dependedOnBy": ["components/ui/sidebar"]
     },
     "components/ui/sidebar": {
       "component": "components/ui/sidebar",
@@ -899,27 +734,17 @@
     },
     "components/ui/sheet": {
       "component": "components/ui/sheet",
-      "dependsOn": [
-        "lib/utils"
-      ],
-      "dependedOnBy": [
-        "components/ui/sidebar"
-      ]
+      "dependsOn": ["lib/utils"],
+      "dependedOnBy": ["components/ui/sidebar"]
     },
     "components/ui/separator": {
       "component": "components/ui/separator",
-      "dependsOn": [
-        "lib/utils"
-      ],
-      "dependedOnBy": [
-        "components/ui/sidebar"
-      ]
+      "dependsOn": ["lib/utils"],
+      "dependedOnBy": ["components/ui/sidebar"]
     },
     "components/ui/select": {
       "component": "components/ui/select",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/bylaw-search-filters",
         "components/bylaw/bylaw-search-filters"
@@ -927,9 +752,7 @@
     },
     "components/ui/label": {
       "component": "components/ui/label",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/bylaw-search-filters",
         "components/auth-form",
@@ -938,9 +761,7 @@
     },
     "components/ui/input": {
       "component": "components/ui/input",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/bylaw-search-filters",
         "components/auth-form",
@@ -950,9 +771,7 @@
     },
     "components/ui/dropdown-menu": {
       "component": "components/ui/dropdown-menu",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/visibility-selector",
         "components/sidebar-user-nav",
@@ -962,9 +781,7 @@
     },
     "components/ui/card": {
       "component": "components/ui/card",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/bylaw-search-filters",
         "components/bylaw-citation",
@@ -974,9 +791,7 @@
     },
     "components/ui/button": {
       "component": "components/ui/button",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": [
         "components/visibility-selector",
         "components/version-footer",
@@ -1007,10 +822,7 @@
     },
     "components/ui/alert-dialog": {
       "component": "components/ui/alert-dialog",
-      "dependsOn": [
-        "components/ui/button",
-        "lib/utils"
-      ],
+      "dependsOn": ["components/ui/button", "lib/utils"],
       "dependedOnBy": [
         "components/sidebar-history",
         "components/pdf-viewer-modal"
@@ -1050,9 +862,7 @@
     },
     "components/bylaw/bylaw-welcome": {
       "component": "components/bylaw/bylaw-welcome",
-      "dependsOn": [
-        "components/icons"
-      ],
+      "dependsOn": ["components/icons"],
       "dependedOnBy": []
     },
     "components/bylaw/bylaw-search-filters": {
@@ -1082,9 +892,7 @@
     "lib/vector-search/verification-database": {
       "component": "lib/vector-search/verification-database",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/vector-search/enhanced-search"
-      ]
+      "dependedOnBy": ["lib/vector-search/enhanced-search"]
     },
     "lib/vector-search/types": {
       "component": "lib/vector-search/types",
@@ -1097,9 +905,7 @@
         "lib/vector-search/pinecone-client",
         "lib/monitoring/logger"
       ],
-      "dependedOnBy": [
-        "app/api/bylaws/search/route"
-      ]
+      "dependedOnBy": ["app/api/bylaws/search/route"]
     },
     "lib/vector-search/pinecone-client": {
       "component": "lib/vector-search/pinecone-client",
@@ -1123,9 +929,7 @@
         "lib/monitoring/logger",
         "lib/vector-search/api-batching"
       ],
-      "dependedOnBy": [
-        "app/api/bylaws/search/optimized-route"
-      ]
+      "dependedOnBy": ["app/api/bylaws/search/optimized-route"]
     },
     "lib/vector-search/fallback-search": {
       "component": "lib/vector-search/fallback-search",
@@ -1142,33 +946,22 @@
         "lib/vector-search/embedding-models",
         "lib/vector-search/verification-database"
       ],
-      "dependedOnBy": [
-        "app/api/bylaws/search/route"
-      ]
+      "dependedOnBy": ["app/api/bylaws/search/route"]
     },
     "lib/vector-search/embedding-models": {
       "component": "lib/vector-search/embedding-models",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/vector-search/enhanced-search"
-      ]
+      "dependedOnBy": ["lib/vector-search/enhanced-search"]
     },
     "lib/vector-search/api-batching": {
       "component": "lib/vector-search/api-batching",
-      "dependsOn": [
-        "lib/utils/profiler",
-        "lib/utils/api-batching"
-      ],
-      "dependedOnBy": [
-        "lib/vector-search/optimized-search-service"
-      ]
+      "dependsOn": ["lib/utils/profiler", "lib/utils/api-batching"],
+      "dependedOnBy": ["lib/vector-search/optimized-search-service"]
     },
     "lib/vector/verification-database": {
       "component": "lib/vector/verification-database",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/vector/enhanced-search"
-      ]
+      "dependedOnBy": ["lib/vector/enhanced-search"]
     },
     "lib/vector/types": {
       "component": "lib/vector/types",
@@ -1177,10 +970,7 @@
     },
     "lib/vector/search-service": {
       "component": "lib/vector/search-service",
-      "dependsOn": [
-        "lib/monitoring/logger",
-        "lib/vector/pinecone-client"
-      ],
+      "dependsOn": ["lib/monitoring/logger", "lib/vector/pinecone-client"],
       "dependedOnBy": []
     },
     "lib/vector/pinecone-client": {
@@ -1205,18 +995,13 @@
     },
     "lib/vector/initialize": {
       "component": "lib/vector/initialize",
-      "dependsOn": [
-        "lib/vector-search/pinecone-client",
-        "lib/vector/index"
-      ],
+      "dependsOn": ["lib/vector-search/pinecone-client", "lib/vector/index"],
       "dependedOnBy": []
     },
     "lib/vector/index": {
       "component": "lib/vector/index",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/vector/initialize"
-      ]
+      "dependedOnBy": ["lib/vector/initialize"]
     },
     "lib/vector/fallback-search": {
       "component": "lib/vector/fallback-search",
@@ -1238,19 +1023,12 @@
     "lib/vector/embedding-models": {
       "component": "lib/vector/embedding-models",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/vector/enhanced-search"
-      ]
+      "dependedOnBy": ["lib/vector/enhanced-search"]
     },
     "lib/vector/api-batching": {
       "component": "lib/vector/api-batching",
-      "dependsOn": [
-        "lib/utils/profiler",
-        "lib/utils/api-batching"
-      ],
-      "dependedOnBy": [
-        "lib/vector/optimized-search-service"
-      ]
+      "dependsOn": ["lib/utils/profiler", "lib/utils/api-batching"],
+      "dependedOnBy": ["lib/vector/optimized-search-service"]
     },
     "lib/utils/debounce": {
       "component": "lib/utils/debounce",
@@ -1262,10 +1040,7 @@
     },
     "lib/utils/component-optimization": {
       "component": "lib/utils/component-optimization",
-      "dependsOn": [
-        "lib/utils",
-        "lib/utils/debounce"
-      ],
+      "dependsOn": ["lib/utils", "lib/utils/debounce"],
       "dependedOnBy": []
     },
     "lib/utils/bylaw-utils": {
@@ -1280,9 +1055,7 @@
     },
     "lib/utils/api-batching": {
       "component": "lib/utils/api-batching",
-      "dependsOn": [
-        "lib/utils/profiler"
-      ],
+      "dependsOn": ["lib/utils/profiler"],
       "dependedOnBy": [
         "lib/vector-search/api-batching",
         "lib/vector/api-batching"
@@ -1291,9 +1064,7 @@
     "lib/pdf/pdf-extractor": {
       "component": "lib/pdf/pdf-extractor",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/pdf/indexing"
-      ]
+      "dependedOnBy": ["lib/pdf/indexing"]
     },
     "lib/pdf/indexing": {
       "component": "lib/pdf/indexing",
@@ -1307,9 +1078,7 @@
     "lib/pdf/chunking": {
       "component": "lib/pdf/chunking",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/pdf/indexing"
-      ]
+      "dependedOnBy": ["lib/pdf/indexing"]
     },
     "lib/openai/embeddings": {
       "component": "lib/openai/embeddings",
@@ -1328,21 +1097,13 @@
     },
     "lib/hooks/use-optimized-api": {
       "component": "lib/hooks/use-optimized-api",
-      "dependsOn": [
-        "lib/utils/profiler",
-        "lib/utils/debounce"
-      ],
+      "dependsOn": ["lib/utils/profiler", "lib/utils/debounce"],
       "dependedOnBy": []
     },
     "lib/editor/suggestions": {
       "component": "lib/editor/suggestions",
-      "dependsOn": [
-        "components/suggestion"
-      ],
-      "dependedOnBy": [
-        "components/text-editor",
-        "lib/editor/functions"
-      ]
+      "dependsOn": ["components/suggestion"],
+      "dependedOnBy": ["components/text-editor", "lib/editor/functions"]
     },
     "lib/editor/react-renderer": {
       "component": "lib/editor/react-renderer",
@@ -1356,40 +1117,26 @@
         "lib/editor/suggestions",
         "components/markdown"
       ],
-      "dependedOnBy": [
-        "components/text-editor",
-        "lib/editor/config"
-      ]
+      "dependedOnBy": ["components/text-editor", "lib/editor/config"]
     },
     "lib/editor/diff": {
       "component": "lib/editor/diff",
       "dependsOn": [],
-      "dependedOnBy": [
-        "components/diffview"
-      ]
+      "dependedOnBy": ["components/diffview"]
     },
     "lib/editor/config": {
       "component": "lib/editor/config",
-      "dependsOn": [
-        "lib/editor/functions"
-      ],
-      "dependedOnBy": [
-        "components/text-editor",
-        "lib/editor/functions"
-      ]
+      "dependsOn": ["lib/editor/functions"],
+      "dependedOnBy": ["components/text-editor", "lib/editor/functions"]
     },
     "lib/db/schema": {
       "component": "lib/db/schema",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/db/queries"
-      ]
+      "dependedOnBy": ["lib/db/queries"]
     },
     "lib/db/queries": {
       "component": "lib/db/queries",
-      "dependsOn": [
-        "lib/db/schema"
-      ],
+      "dependsOn": ["lib/db/schema"],
       "dependedOnBy": [
         "artifacts/actions",
         "lib/artifacts/server",
@@ -1414,9 +1161,7 @@
     "lib/db/indexes": {
       "component": "lib/db/indexes",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/optimization"
-      ]
+      "dependedOnBy": ["lib/optimization"]
     },
     "lib/bylaw-search/types": {
       "component": "lib/bylaw-search/types",
@@ -1434,9 +1179,7 @@
     "lib/bylaw-search/index": {
       "component": "lib/bylaw-search/index",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/bylaw-search/initialize"
-      ]
+      "dependedOnBy": ["lib/bylaw-search/initialize"]
     },
     "lib/bylaw-processing/pdf-extractor": {
       "component": "lib/bylaw-processing/pdf-extractor",
@@ -1459,9 +1202,7 @@
     "lib/bylaw-processing/chunking": {
       "component": "lib/bylaw-processing/chunking",
       "dependsOn": [],
-      "dependedOnBy": [
-        "lib/bylaw-processing/indexing"
-      ]
+      "dependedOnBy": ["lib/bylaw-processing/indexing"]
     },
     "lib/artifacts/server": {
       "component": "lib/artifacts/server",
@@ -1503,9 +1244,7 @@
     },
     "lib/ai/tools-config": {
       "component": "lib/ai/tools-config",
-      "dependsOn": [
-        "lib/ai/tools"
-      ],
+      "dependsOn": ["lib/ai/tools"],
       "dependedOnBy": []
     },
     "lib/ai/prompts": {
@@ -1541,14 +1280,8 @@
     },
     "artifacts/text/server": {
       "component": "artifacts/text/server",
-      "dependsOn": [
-        "lib/ai/models",
-        "lib/artifacts/server",
-        "lib/ai/prompts"
-      ],
-      "dependedOnBy": [
-        "lib/artifacts/server"
-      ]
+      "dependsOn": ["lib/ai/models", "lib/artifacts/server", "lib/ai/prompts"],
+      "dependedOnBy": ["lib/artifacts/server"]
     },
     "artifacts/text/client": {
       "component": "artifacts/text/client",
@@ -1560,20 +1293,12 @@
         "components/diffview",
         "artifacts/actions"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "artifacts/sheet/server": {
       "component": "artifacts/sheet/server",
-      "dependsOn": [
-        "lib/ai/models",
-        "lib/artifacts/server",
-        "lib/ai/prompts"
-      ],
-      "dependedOnBy": [
-        "lib/artifacts/server"
-      ]
+      "dependsOn": ["lib/ai/models", "lib/artifacts/server", "lib/ai/prompts"],
+      "dependedOnBy": ["lib/artifacts/server"]
     },
     "artifacts/sheet/client": {
       "component": "artifacts/sheet/client",
@@ -1582,19 +1307,12 @@
         "components/sheet-editor",
         "components/create-artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "artifacts/image/server": {
       "component": "artifacts/image/server",
-      "dependsOn": [
-        "lib/ai/models",
-        "lib/artifacts/server"
-      ],
-      "dependedOnBy": [
-        "lib/artifacts/server"
-      ]
+      "dependsOn": ["lib/ai/models", "lib/artifacts/server"],
+      "dependedOnBy": ["lib/artifacts/server"]
     },
     "artifacts/image/client": {
       "component": "artifacts/image/client",
@@ -1603,20 +1321,12 @@
         "components/image-editor",
         "components/create-artifact"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "artifacts/code/server": {
       "component": "artifacts/code/server",
-      "dependsOn": [
-        "lib/ai/models",
-        "lib/artifacts/server",
-        "lib/ai/prompts"
-      ],
-      "dependedOnBy": [
-        "lib/artifacts/server"
-      ]
+      "dependsOn": ["lib/ai/models", "lib/artifacts/server", "lib/ai/prompts"],
+      "dependedOnBy": ["lib/artifacts/server"]
     },
     "artifacts/code/client": {
       "component": "artifacts/code/client",
@@ -1627,9 +1337,7 @@
         "components/create-artifact",
         "components/console"
       ],
-      "dependedOnBy": [
-        "components/artifact"
-      ]
+      "dependedOnBy": ["components/artifact"]
     },
     "app/(chat)/page": {
       "component": "app/(chat)/page",
@@ -1652,10 +1360,7 @@
     },
     "app/(chat)/actions": {
       "component": "app/(chat)/actions",
-      "dependsOn": [
-        "lib/ai/models",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["lib/ai/models", "lib/db/queries"],
       "dependedOnBy": [
         "components/model-selector",
         "components/message-editor",
@@ -1665,10 +1370,7 @@
     },
     "app/(auth)/auth": {
       "component": "app/(auth)/auth",
-      "dependsOn": [
-        "lib/db/queries",
-        "app/(auth)/auth.config"
-      ],
+      "dependsOn": ["lib/db/queries", "app/(auth)/auth.config"],
       "dependedOnBy": [
         "components/sign-out-form",
         "app/(chat)/layout",
@@ -1688,20 +1390,12 @@
     "app/(auth)/auth.config": {
       "component": "app/(auth)/auth.config",
       "dependsOn": [],
-      "dependedOnBy": [
-        "app/(auth)/auth"
-      ]
+      "dependedOnBy": ["app/(auth)/auth"]
     },
     "app/(auth)/actions": {
       "component": "app/(auth)/actions",
-      "dependsOn": [
-        "app/(auth)/auth",
-        "lib/db/queries"
-      ],
-      "dependedOnBy": [
-        "app/(auth)/register/page",
-        "app/(auth)/login/page"
-      ]
+      "dependsOn": ["app/(auth)/auth", "lib/db/queries"],
+      "dependedOnBy": ["app/(auth)/register/page", "app/(auth)/login/page"]
     },
     "lib/utils/profiler/index": {
       "component": "lib/utils/profiler/index",
@@ -1710,34 +1404,22 @@
     },
     "lib/components/ui/lazy-wrapper": {
       "component": "lib/components/ui/lazy-wrapper",
-      "dependsOn": [
-        "lib/utils"
-      ],
+      "dependsOn": ["lib/utils"],
       "dependedOnBy": []
     },
     "lib/ai/tools/update-document": {
       "component": "lib/ai/tools/update-document",
-      "dependsOn": [
-        "lib/db/queries",
-        "lib/artifacts/server"
-      ],
+      "dependsOn": ["lib/db/queries", "lib/artifacts/server"],
       "dependedOnBy": []
     },
     "lib/ai/tools/search-bylaws": {
       "component": "lib/ai/tools/search-bylaws",
-      "dependsOn": [
-        "lib/utils/bylaw-utils",
-        "lib/bylaw-search"
-      ],
+      "dependsOn": ["lib/utils/bylaw-utils", "lib/bylaw-search"],
       "dependedOnBy": []
     },
     "lib/ai/tools/request-suggestions": {
       "component": "lib/ai/tools/request-suggestions",
-      "dependsOn": [
-        "lib/utils",
-        "lib/ai/models",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["lib/utils", "lib/ai/models", "lib/db/queries"],
       "dependedOnBy": []
     },
     "lib/ai/tools/index": {
@@ -1752,10 +1434,7 @@
     },
     "lib/ai/tools/create-document": {
       "component": "lib/ai/tools/create-document",
-      "dependsOn": [
-        "lib/utils",
-        "lib/artifacts/server"
-      ],
+      "dependsOn": ["lib/utils", "lib/artifacts/server"],
       "dependedOnBy": []
     },
     "lib/ai/tools/bylaw-answers": {
@@ -1783,17 +1462,12 @@
     },
     "app/(auth)/auth-error/page": {
       "component": "app/(auth)/auth-error/page",
-      "dependsOn": [
-        "components/ui/button",
-        "components/ui/card"
-      ],
+      "dependsOn": ["components/ui/button", "components/ui/card"],
       "dependedOnBy": []
     },
     "app/api/dev/metrics/route": {
       "component": "app/api/dev/metrics/route",
-      "dependsOn": [
-        "lib/optimization"
-      ],
+      "dependsOn": ["lib/optimization"],
       "dependedOnBy": []
     },
     "app/api/bylaws/view-pdf/route": {
@@ -1826,9 +1500,7 @@
     },
     "app/api/bylaws/feedback/route": {
       "component": "app/api/bylaws/feedback/route",
-      "dependsOn": [
-        "app/(auth)/auth"
-      ],
+      "dependsOn": ["app/(auth)/auth"],
       "dependedOnBy": []
     },
     "app/(chat)/chat/[id]/page": {
@@ -1845,34 +1517,22 @@
     },
     "app/(chat)/api/vote/route": {
       "component": "app/(chat)/api/vote/route",
-      "dependsOn": [
-        "app/(auth)/auth",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["app/(auth)/auth", "lib/db/queries"],
       "dependedOnBy": []
     },
     "app/(chat)/api/suggestions/route": {
       "component": "app/(chat)/api/suggestions/route",
-      "dependsOn": [
-        "app/(auth)/auth",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["app/(auth)/auth", "lib/db/queries"],
       "dependedOnBy": []
     },
     "app/(chat)/api/history/route": {
       "component": "app/(chat)/api/history/route",
-      "dependsOn": [
-        "app/(auth)/auth",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["app/(auth)/auth", "lib/db/queries"],
       "dependedOnBy": []
     },
     "app/(chat)/api/document/route": {
       "component": "app/(chat)/api/document/route",
-      "dependsOn": [
-        "app/(auth)/auth",
-        "lib/db/queries"
-      ],
+      "dependsOn": ["app/(auth)/auth", "lib/db/queries"],
       "dependedOnBy": []
     },
     "app/(chat)/api/chat/route": {
@@ -1889,9 +1549,7 @@
     },
     "app/(chat)/api/files/upload/route": {
       "component": "app/(chat)/api/files/upload/route",
-      "dependsOn": [
-        "app/(auth)/auth"
-      ],
+      "dependsOn": ["app/(auth)/auth"],
       "dependedOnBy": []
     },
     "app/(auth)/api/auth/[...nextauth]/route": {

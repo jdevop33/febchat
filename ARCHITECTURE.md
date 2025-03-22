@@ -127,9 +127,11 @@ Based on our dependency analysis, we've identified critical circular dependencie
 ### Artifact Component Cycle
 
 The most pressing circular dependency involves the artifact component system:
+
 - `components/artifact.tsx` → `artifact-messages.tsx` → `message.tsx` → `document-preview.tsx` → `document.tsx` → `artifact.tsx`
 
 Recommendations:
+
 1. Extract all shared interfaces to separate type files in `/types/artifacts/` and `/types/documents/`
 2. Break large components into smaller, focused components with clear responsibilities
 3. Implement a unidirectional data flow pattern
@@ -138,9 +140,11 @@ Recommendations:
 ### Editor Configuration Cycle
 
 Another circular dependency exists in the editor system:
+
 - `lib/editor/config.ts` → `lib/editor/functions.tsx` → `lib/editor/config.ts`
 
 Recommendations:
+
 1. Extract shared types to `/lib/editor/types/`
 2. Separate configuration constants into `/lib/editor/config/constants.ts`
 3. Move common utility functions to a separate file
@@ -150,14 +154,17 @@ Recommendations:
 These modules have been identified as overly complex:
 
 1. **components/message.tsx** (12 dependencies):
+
    - Split into smaller components with single responsibilities
    - Extract message rendering logic from formatting logic
 
 2. **components/artifact.tsx** (7 dependencies, imported by 9 modules):
+
    - Create a facade pattern with smaller internal components
    - Extract type definitions to dedicated files
 
 3. **components/document-preview.tsx** (8 dependencies):
+
    - Split document preview from document rendering
    - Create specialized preview components for each document type
 
@@ -168,7 +175,7 @@ These modules have been identified as overly complex:
 ## Maintenance Guidelines
 
 1. Monitor for circular dependencies with regular dependency analysis
-2. Keep components small and focused on single responsibilities 
+2. Keep components small and focused on single responsibilities
 3. Follow the established directory structure
 4. Use the code audit script to identify issues
 5. Refactor duplicate functionality into shared utilities
