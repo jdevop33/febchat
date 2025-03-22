@@ -42,3 +42,7 @@ jobs:
           # Use mock data instead of real database/vector search in tests
           MOCK_DB: true
           MOCK_VECTOR_SEARCH: true
+          SKIP_DB_OPERATIONS: "true"
+          NEXTAUTH_URL: "https://juche.org"
+          NEXTAUTH_SECRET: "ci-dummy-secret-00000000000000000000000000000000"
+          CI: "true" # Explicitly set CI environment variable
