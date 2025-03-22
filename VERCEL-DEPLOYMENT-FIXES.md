@@ -1,136 +1,75 @@
-# FebChat Vercel Deployment Troubleshooting Guide
+# Vercel Deployment Configuration Guide
 
-This guide addresses common issues encountered when deploying FebChat to Vercel, particularly focusing on database integration and query handling.
+## Critical Environment Variables
 
-## Common Issues and Solutions
+Add these environment variables in your Vercel project settings to ensure proper authentication and API functionality:
 
-### 1. Build Failures on Vercel (but Success on GitHub)
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `NEXTAUTH_SECRET` | Secret key for NextAuth.js sessions | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Production URL of your application | `https://your-app-name.vercel.app` |
+| `AUTH_SECRET` | Alternative auth secret (should match NEXTAUTH_SECRET) | Same as NEXTAUTH_SECRET |
 
-**Potential Causes:**
-- Missing environment variables on Vercel
-- Insufficient memory or timeouts during build
-- Vercel PostgreSQL integration issues
+## Authentication Configuration
 
-**Solutions:**
-- Verify all required environment variables are set in Vercel project settings
-- Use the enhanced build script that includes environment variable checks
-- Increase Node.js memory limit with NODE_OPTIONS in build settings
-- Ensure database is properly connected and accessible
+1. Go to your Vercel dashboard and select your project
+2. Navigate to "Settings" > "Environment Variables"
+3. Add the following variables:
 
-### 2. Query Failures in Production
-
-**Potential Causes:**
-- Database connection issues
-- Environment-specific code that works locally but not in production
-- Missing fallbacks for database operations
-- Authentication or permission issues with the database
-
-**Solutions:**
-- The updated `lib/db/index.ts` includes better error handling and fallbacks
-- Enhanced logging helps identify the source of query issues
-- Centralized database client with proper environment checks
-- Improved error handling in API routes
-
-## Required Environment Variables
-
-Ensure these environment variables are set in your Vercel project:
-
-### Database Configuration
 ```
-POSTGRES_URL=postgres://user:password@host:port/database
-DATABASE_URL=postgres://user:password@host:port/database
-POSTGRES_PRISMA_URL=postgres://user:password@host:port/database?pgbouncer=true&connect_timeout=15
-POSTGRES_URL_NON_POOLING=postgres://user:password@host:port/database
+NEXTAUTH_SECRET=<generated-secret-key>
+NEXTAUTH_URL=https://your-deployed-app-url.vercel.app
+AUTH_SECRET=<same-as-nextauth-secret>
 ```
 
-### Authentication
-```
-NEXTAUTH_SECRET=your-secret-key
-NEXTAUTH_URL=https://your-app-url.vercel.app
-AUTH_SECRET=your-auth-secret
-```
+For local development, you should add these to your `.env.local` file as well.
 
-### AI Models
-```
-ANTHROPIC_API_KEY=your-anthropic-key
+## How to Generate a Secure Secret
+
+Run this command to generate a secure random string:
+
+```bash
+openssl rand -base64 32
 ```
 
-## Deployment Checklist
+## Rate Limiting Configuration (Optional)
 
-### Before Deployment
-1. Test your application locally with production environment settings:
-   ```bash
-   NODE_ENV=production npm run dev
-   ```
-2. Verify all required environment variables are set in your Vercel project
-3. Run the database connection test script:
-   ```bash
-   node dev-tests/test-db.js
-   ```
+If you want to adjust rate limiting for the API:
 
-### During Deployment
-1. Monitor build logs for warnings and errors
-2. Check that the database connection is successful
-3. Verify that environment variables are correctly loaded
+```
+RATE_LIMIT_MAX=50
+RATE_LIMIT_WINDOW_MS=60000
+```
 
-### After Deployment
-1. Test authentication functionality
-2. Test chat functionality with simple queries
-3. Monitor server logs for any errors
-4. Check database connection status
+## Testing Authentication
 
-## Recent Fixes Implemented
+After setting these variables and redeploying:
 
-1. **Enhanced Database Client**
-   - Added robust error handling
-   - Implemented better fallback mechanisms
-   - Added connection timeouts to prevent hanging
+1. Try to register a new account
+2. Test logging in with those credentials
+3. Verify that you stay logged in between page refreshes
+4. Try accessing a protected route to ensure it's properly guarded
 
-2. **Improved Build Script**
-   - Added environment variable validation
-   - Better compatibility between different database URL formats
-   - Node.js memory optimization settings
+## Troubleshooting
 
-3. **Enhanced API Error Handling**
-   - Better logging with context-specific information
-   - More detailed error responses in development
-   - Graceful degradation when services are unavailable
+If authentication still fails:
 
-## Troubleshooting Steps
+1. Check browser console for any errors
+2. Verify that cookies are being set (should see a `.session-token` cookie)
+3. Check server logs for any auth-related errors
 
-If you encounter issues after deployment:
+## Common Issues
 
-1. **Check Vercel Logs**
-   - Go to your Vercel project dashboard
-   - Navigate to the Deployments tab
-   - Select the latest deployment
-   - View the Function Logs
+1. **Session not persisting**: Ensure NEXTAUTH_SECRET is properly set
+2. **Redirect loops**: Check that NEXTAUTH_URL is correct
+3. **API routes failing**: Check that server-side authentication validation is working
 
-2. **Verify Environment Variables**
-   - Go to your Vercel project settings
-   - Check that all required environment variables are set
-   - Verify there are no typos or trailing spaces
+## Logging and Monitoring
 
-3. **Test Database Connection**
-   - Use the Vercel dashboard to access your database
-   - Verify the database has been created and is accessible
-   - Check that tables have been properly created
+For better diagnostics, enable enhanced logging:
 
-4. **Check Auth Configuration**
-   - Verify NEXTAUTH_SECRET and NEXTAUTH_URL are correctly set
-   - Test login and registration functionality
-   - Check for auth-related errors in logs
+```
+AUTH_DEBUG=true
+```
 
-## If All Else Fails
-
-1. **Reset Database Integration**
-   - Remove the Vercel Postgres integration
-   - Re-add the integration to generate new credentials
-   - Update environment variables with the new values
-
-2. **Contact Vercel Support**
-   - If database branching issues persist, contact Vercel support
-   - Provide error logs and deployment details
-   - Mention you're using Next.js with Vercel Postgres
-
-Remember that Vercel's database branching feature requires specific setup. If you've recently changed your database schema or configuration, you may need to reset the database integration to ensure proper branching.
+Remember to turn this off in production once issues are resolved.
