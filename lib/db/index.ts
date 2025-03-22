@@ -7,8 +7,16 @@
 import 'server-only';
 
 import { drizzle } from 'drizzle-orm/vercel-postgres';
-import { db as vercelDb } from '@vercel/postgres';
 import { env } from 'node:process';
+
+// Dynamic import for Vercel Postgres to avoid ESM/CJS conflicts
+let vercelDb;
+try {
+  // This is imported dynamically to allow it to work in both ESM and CommonJS environments
+  vercelDb = (await import('@vercel/postgres')).db;
+} catch (error) {
+  console.error('Failed to import Vercel Postgres:', error);
+}
 
 import * as schema from './schema';
 

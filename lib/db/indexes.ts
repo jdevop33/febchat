@@ -4,29 +4,29 @@
  */
 
 import { sql } from 'drizzle-orm';
+import db from './index';
 
-// Mock database object for build time
-// This handles both development (SQLite) and production (PostgreSQL)
-const db = {
-  execute: async (query: any) => {
-    // This is a mock implementation that will be replaced at runtime
-    console.log('Running database query:', query);
-
-    // In production builds, just return success without performing actual DB operations
-    // This avoids the need for database connections during the build process
-    if (
-      process.env.NODE_ENV === 'production' &&
-      process.env.NEXT_PHASE === 'build'
-    ) {
-      console.log(
-        'Production build detected - skipping actual database operations',
-      );
-      return { rowCount: 0 };
-    }
-
-    return { rowCount: 0 };
-  },
-};
+// This function decides whether to use the real DB or a mock
+function getDbForIndexes() {
+  // In production builds, use a mock to avoid DB connections
+  if (
+    process.env.NODE_ENV === 'production' &&
+    process.env.NEXT_PHASE === 'build'
+  ) {
+    console.log(
+      'Production build detected - using mock database for indexes',
+    );
+    return {
+      execute: async (query: any) => {
+        console.log('Running database query:', query);
+        return { rowCount: 0 };
+      }
+    };
+  }
+  
+  // Otherwise use the real DB connection
+  return db;
+}
 
 /**
  * Add indexes to the database
@@ -37,28 +37,31 @@ export async function createDatabaseIndexes() {
   const start = Date.now();
 
   try {
+    // Get the appropriate database instance
+    const dbInstance = getDbForIndexes();
+    
     // Create indexes for frequently queried columns
     // These are examples - adjust based on your actual query patterns
 
     // Index for user lookups by email (common during authentication)
-    await db.execute(
-      sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)`,
+    await dbInstance.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_users_email ON "User" (email)`,
     );
 
     // Index for chat lookups by user ID (common for listing chats)
-    await db.execute(
-      sql`CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats (user_id)`,
+    await dbInstance.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_chats_user_id ON "Chat" ("userId")`,
     );
 
     // Index for messages by chat ID (common for retrieving chat history)
-    await db.execute(
-      sql`CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages (chat_id)`,
+    await dbInstance.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON "Message" ("chatId")`,
     );
 
     // Compound index for messages ordered by chat_id and timestamp
     // This improves performance when retrieving messages in chronological order
-    await db.execute(
-      sql`CREATE INDEX IF NOT EXISTS idx_messages_chat_id_created_at ON messages (chat_id, created_at)`,
+    await dbInstance.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_messages_chat_id_created_at ON "Message" ("chatId", "createdAt")`,
     );
 
     console.log(`✅ Database indexes created in ${Date.now() - start}ms`);
@@ -74,8 +77,11 @@ export async function createDatabaseIndexes() {
  */
 export async function indexExists(indexName: string): Promise<boolean> {
   try {
+    // Get the appropriate database instance
+    const dbInstance = getDbForIndexes();
+    
     // This query works for PostgreSQL
-    const result = await db.execute(
+    const result = await dbInstance.execute(
       sql`SELECT 1 FROM pg_indexes WHERE indexname = ${indexName}`,
     );
 
