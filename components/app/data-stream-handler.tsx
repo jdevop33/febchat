@@ -23,30 +23,29 @@ export type DataStreamDelta = {
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
-  // Fix destructuring error: directly capture all values from useChat instead of accessing .data later
-  const {
-    data = [], // Provide empty array default to avoid undefined
-    messages,
-    append,
-    reload,
-    isLoading,
-  } = useChat({ id, api: '/api/chat' });
+  // Safely access useChat return values with proper defaults to avoid undefined errors
+  const chat = useChat({ id, api: '/api/chat' });
+  
+  // Extract needed properties with fallbacks to prevent destructuring errors
+  const data = Array.isArray(chat?.data) ? chat.data : [];
+  const messages = chat?.messages || [];
+  const append = chat?.append || (() => {});
+  const reload = chat?.reload || (() => {});
+  const isLoading = chat?.isLoading || false;
 
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
-    // Directly use data from destructured useChat result with fallback
-    const dataStream = Array.isArray(data) ? data : [];
+    // Safety check - if data is not available or empty, exit early
+    if (!data || data.length === 0) return;
 
-    // Additional safety check
-    if (dataStream.length === 0) return;
+    // Process only new data since last check
+    const newDeltas = data.slice(lastProcessedIndex.current + 1);
+    lastProcessedIndex.current = data.length - 1;
 
-    const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
-    lastProcessedIndex.current = dataStream.length - 1;
-
-    // Check if newDeltas is an array before trying to iterate
-    if (newDeltas.length === 0) return;
+    // If no new deltas, exit early
+    if (!newDeltas || newDeltas.length === 0) return;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
       const artifactDefinition = artifactDefinitions.find(
@@ -106,7 +105,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [data, setArtifact, setMetadata, artifact]); // Updated dependency array to use data directly
+  }, [data, setArtifact, setMetadata, artifact]); // Only re-run when data or artifact-related props change
 
   return null;
 }
