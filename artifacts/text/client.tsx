@@ -1,4 +1,4 @@
-import { Artifact } from '@/components/artifacts/create-artifact';
+import { BaseArtifact } from '@/components/artifacts/create-artifact';
 import { DiffView } from '@/components/editor/diffview';
 import { DocumentSkeleton } from '@/components/documents/document-skeleton';
 import { Editor } from '@/components/editor/text-editor';
@@ -18,7 +18,7 @@ interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
 }
 
-export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
+export const textArtifact = new BaseArtifact<'text', TextArtifactMetadata>({
   kind: 'text',
   description: 'Useful for text content, like drafting essays and emails.',
   initialize: async ({ documentId, setMetadata }) => {

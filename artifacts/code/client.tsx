@@ -1,4 +1,4 @@
-import { Artifact } from '@/components/artifacts/create-artifact';
+import { BaseArtifact } from '@/components/artifacts/create-artifact';
 import { CodeEditor } from '@/components/editor/code-editor';
 import {
   CopyIcon,
@@ -66,7 +66,7 @@ interface Metadata {
   outputs: Array<ConsoleOutput>;
 }
 
-export const codeArtifact = new Artifact<'code', Metadata>({
+export const codeArtifact = new BaseArtifact<'code', Metadata>({
   kind: 'code',
   description:
     'Useful for code generation; Code execution is only available for python code.',

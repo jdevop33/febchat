@@ -5,7 +5,7 @@
  */
 
 // Core artifact components
-export { Artifact } from './artifact';
+export { Artifact } from './create-artifact';
 // Temporarily commented out to fix circular imports
 // export { ArtifactMessages } from './artifact-messages';
 export { ArtifactActions } from './artifact-actions';

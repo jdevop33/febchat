@@ -1,9 +1,9 @@
-import { Artifact } from '@/components/artifacts/create-artifact';
+import { BaseArtifact } from '@/components/artifacts/create-artifact';
 import { CopyIcon, RedoIcon, UndoIcon } from '@/components/shared/icons';
 import { ImageEditor } from '@/components/editor/image-editor';
 import { toast } from 'sonner';
 
-export const imageArtifact = new Artifact({
+export const imageArtifact = new BaseArtifact({
   kind: 'image',
   description: 'Useful for image generation',
   onStreamPart: ({ streamPart, setArtifact }) => {

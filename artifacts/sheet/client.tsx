@@ -1,4 +1,4 @@
-import { Artifact } from '@/components/artifacts/create-artifact';
+import { BaseArtifact } from '@/components/artifacts/create-artifact';
 import {
   CopyIcon,
   LineChartIcon,
@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 type Metadata = any;
 
-export const sheetArtifact = new Artifact<'sheet', Metadata>({
+export const sheetArtifact = new BaseArtifact<'sheet', Metadata>({
   kind: 'sheet',
   description: 'Useful for working with spreadsheets',
   initialize: async () => {},

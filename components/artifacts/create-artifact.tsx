@@ -2,7 +2,7 @@ import type { Suggestion } from '@/lib/db/schema';
 import type { UseChatHelpers } from 'ai/react';
 import type { ComponentType, Dispatch, ReactNode, SetStateAction } from 'react';
 import type { DataStreamDelta } from './data-stream-handler';
-import type { UIArtifact } from './artifact';
+import type { UIArtifact } from '@/types/artifacts/artifact-types';
 
 export type ArtifactActionContext<M = any> = {
   content: string;
@@ -67,7 +67,7 @@ type ArtifactConfig<T extends string, M = any> = {
   }) => void;
 };
 
-export class Artifact<T extends string, M = any> {
+export class BaseArtifact<T extends string, M = any> {
   readonly kind: T;
   readonly description: string;
   readonly content: ComponentType<ArtifactContent<M>>;
@@ -90,3 +90,6 @@ export class Artifact<T extends string, M = any> {
     this.onStreamPart = config.onStreamPart;
   }
 }
+
+// For backward compatibility
+export const Artifact = BaseArtifact;
