@@ -28,8 +28,9 @@ import {
 import { sanitizeUIMessages } from '@/lib/utils';
 
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from '@/components/shared/icons';
-import { artifactDefinitions, type ArtifactKind } from './artifact';
-import type { ArtifactToolbarItem } from './create-artifact';
+import { artifactDefinitions } from '@/components/artifacts';
+import type { ArtifactKind } from '@/types/artifacts/artifact-types';
+import type { ArtifactToolbarItem } from '@/components/artifacts/create-artifact';
 import type { UseChatHelpers } from 'ai/react';
 
 type ToolProps = {

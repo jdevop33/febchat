@@ -11,6 +11,19 @@ export { Artifact } from './artifact';
 export { ArtifactActions } from './artifact-actions';
 export { ArtifactCloseButton } from './artifact-close-button';
 
+// Artifact definitions
+import { textArtifact } from '@/artifacts/text/client';
+import { codeArtifact } from '@/artifacts/code/client';
+import { imageArtifact } from '@/artifacts/image/client';
+import { sheetArtifact } from '@/artifacts/sheet/client';
+
+export const artifactDefinitions = [
+  textArtifact,
+  codeArtifact,
+  imageArtifact,
+  sheetArtifact
+];
+
 // Types
 export type {
   ArtifactKind,

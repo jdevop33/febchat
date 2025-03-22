@@ -2,7 +2,7 @@
 
 import { useChat } from 'ai/react';
 import { useEffect, useRef } from 'react';
-import { artifactDefinitions } from '@/components/artifacts/artifact';
+import { artifactDefinitions } from '@/components/artifacts';
 import type { ArtifactKind } from '@/types/artifacts/artifact-types';
 import type { Suggestion } from '@/lib/db/schema';
 import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';

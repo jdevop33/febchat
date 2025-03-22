@@ -7,9 +7,9 @@ import {
 } from 'prosemirror-view';
 import { createRoot } from 'react-dom/client';
 
-import { Suggestion as PreviewSuggestion } from '@/components/suggestion';
+import { Suggestion as PreviewSuggestion } from '@/components/ui/suggestion';
 import type { Suggestion } from '@/lib/db/schema';
-import type { ArtifactKind } from '@/components/artifact';
+import type { ArtifactKind } from '@/types/artifacts/artifact-types';
 import type { UISuggestion } from '../types';
 
 interface Position {

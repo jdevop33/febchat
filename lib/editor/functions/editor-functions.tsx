@@ -5,7 +5,7 @@ import { DOMParser } from 'prosemirror-model';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { renderToString } from 'react-dom/server';
 
-import { Markdown } from '@/components/markdown';
+import { Markdown } from '@/components/shared/markdown';
 import { documentSchema } from '../config/constants';
 import type { HandleTransactionParams, UISuggestion } from '../types';
 import { createSuggestionWidget } from '../suggestions';
