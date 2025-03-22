@@ -49,8 +49,8 @@ async function main() {
           title: bylawTitle,
           isConsolidated: true,
           consolidatedDate: 'September 30, 2013',
-          pdfPath: `/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf`,
-          officialUrl: `https://oakbay.civicweb.net/document/bylaw/3210`,
+          pdfPath: '/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
+          officialUrl: 'https://oakbay.civicweb.net/document/bylaw/3210',
           lastVerified: new Date(),
           amendments: '3332,3937,4198,4594',
         })
@@ -62,8 +62,8 @@ async function main() {
         title: bylawTitle,
         isConsolidated: true,
         consolidatedDate: 'September 30, 2013',
-        pdfPath: `/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf`,
-        officialUrl: `https://oakbay.civicweb.net/document/bylaw/3210`,
+        pdfPath: '/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
+        officialUrl: 'https://oakbay.civicweb.net/document/bylaw/3210',
         lastVerified: new Date(),
         amendments: '3332,3937,4198,4594',
       });

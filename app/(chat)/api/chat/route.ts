@@ -182,7 +182,7 @@ export async function POST(request: Request) {
 
           console.log(`Chat API: Saving new chat with ID: ${id}`);
           await saveChat({ id, userId: session.user.id, title });
-          console.log(`Chat API: New chat created successfully`);
+          console.log('Chat API: New chat created successfully');
         } catch (titleError) {
           console.error('Chat API: Error generating title:', titleError);
           // Fall back to a generic title if title generation fails

@@ -119,7 +119,7 @@ async function processBylawFile(filePath: string) {
 
     console.log(`Successfully processed file with ${chunkIds.length} chunks.`);
   } catch (error) {
-    console.error(`Error processing file:`, error);
+    console.error('Error processing file:', error);
     throw error;
   }
 }

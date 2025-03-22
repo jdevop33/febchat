@@ -234,7 +234,7 @@ function resolveImportPath(importPath: string, importingFile: string): string {
     // Relative import
     const dirName = path.dirname(importingFile);
     return path.resolve(dirName, importPath);
-  } else if (importPath.startsWith('@/')) {
+  }if (importPath.startsWith('@/')) {
     // Alias import (@/ usually points to the src directory)
     return path.resolve(process.cwd(), importPath.replace('@/', ''));
   }

@@ -12,7 +12,7 @@ const isProduction = env.NODE_ENV === 'production';
 
 // Log configuration
 console.log(`Environment: ${env.NODE_ENV || 'development'}`);
-console.log(`Using Claude 3.7 Sonnet for all functionality`);
+console.log('Using Claude 3.7 Sonnet for all functionality');
 
 // In production, ensure API key is set
 if (isProduction && !env.ANTHROPIC_API_KEY) {

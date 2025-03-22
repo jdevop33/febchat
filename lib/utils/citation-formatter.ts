@@ -92,8 +92,8 @@ export function getConsolidationInfo(
 ): string {
   if (isConsolidated && consolidatedDate) {
     return ` (Consolidated to ${consolidatedDate})`;
-  } else if (isConsolidated) {
-    return ` (Consolidated)`;
+  }if (isConsolidated) {
+    return ' (Consolidated)';
   }
   return '';
 }
@@ -136,8 +136,6 @@ export function formatCitation(
 
     case 'apa':
       return `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${title} [Bylaw No. ${bylawNumber}${consolidationInfo}], ${getCitationSectionString(section, 'apa')}.`;
-
-    case 'standard':
     default:
       return `${title}${consolidationInfo}, ${getCitationSectionString(section, 'standard')}${excerpt ? `: ${excerpt}` : ''}`;
   }

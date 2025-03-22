@@ -321,9 +321,9 @@ async function updateMockSearchData() {
       }
 
       for (const section of sections) {
-        newMockData += `  {\n`;
+        newMockData += '  {\n';
         newMockData += `    text: '${section.content.replace(/'/g, "\\'")}',\n`;
-        newMockData += `    metadata: {\n`;
+        newMockData += '    metadata: {\n';
         newMockData += `      bylawNumber: '${bylawNumber}',\n`;
         newMockData += `      title: '${bylawTitle}',\n`;
         newMockData += `      section: '${section.sectionNumber}',\n`;
@@ -332,11 +332,11 @@ async function updateMockSearchData() {
         newMockData += `      category: '${category}',\n`;
         newMockData += `      lastUpdated: '${lastUpdated}',\n`;
         if (isConsolidated) {
-          newMockData += `      isConsolidated: true,\n`;
+          newMockData += '      isConsolidated: true,\n';
           newMockData += `      consolidatedDate: '${consolidatedDate}'\n`;
         }
-        newMockData += `    },\n`;
-        newMockData += `  },\n`;
+        newMockData += '    },\n';
+        newMockData += '  },\n';
       }
     }
 

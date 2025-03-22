@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import type React from 'react';
 import { Markdown } from '@/components/shared/markdown';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
 import { CitationFallback } from '@/components/bylaw/citation-fallback';

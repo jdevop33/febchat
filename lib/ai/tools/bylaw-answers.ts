@@ -163,31 +163,31 @@ export const bylawAnswersTool = tool({
         normalizedTopic.includes('renovation')
       ) {
         return BYLAW_ANSWERS.constructionNoise;
-      } else if (
+      }if (
         normalizedTopic.includes('leaf') ||
         normalizedTopic.includes('blower')
       ) {
         return BYLAW_ANSWERS.leafBlowers;
-      } else if (
+      }if (
         normalizedTopic.includes('noise') ||
         normalizedTopic.includes('loud') ||
         normalizedTopic.includes('sound')
       ) {
         return BYLAW_ANSWERS.noiseRegulations;
-      } else if (
+      }if (
         normalizedTopic.includes('tree') ||
         normalizedTopic.includes('cutting') ||
         normalizedTopic.includes('arbutus')
       ) {
         return BYLAW_ANSWERS.treeRemoval;
-      } else if (
+      }if (
         normalizedTopic.includes('dog') ||
         normalizedTopic.includes('pet') ||
         normalizedTopic.includes('leash') ||
         normalizedTopic.includes('beach')
       ) {
         return BYLAW_ANSWERS.dogRegulations;
-      } else if (
+      }if (
         normalizedTopic.includes('zoning') ||
         normalizedTopic.includes('lot') ||
         normalizedTopic.includes('height') ||

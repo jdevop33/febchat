@@ -264,7 +264,7 @@ export async function voteMessage({
           dbError.message.includes('foreign key'))
       ) {
         throw new Error(
-          `Database constraint violation: The message or chat referenced may have been deleted.`,
+          'Database constraint violation: The message or chat referenced may have been deleted.',
         );
       }
 

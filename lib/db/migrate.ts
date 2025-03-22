@@ -42,9 +42,8 @@ const runMigrate = async () => {
     if (process.env.NODE_ENV === 'production') {
       console.log('⚠️ Continuing build despite database connection failure');
       return;
-    } else {
-      process.exit(1);
     }
+      process.exit(1);
   }
 };
 

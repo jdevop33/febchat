@@ -109,7 +109,7 @@ async function main() {
 
         // Generate embeddings
         const texts = chunks.map((chunk) => chunk.pageContent);
-        console.log(`  Generating embeddings...`);
+        console.log('  Generating embeddings...');
         const embeddingsResult = await embeddings.embedDocuments(texts);
 
         // Create vectors

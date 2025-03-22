@@ -4,7 +4,8 @@
 
 'use client';
 
-import React, {
+import type React from 'react';
+import {
   Suspense,
   lazy,
   type LazyExoticComponent,

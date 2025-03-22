@@ -32,7 +32,7 @@ async function verifyPineconeConnection() {
       throw new Error('PINECONE_API_KEY is not set in environment variables');
     }
 
-    console.log(`✅ Environment variables present`);
+    console.log('✅ Environment variables present');
     console.log(`   - Index: ${indexName}`);
     console.log(`   - API Key: ${apiKey.substring(0, 10)}...`);
 
@@ -100,7 +100,7 @@ async function verifyPineconeConnection() {
       includeMetadata: true,
     });
 
-    console.log(`✅ Search completed successfully`);
+    console.log('✅ Search completed successfully');
     console.log(`   - Results returned: ${searchResults.matches?.length || 0}`);
 
     if (searchResults.matches && searchResults.matches.length > 0) {

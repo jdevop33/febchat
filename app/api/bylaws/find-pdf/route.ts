@@ -52,12 +52,11 @@ export async function GET(request: Request) {
         found: true,
         url: `/pdfs/${matchedFile}`,
       });
-    } else {
+    }
       return NextResponse.json({
         found: false,
         message: `No PDF found for bylaw number: ${bylawNumber}`,
       });
-    }
   } catch (error) {
     console.error('Error in find-pdf API:', error);
     return NextResponse.json(

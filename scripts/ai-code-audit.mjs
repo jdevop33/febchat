@@ -301,7 +301,7 @@ async function fixCircularDependencies() {
       console.log(chalk.yellow('Would fix these circular dependencies:'));
 
       for (const { files, solution } of CIRCULAR_DEPENDENCIES) {
-        console.log(chalk.yellow(`\nFiles involved:`));
+        console.log(chalk.yellow('\nFiles involved:'));
         for (const file of files) {
           console.log(chalk.yellow(`  - ${file}`));
         }
@@ -320,7 +320,7 @@ async function fixCircularDependencies() {
     let fixCount = 0;
 
     for (const { files, solution } of CIRCULAR_DEPENDENCIES) {
-      console.log(chalk.blue(`\nFixing circular dependency in:`));
+      console.log(chalk.blue('\nFixing circular dependency in:'));
       for (const file of files) {
         console.log(chalk.blue(`  - ${file}`));
       }

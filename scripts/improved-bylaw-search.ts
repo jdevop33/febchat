@@ -57,7 +57,7 @@ async function searchBylaws() {
     );
 
     // Generate query embedding
-    console.log(`Generating embedding for query...`);
+    console.log('Generating embedding for query...');
     const queryEmbedding = await embeddings.embedQuery(query);
 
     // Build filter
@@ -172,7 +172,7 @@ async function searchBylaws() {
           .sort((a, b) => b.score - a.score)
           .slice(0, 3);
 
-        console.log(`\n   Top relevant sections:`);
+        console.log('\n   Top relevant sections:');
         sortedSnippets.forEach((snippet, i) => {
           console.log(
             `   ${i + 1}. Section ${snippet.section}${snippet.sectionTitle ? `: ${snippet.sectionTitle}` : ''}`,

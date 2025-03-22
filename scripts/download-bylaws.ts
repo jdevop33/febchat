@@ -47,10 +47,9 @@ const downloadFile = (url: string, destPath: string): Promise<void> => {
             .then(resolve)
             .catch(reject);
           return;
-        } else {
-          reject(new Error(`Redirect with no location header`));
-          return;
         }
+          reject(new Error('Redirect with no location header'));
+          return;
       }
 
       // Check if the request was successful

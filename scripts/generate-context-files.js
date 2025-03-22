@@ -307,7 +307,7 @@ ${relevantFiles.map((f) => `- ${path.relative(process.cwd(), f)}`).join('\n')}`;
 
     // Add file contents if we have a sample
     if (fileContents.length > 0) {
-      fullPrompt += `\n\nHere are sample files for reference:`;
+      fullPrompt += '\n\nHere are sample files for reference:';
 
       for (const { path: filePath, content } of fileContents) {
         fullPrompt += `\n\nFile: ${filePath}\n\`\`\`\n${content}\n\`\`\``;

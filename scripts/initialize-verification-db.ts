@@ -44,7 +44,7 @@ async function main() {
       .select({ count: count() })
       .from(bylawSection);
 
-    console.log(`Database stats:`);
+    console.log('Database stats:');
     console.log(`- ${bylawCountResult.count} bylaws`);
     console.log(`- ${sectionCountResult.count} bylaw sections`);
   } catch (error) {

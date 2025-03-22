@@ -45,7 +45,7 @@ async function searchBylaws() {
     );
 
     // Generate query embedding
-    console.log(`Generating embedding for query...`);
+    console.log('Generating embedding for query...');
     const queryEmbedding = await embeddings.embedQuery(query);
 
     // Perform search
@@ -128,7 +128,7 @@ async function searchBylaws() {
         }
 
         // Show up to 2 snippets
-        console.log(`\n   Relevant sections:`);
+        console.log('\n   Relevant sections:');
         result.snippets.slice(0, 2).forEach((snippet, i) => {
           console.log(`   ${i + 1}. ${snippet}`);
         });

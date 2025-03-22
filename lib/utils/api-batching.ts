@@ -127,7 +127,7 @@ export class APIBatcher<T, R> {
         // Exponential backoff with jitter
         const delay =
           (this.options.retryDelay || 300) *
-          Math.pow(2, attempt) *
+          2 ** attempt *
           (0.5 + Math.random() * 0.5);
         await new Promise((resolve) => setTimeout(resolve, delay));
       }

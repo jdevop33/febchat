@@ -490,7 +490,7 @@ async function upsertVectors(vectors: any[]): Promise<void> {
           success = true;
         } catch (error) {
           retryCount++;
-          const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff
+          const waitTime = 2 ** retryCount * 1000; // Exponential backoff
 
           if (retryCount <= maxRetries) {
             console.warn(
