@@ -4,6 +4,6 @@
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "env": {
-    "NEXTAUTH_URL": "https://juche.org"
+    "NEXTAUTH_URL": "https://app.fitforgov.com"
   }
 }

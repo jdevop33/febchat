@@ -43,6 +43,6 @@ jobs:
           MOCK_DB: true
           MOCK_VECTOR_SEARCH: true
           SKIP_DB_OPERATIONS: "true"
-          NEXTAUTH_URL: "https://juche.org"
+          NEXTAUTH_URL: "https://app.fitforgov.com"
           NEXTAUTH_SECRET: "ci-dummy-secret-00000000000000000000000000000000"
           CI: "true" # Explicitly set CI environment variable
