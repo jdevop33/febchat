@@ -9,9 +9,6 @@ import { PdfViewerModal } from '@/components/pdf-viewer-modal';
 import { CitationFeedback } from '@/components/citation-feedback';
 import {
   VALIDATED_BYLAWS,
-  getExternalPdfUrl,
-  getLocalPdfPath,
-  getBestPdfUrl
 } from '@/lib/utils/bylaw-maps-client';
 
 // Import the smaller components

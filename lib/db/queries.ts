@@ -42,7 +42,7 @@ class DbOperationError extends Error {
 /**
  * Get a user by email
  */
-export async function getUser(email: string): Promise<Array<User>> {
+export async function getUser(email: string): Promise<Array<schema.User>> {
   try {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
@@ -161,7 +161,7 @@ export async function getChatById({ id }: { id: string }) {
 /**
  * Save messages to the database
  */
-export async function saveMessages({ messages }: { messages: Array<Message> }) {
+export async function saveMessages({ messages }: { messages: Array<schema.Message> }) {
   if (!messages.length) {
     return; // Nothing to save
   }
@@ -320,7 +320,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: string;
+  kind: 'text' | 'code' | 'image' | 'sheet';
   content: string;
   userId: string;
 }) {
@@ -400,7 +400,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
 export async function saveSuggestions({
   suggestions,
 }: {
-  suggestions: Array<Suggestion>;
+  suggestions: Array<schema.Suggestion>;
 }) {
   try {
     return await db.insert(suggestion).values(suggestions);

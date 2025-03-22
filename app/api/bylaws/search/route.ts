@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     
     // Check rate limit (10 requests per minute)
     const currentCount = rateLimit.get(rateLimitKey) || 0;
-    if (currentCount > 10) {
+    if ((currentCount as number) > 10) {
       logger.warn(`Rate limit exceeded for ${ip}`);
       return NextResponse.json(
         { error: 'Rate limit exceeded, please try again later' },
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     }
     
     // Update rate limit counter
-    rateLimit.set(rateLimitKey, currentCount + 1);
+    rateLimit.set(rateLimitKey, (currentCount as number) + 1);
     
     // Validate request schema
     const result = searchSchema.safeParse(body);
@@ -123,10 +123,11 @@ export async function POST(request: Request) {
     
     return NextResponse.json(response);
   } catch (error) {
-    logger.error('Search failed with error', { error });
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.error(errorObj, 'Search failed');
     
     return NextResponse.json(
-      { error: 'An error occurred while searching', message: (error as Error).message },
+      { error: 'An error occurred while searching', message: errorObj.message },
       { status: 500 }
     );
   }
@@ -165,10 +166,11 @@ export async function GET(request: Request) {
     // Pass to POST handler
     return POST(newReq);
   } catch (error) {
-    logger.error('GET search failed with error', { error });
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.error(errorObj, 'GET search failed');
     
     return NextResponse.json(
-      { error: 'An error occurred while searching', message: (error as Error).message },
+      { error: 'An error occurred while searching', message: errorObj.message },
       { status: 500 }
     );
   }

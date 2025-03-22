@@ -27,14 +27,8 @@ export function getPineconeClient(): Pinecone {
   }
 
   // Create Pinecone client using v5.0+ SDK
-  const config: any = { apiKey };
-
-  // Add environment if specified (optional in newer SDK versions)
-  if (process.env.PINECONE_ENVIRONMENT) {
-    config.environment = process.env.PINECONE_ENVIRONMENT;
-  }
-
-  pineconeInstance = new Pinecone(config);
+  // In v5, environment is no longer used as a parameter
+  pineconeInstance = new Pinecone({ apiKey });
 
   return pineconeInstance;
 }

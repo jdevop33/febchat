@@ -8,9 +8,11 @@
 - `pnpm lint`: Run ESLint and Biome linting
 - `pnpm lint:fix`: Auto-fix linting issues
 - `pnpm format`: Format with Prettier (includes Tailwind class sorting)
+- `pnpm format:biome`: Format with Biome
 - `pnpm db:generate`: Generate Drizzle migrations
 - `pnpm db:migrate`: Run database migrations
 - `pnpm db:studio`: Launch Drizzle studio interface
+- `npx jest components/path/to/file.test.tsx`: Run single test file
 - `ts-node scripts/<script-name>.ts`: Run TypeScript scripts
 
 ## Code Style Guidelines
@@ -24,6 +26,10 @@
 - Error handling: try/catch blocks, Zod for validation, toast for notifications
 - Styling: Tailwind CSS with `cn()` utility for conditional classes
 - Custom hooks: prefix with `use`, like `useIsMobile`
+- Testing: Jest with React Testing Library
+- Use fragment syntax (`<>...</>`) instead of `<React.Fragment>`
+- JSX brackets should be on new lines, not same line
+- Avoid unnecessary template literals and else statements
 
 ## Architecture
 

@@ -61,6 +61,9 @@ export function analyzeUrlStructure(): { patterns: Record<string, number>, examp
   
   // Add additional pattern types for diagnostic purposes
   patterns["total-hardcoded"] = Object.keys(HARDCODED_PDF_URLS).length;
+  
+  // Import from the shared module
+  const { VALIDATED_BYLAWS } = require('./bylaw-shared');
   patterns["total-validated"] = VALIDATED_BYLAWS.length;
   
   return { patterns, examples };

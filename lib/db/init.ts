@@ -6,7 +6,6 @@
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
 import postgres from 'postgres';
 import { env } from 'node:process';
 
@@ -39,8 +38,13 @@ export function initializeDatabase(): DrizzleClient {
   if (isProduction && env.POSTGRES_URL) {
     console.log('Using Vercel Postgres integration in production');
     
+    // Import at runtime to prevent build errors
+    const { neon } = require('@neondatabase/serverless');
+    const { drizzle: vercelDrizzle } = require('drizzle-orm/neon-http');
+    
     // Initialize with Vercel's PostgreSQL client
-    return vercelDrizzle(schema) as unknown as DrizzleClient;
+    const client = neon(env.POSTGRES_URL);
+    return vercelDrizzle({ schema }) as unknown as DrizzleClient;
   }
   
   // Fall back to direct connection for development or if Vercel integration isn't available

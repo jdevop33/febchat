@@ -10,7 +10,7 @@
 import { config } from 'dotenv';
 import { sql } from '@vercel/postgres';
 import { put, list, del } from '@vercel/blob';
-import { PineconeClient } from '@pinecone-database/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
 
 // Load environment variables
 config({ path: '.env.local' });
@@ -119,15 +119,14 @@ async function testVercelIntegrations() {
     if (!pineconeApiKey || !pineconeEnvironment || !pineconeIndex) {
       recordTest('Pinecone', false, 'Missing Pinecone environment variables');
     } else {
-      const pinecone = new PineconeClient();
-      await pinecone.init({
-        apiKey: pineconeApiKey,
-        environment: pineconeEnvironment,
+      const pinecone = new Pinecone({
+        apiKey: pineconeApiKey
       });
       
       const indexes = await pinecone.listIndexes();
+      const indexNames = indexes.indexes?.map(idx => idx.name) || [];
       
-      if (indexes.includes(pineconeIndex)) {
+      if (indexNames.includes(pineconeIndex)) {
         recordTest('Pinecone', true, `Successfully connected to Pinecone, index "${pineconeIndex}" exists`);
       } else {
         recordTest('Pinecone', false, `Index "${pineconeIndex}" not found in your account`);

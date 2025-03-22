@@ -324,4 +324,32 @@ export const logger = {
   apiPerformance: logApiPerformance,
   error: logError,
   feedback: logFeedback,
+  // Add standard logging methods to match console interface
+  info: (message: string, data?: any) => {
+    writeLog({
+      timestamp: getTimestamp(),
+      eventType: 'api',
+      severity: 'info',
+      message,
+      data
+    });
+  },
+  warn: (message: string, data?: any) => {
+    writeLog({
+      timestamp: getTimestamp(),
+      eventType: 'api',
+      severity: 'warn',
+      message,
+      data
+    });
+  },
+  debug: (message: string, data?: any) => {
+    writeLog({
+      timestamp: getTimestamp(),
+      eventType: 'api',
+      severity: 'debug',
+      message,
+      data
+    });
+  }
 };

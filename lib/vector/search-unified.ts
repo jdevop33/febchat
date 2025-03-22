@@ -102,7 +102,8 @@ export async function searchBylaws(
         return results;
       }
     } catch (error) {
-      logger.error('Pinecone search failed, falling back to keyword search', { error });
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      logger.error(errorObj, 'Pinecone search failed, falling back to keyword search');
     }
     
     // Fall back to keyword search if Pinecone fails or isn't configured
@@ -110,7 +111,8 @@ export async function searchBylaws(
     logger.info(`Keyword search completed in ${Date.now() - startTime}ms`);
     return keywordResults;
   } catch (error) {
-    logger.error('Search failed with error', { error });
+    const errorObj = error instanceof Error ? error : new Error(String(error));
+    logger.error(errorObj, 'Search failed');
     return []; // Return empty results in case of errors
   }
 }

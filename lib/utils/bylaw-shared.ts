@@ -6,7 +6,7 @@
  */
 
 // Import the centralized bylaw data
-import { knownBylawUrls, bylawTitleMap, VALIDATED_BYLAWS } from './bylaw-maps';
+import { bylawTitleMap, VALIDATED_BYLAWS } from './bylaw-maps';
 
 /**
  * Get external PDF URL for a bylaw
