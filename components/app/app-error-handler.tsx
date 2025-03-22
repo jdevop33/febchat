@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 
 interface AppErrorHandlerProps {
   children: React.ReactNode;
@@ -106,6 +106,7 @@ export function AppErrorHandler({ children }: AppErrorHandlerProps) {
 
           <div className="space-x-2 text-center">
             <button
+              type="button"
               onClick={() => window.location.reload()}
               className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
             >

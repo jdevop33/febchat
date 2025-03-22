@@ -39,7 +39,9 @@ export function BylawWelcome() {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="text-blue-500"
+              aria-label="Document with notes"
             >
+              <title>Document with notes</title>
               <path d="M15 21h-9a3 3 0 0 1-3-3v-1h10v2a2 2 0 0 0 4 0v-10.8a2 2 0 0 1 .586-1.414l2.828-2.828a2 2 0 0 1 1.414-.586h0a2 2 0 0 1 2 2v6.8" />
               <path d="M6 10h4" />
               <path d="M6 14h2" />

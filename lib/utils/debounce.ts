@@ -40,7 +40,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
         fnRef.current(...args);
       }, wait);
     } as unknown as T,
-    [wait],
+    [],
   );
 }
 

@@ -7,7 +7,7 @@
 // Document components
 export { DocumentToolCall, DocumentToolResult } from './document';
 export { DocumentPreview } from './document-preview';
-export { InlineDocumentSkeleton } from '../document-skeleton';
+export { DocumentSkeleton } from './document-skeleton';
 
 // Types
 export type {

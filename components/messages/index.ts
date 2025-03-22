@@ -6,9 +6,9 @@
 
 // Message components
 export { PreviewMessage, ThinkingMessage } from './message';
-export { MessageActions } from '../message-actions';
-export { MessageReasoning } from '../message-reasoning';
-export { MessageEditor } from '../message-editor';
+export { MessageActions } from '@/components/chat/message-actions';
+export { MessageReasoning } from '@/components/chat/message-reasoning';
+export { MessageEditor } from '@/components/chat/message-editor';
 
 // Types
 export type {
