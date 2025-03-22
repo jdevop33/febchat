@@ -10,7 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/(auth)/auth';
-import { searchBylaws } from '@/lib/vector/search-unified';
+import { searchBylaws } from '@/lib/vector/search';
 import { logger } from '@/lib/monitoring/logger';
 import { z } from 'zod';
 

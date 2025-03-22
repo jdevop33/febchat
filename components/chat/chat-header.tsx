@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useWindowSize } from 'usehooks-ts';
 
-import { SidebarToggle } from '@/components/sidebar-toggle';
+import { SidebarToggle } from '@/components/app/sidebar-toggle';
 import { Button } from '@/components/ui/button';
-import { FileTextIcon, PlusIcon } from '@/components/icons';
+import { FileTextIcon, PlusIcon } from '@/components/shared/icons';
 import { useSidebar } from '@/components/ui/sidebar';
 import { memo } from 'react';
 import {

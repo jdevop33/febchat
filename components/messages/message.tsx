@@ -15,21 +15,21 @@ import {
   DocumentToolCall,
   DocumentToolResult,
 } from '@/components/documents/document';
-import { PencilEditIcon, SparklesIcon } from '@/components/icons';
-import { Markdown } from '@/components/markdown';
-import { EnhancedMarkdown } from '@/components/enhanced-markdown';
-import { MessageActions } from '@/components/message-actions';
-import { PreviewAttachment } from '@/components/preview-attachment';
-import { Weather } from '@/components/weather';
+import { PencilEditIcon, SparklesIcon } from '@/components/shared/icons';
+import { Markdown } from '@/components/shared/markdown';
+import { EnhancedMarkdown } from '@/components/shared/enhanced-markdown';
+import { MessageActions } from '@/components/chat/message-actions';
+import { PreviewAttachment } from '@/components/ui/preview-attachment';
+import { Weather } from '@/components/ui/weather';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { MessageEditor } from '@/components/message-editor';
+import { MessageEditor } from '@/components/chat/message-editor';
 import { DocumentPreview } from '@/components/documents/document-preview';
-import { MessageReasoning } from '@/components/message-reasoning';
+import { MessageReasoning } from '@/components/chat/message-reasoning';
 import { BylawCitation } from '@/components/bylaw/bylaw-citation';
 import { CitationFallback } from '@/components/bylaw/citation-fallback';
 

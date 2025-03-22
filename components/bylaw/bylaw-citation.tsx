@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileSearch } from 'lucide-react';
 import { toast } from 'sonner';
-import { PdfViewerModal } from '@/components/pdf-viewer-modal';
-import { CitationFeedback } from '@/components/citation-feedback';
+import { PdfViewerModal } from '@/components/pdf/pdf-viewer-modal';
+import { CitationFeedback } from '@/components/bylaw/citation-feedback';
 import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-maps-client';
 
 // Import the smaller components

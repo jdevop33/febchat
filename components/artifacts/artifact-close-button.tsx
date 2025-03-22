@@ -1,38 +1,29 @@
 import { memo } from 'react';
-import { useArtifact } from '@/hooks/use-artifact';
+import { CrossIcon } from '@/components/shared/icons';
+import { Button } from '@/components/ui/button';
+import { initialArtifactData, useArtifact } from '@/hooks/use-artifact';
 
-export function PureArtifactCloseButton() {
-  const { artifact, setArtifact } = useArtifact();
-
-  if (!artifact.isVisible) return null;
+function PureArtifactCloseButton() {
+  const { setArtifact } = useArtifact();
 
   return (
-    <button
-      className="group flex h-7 w-7 items-center justify-center rounded-full bg-white transition-all hover:scale-110 dark:bg-zinc-950"
+    <Button
+      variant="outline"
+      className="h-fit p-2 dark:hover:bg-zinc-700"
       onClick={() => {
-        setArtifact((draftArtifact) => ({
-          ...draftArtifact,
-          isVisible: false,
-        }));
+        setArtifact((currentArtifact) =>
+          currentArtifact.status === 'streaming'
+            ? {
+                ...currentArtifact,
+                isVisible: false,
+              }
+            : { ...initialArtifactData, status: 'idle' },
+        );
       }}
     >
-      <span className="muted-icon text-current group-hover:text-red-500">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </span>
-    </button>
+      <CrossIcon size={18} />
+    </Button>
   );
 }
 
-export const ArtifactCloseButton = memo(PureArtifactCloseButton);
+export const ArtifactCloseButton = memo(PureArtifactCloseButton, () => true);

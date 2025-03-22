@@ -3,7 +3,7 @@ import { Toaster } from 'sonner';
 
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { AppErrorHandler } from '@/components/app-error-handler';
+import { AppErrorHandler } from '@/components/app/app-error-handler';
 
 import './globals.css';
 

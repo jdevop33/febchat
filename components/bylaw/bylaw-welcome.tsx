@@ -1,6 +1,6 @@
 'use client';
 
-import { FileTextIcon } from '@/components/icons';
+import { FileTextIcon } from '@/components/shared/icons';
 
 export function BylawWelcome() {
   return (

@@ -1,119 +1,100 @@
-import { memo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { artifactDefinitions, type UIArtifact } from './artifact';
+import { type Dispatch, memo, type SetStateAction, useState } from 'react';
+import type { ArtifactActionContext } from './create-artifact';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-import type { UIArtifact } from '@/types/artifacts/artifact-types';
-import { artifactDefinitions } from './artifact';
-
-export interface ArtifactActionsProps {
+interface ArtifactActionsProps {
   artifact: UIArtifact;
-  currentVersionIndex: number;
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
+  currentVersionIndex: number;
   isCurrentVersion: boolean;
   mode: 'edit' | 'diff';
   metadata: any;
-  setMetadata: (metadata: any) => void;
+  setMetadata: Dispatch<SetStateAction<any>>;
 }
 
 function PureArtifactActions({
   artifact,
-  currentVersionIndex,
   handleVersionChange,
+  currentVersionIndex,
   isCurrentVersion,
   mode,
   metadata,
   setMetadata,
 }: ArtifactActionsProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
   const artifactDefinition = artifactDefinitions.find(
     (definition) => definition.kind === artifact.kind,
   );
 
   if (!artifactDefinition) {
-    return null;
+    throw new Error('Artifact definition not found!');
   }
 
+  const actionContext: ArtifactActionContext = {
+    content: artifact.content,
+    handleVersionChange,
+    currentVersionIndex,
+    isCurrentVersion,
+    mode,
+    metadata,
+    setMetadata,
+  };
+
   return (
-    <div className="mt-1 flex gap-0.5">
-      {!isCurrentVersion && (
-        <button
-          className="group flex h-7 w-7 items-center justify-center transition-all hover:scale-110"
-          onClick={() => handleVersionChange('latest')}
-        >
-          <span className="muted-icon text-current group-hover:text-blue-500">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M11 5L1 5" />
-              <path d="M6 0V10" />
-              <path d="M5 19H19" />
-              <path d="M19 9V19" />
-              <path d="M13 15L19 19L16 21" />
-            </svg>
-          </span>
-        </button>
-      )}
+    <div className="flex flex-row gap-1">
+      {artifactDefinition.actions.map((action) => (
+        <Tooltip key={action.description}>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn('h-fit dark:hover:bg-zinc-700', {
+                'p-2': !action.label,
+                'px-2 py-1.5': action.label,
+              })}
+              onClick={async () => {
+                setIsLoading(true);
 
-      {artifactDefinition?.actions.map((action, index) => {
-        return (
-          <button
-            key={index}
-            className={`group flex h-7 w-7 items-center justify-center transition-all ${
-              (action.isDisabled?.({
-                currentVersionIndex,
-                isCurrentVersion,
-                mode,
-                handleVersionChange,
-                content: artifact.content,
-                metadata,
-                document: null,
-              }) ?? false)
-                ? 'cursor-not-allowed opacity-50'
-                : 'hover:scale-110'
-            } `}
-            onClick={() => {
-              // Check if the action is disabled
-              if (
-                action.isDisabled?.({
-                  currentVersionIndex,
-                  isCurrentVersion,
-                  mode,
-                  handleVersionChange,
-                  content: artifact.content,
-                  metadata,
-                  document: null,
-                }) ??
-                false
-              ) {
-                return;
+                try {
+                  await Promise.resolve(action.onClick(actionContext));
+                } catch (error) {
+                  toast.error('Failed to execute action');
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              disabled={
+                isLoading || artifact.status === 'streaming'
+                  ? true
+                  : action.isDisabled
+                    ? action.isDisabled(actionContext)
+                    : false
               }
-
-              // Execute the action
-              action.onClick({
-                currentVersionIndex,
-                isCurrentVersion,
-                mode,
-                handleVersionChange,
-                content: artifact.content,
-                metadata,
-                setMetadata,
-                document: null,
-                appendMessage: () => {},
-              });
-            }}
-          >
-            <span className="muted-icon text-current group-hover:text-blue-500">
+            >
               {action.icon}
-            </span>
-          </button>
-        );
-      })}
+              {action.label}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{action.description}</TooltipContent>
+        </Tooltip>
+      ))}
     </div>
   );
 }
 
-export const ArtifactActions = memo(PureArtifactActions);
+export const ArtifactActions = memo(
+  PureArtifactActions,
+  (prevProps, nextProps) => {
+    if (prevProps.artifact.status !== nextProps.artifact.status) return false;
+    if (prevProps.currentVersionIndex !== nextProps.currentVersionIndex)
+      return false;
+    if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
+    if (prevProps.artifact.content !== nextProps.artifact.content) return false;
+
+    return true;
+  },
+);
