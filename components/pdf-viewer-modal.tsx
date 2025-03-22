@@ -20,6 +20,7 @@ interface PdfViewerModalProps {
   pdfPath?: string;
   section?: string;
   isVerified?: boolean;
+  externalUrl?: string;
 }
 
 export function PdfViewerModal({
@@ -29,13 +30,16 @@ export function PdfViewerModal({
   title,
   section,
   isVerified = false,
+  externalUrl,
 }: PdfViewerModalProps) {
   // Simple handler to open external site
   const handleExternalOpen = () => {
     if (typeof window !== 'undefined') {
-      // Open a generic URL
+      // Use provided external URL or default to bylaws page
+      const urlToOpen = externalUrl || `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
+      
       window.open(
-        'https://www.oakbay.ca/municipal-services/bylaws',
+        urlToOpen,
         '_blank',
         'noopener,noreferrer',
       );
@@ -69,16 +73,22 @@ export function PdfViewerModal({
           </Button>
         </AlertDialogHeader>
 
-        <div className="flex h-40 flex-col items-center justify-center space-y-4 rounded-md bg-gray-50 p-6 dark:bg-gray-800">
-          <p className="text-center text-sm text-muted-foreground">
-            PDF viewer is currently disabled for testing purposes.
-            <br />
-            Please visit the official website to view this bylaw.
+        <div className="flex h-60 flex-col items-center justify-center space-y-4 rounded-md bg-gray-50 p-6 dark:bg-gray-800">
+          <p className="text-center text-sm font-medium text-blue-700 dark:text-blue-300">
+            Bylaw No. {bylawNumber} {section ? `Section ${section}` : ""}
           </p>
-          <Button variant="default" onClick={handleExternalOpen}>
+          <p className="text-center text-sm text-muted-foreground">
+            To view the complete bylaw document, please visit the official Oak Bay website.
+            <br />
+            You&apos;ll be redirected to the official municipal page containing the bylaw information.
+          </p>
+          <Button variant="default" onClick={handleExternalOpen} className="mt-4">
             <ExternalLink size={16} className="mr-2" />
-            Visit Official Website
+            Open Official Bylaw Document
           </Button>
+          <p className="text-xs text-muted-foreground mt-2">
+            © Oak Bay Municipal Government. All documents are property of the District of Oak Bay.
+          </p>
         </div>
       </AlertDialogContent>
     </AlertDialog>

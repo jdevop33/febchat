@@ -125,29 +125,31 @@ export function BylawCitation({
     }
   }, [bylawNumber, isVerified]);
 
-  // Function to handle PDF not found
-  const handlePdfNotFound = () => {
-    // Show a softer message since PDFs are just placeholders now
-    toast.info('Opening external site', {
-      description: `Redirecting you to Oak Bay's municipal website for Bylaw No. ${bylawNumber} information.`,
-    });
-
-    // Auto-open external link if PDF not found (browser-only)
-    if (typeof window !== 'undefined') {
-      // Use timeout to ensure toast is displayed before redirect
-      setTimeout(() => {
-        window.open(externalUrl, '_blank');
-      }, 1000);
-    }
+  // Function to handle view bylaw action
+  const handleViewBylaw = () => {
+    // Always use modals instead of direct redirects for better UX
+    setIsPdfOpen(true);
+    
+    // Log the action
+    console.log(`User clicked to view Bylaw ${bylawNumber}, Section ${section}`);
   };
 
-  // TEMPORARILY SIMPLIFIED FOR TESTING
-  // Function to get the appropriate PDF path (simplified for testing)
+  // Get PDF path using local file system
   const getPdfPath = () => {
     if (pdfPath) {
       return pdfPath;
     }
-    return `/pdfs/placeholder.pdf`;
+    
+    // Try to use bylaw number to find matching PDF
+    const possiblePaths = [
+      `/pdfs/${bylawNumber}.pdf`,
+      `/pdfs/${bylawNumber} -*.pdf`,
+      `/pdfs/${bylawNumber}*.pdf`
+    ];
+    
+    // In production, we'd check if these files exist
+    // For now, just return the first pattern and let the PDF viewer handle fallback
+    return possiblePaths[0];
   };
 
   // Get external URL for the bylaw (with error handling)
@@ -250,9 +252,7 @@ export function BylawCitation({
                 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
               className,
             )}
-            onClick={() =>
-              validBylaw ? setIsPdfOpen(true) : handlePdfNotFound()
-            }
+            onClick={handleViewBylaw}
             data-testid={`bylaw-citation-${bylawNumber}-${section}`}
             data-bylaw-number={bylawNumber}
             data-section={section}
@@ -300,11 +300,11 @@ export function BylawCitation({
               <CitationActions
                 expanded={expanded}
                 setExpanded={setExpanded}
-                onViewPdf={handleViewPdf}
-                onViewExternalPdf={handleViewExternalPdf}
-                onViewOfficialSite={handleViewOfficialSite}
+                onViewPdf={handleViewBylaw}
+                onViewExternalPdf={handleViewBylaw}
+                onViewOfficialSite={handleViewBylaw}
                 onExportReport={handleExportReport}
-                validBylaw={validBylaw}
+                validBylaw={true} /* Always enable buttons */
               />
 
               {/* Citation format selector and copy button */}
@@ -333,7 +333,8 @@ export function BylawCitation({
             className="mt-2"
           />
 
-          {validBylaw && (
+          {/* Use the PDF viewer only if in client context and modal is open */}
+          {typeof window !== 'undefined' && isPdfOpen && (
             <PdfViewerModal
               isOpen={isPdfOpen}
               onClose={() => setIsPdfOpen(false)}
@@ -343,6 +344,7 @@ export function BylawCitation({
               initialPage={1}
               section={section}
               isVerified={isVerified}
+              externalUrl={externalUrl}
             />
           )}
         </>

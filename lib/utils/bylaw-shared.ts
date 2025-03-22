@@ -6,19 +6,22 @@
  */
 
 // Import the centralized bylaw data
-import { bylawTitleMap, VALIDATED_BYLAWS } from './bylaw-maps';
+import { 
+  bylawTitleMap, 
+  VALIDATED_BYLAWS,
+  knownBylawUrls as _knownBylawUrls 
+} from './bylaw-maps';
 
 /**
  * Get external PDF URL for a bylaw
  */
+
 export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
   try {
-    // Import here to avoid circular dependency issues
-    const { knownBylawUrls } = require('./bylaw-maps');
-
+    // Use the imported map
     // If we have a known URL for this bylaw, use it
-    if (knownBylawUrls?.[bylawNumber]) {
-      return knownBylawUrls[bylawNumber];
+    if (_knownBylawUrls?.[bylawNumber]) {
+      return _knownBylawUrls[bylawNumber];
     }
 
     // Otherwise, use the standard pattern
@@ -41,12 +44,20 @@ export function getLocalPdfPath(bylawNumber: string): string {
  * Get the best PDF URL to use
  */
 export function getBestPdfUrl(bylawNumber: string, title?: string): string {
-  // TEMPORARILY DISABLED PDF URL MAPPING - FOR TESTING
-  // Original implementation:
-  // return getExternalPdfUrl(bylawNumber, title);
-
-  // Return a placeholder for testing
-  return `/pdfs/placeholder.pdf`;
+  // Return the best available URL:
+  // 1. If we have a known direct URL, use that
+  // 2. Otherwise construct a standard URL pattern
+  
+  // First try the external PDF URL
+  const externalUrl = getExternalPdfUrl(bylawNumber, title);
+  
+  // If we have a specific URL, use it
+  if (externalUrl.includes(bylawNumber)) {
+    return externalUrl;
+  }
+  
+  // Otherwise use a standard URL format
+  return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
 }
 
 /**
