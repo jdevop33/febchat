@@ -2,9 +2,9 @@
 
 // This script uses ESM imports
 
-import { execSync } from 'child_process';
-import path from 'path';
-import fs from 'fs';
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import fs from 'node:fs';
 import chalk from 'chalk';
 import minimist from 'minimist';
 

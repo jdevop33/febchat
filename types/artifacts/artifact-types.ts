@@ -5,27 +5,16 @@ import type {
   Message,
 } from 'ai';
 import type { Dispatch, SetStateAction } from 'react';
-import type { Vote } from '@/lib/db/schema';
+import { 
+  ArtifactKind, 
+  artifactKinds, 
+  type UIArtifact,
+  type SharedMessageProps 
+} from '@/types/shared/shared-types';
 
-// Artifact kinds
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
-export type ArtifactKind = (typeof artifactKinds)[number];
-
-// UI Artifact interface
-export interface UIArtifact {
-  title: string;
-  documentId: string;
-  kind: ArtifactKind;
-  content: string;
-  isVisible: boolean;
-  status: 'streaming' | 'idle';
-  boundingBox: {
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-  };
-}
+// Re-export for backward compatibility
+export { ArtifactKind, artifactKinds };
+export type { UIArtifact };
 
 // Artifact metadata
 export interface ArtifactMetadata {
@@ -33,17 +22,12 @@ export interface ArtifactMetadata {
 }
 
 // Artifact component props interface
-export interface ArtifactProps {
-  chatId: string;
+export interface ArtifactProps extends SharedMessageProps {
   input: string;
   setInput: (input: string) => void;
-  isLoading: boolean;
   stop: () => void;
   attachments: Array<Attachment>;
   setAttachments: Dispatch<SetStateAction<Array<Attachment>>>;
-  messages: Array<Message>;
-  setMessages: Dispatch<SetStateAction<Array<Message>>>;
-  votes: Array<Vote> | undefined;
   append: (
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,
@@ -54,24 +38,9 @@ export interface ArtifactProps {
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  isReadonly: boolean;
 }
 
 // Artifact messages props
-export interface ArtifactMessagesProps {
-  chatId: string;
-  isLoading: boolean;
-  votes: Array<Vote> | undefined;
-  messages: Array<Message>;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  isReadonly: boolean;
+export interface ArtifactMessagesProps extends SharedMessageProps {
   artifactStatus: UIArtifact['status'];
 }

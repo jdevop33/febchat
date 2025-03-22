@@ -6,7 +6,6 @@
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
 import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import { config } from 'dotenv';

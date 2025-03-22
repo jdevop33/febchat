@@ -1,9 +1,13 @@
-import type { ArtifactKind, UIArtifact } from '../artifacts/artifact-types';
 import type { Document } from '@/lib/db/schema';
+import type { 
+  ArtifactKind, 
+  UIArtifact, 
+  SharedDocumentProps,
+  SharedEditorProps 
+} from '@/types/shared/shared-types';
 
 // Document types
-export interface DocumentPreviewProps {
-  isReadonly: boolean;
+export interface DocumentPreviewProps extends SharedDocumentProps {
   result?: any;
   args?: any;
 }
@@ -42,19 +46,5 @@ export interface LoadingSkeletonProps {
   artifactKind: ArtifactKind;
 }
 
-// Editor common properties
-export interface EditorCommonProps {
-  content: string;
-  isCurrentVersion: boolean;
-  currentVersionIndex: number;
-  status: UIArtifact['status'];
-  saveContent?: (updatedContent: string, debounce: boolean) => void;
-  suggestions: any[];
-  onSaveContent?: (updatedContent: string, debounce: boolean) => void;
-  isInline?: boolean;
-  getDocumentContentById?: (index: number) => string;
-  isLoading?: boolean;
-  metadata?: any;
-  setMetadata?: (metadata: any) => void;
-  mode?: 'edit' | 'diff';
-}
+// Re-export editor common properties interface
+export type { SharedEditorProps as EditorCommonProps };

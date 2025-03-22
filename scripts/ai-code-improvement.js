@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const { OpenAI } = require('openai');
 const dotenv = require('dotenv');
 const chalk = require('chalk');
@@ -197,7 +197,7 @@ function extractCodeFromMarkdown(text) {
   if (matches && matches.length > 0) {
     // Extract the content from the first code block
     const match = codeBlockRegex.exec(text);
-    if (match && match[1]) {
+    if (match?.[1]) {
       return match[1];
     }
   }

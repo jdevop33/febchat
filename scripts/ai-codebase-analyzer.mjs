@@ -2,8 +2,8 @@
 
 // This script uses ESM imports
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { glob } from 'glob';
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
@@ -288,23 +288,23 @@ function extractSectionsFromAnalysis(analysis) {
   
   // Simple regex-based extraction
   const overviewMatch = analysis.match(/high-level overview.*?:\s*([\s\S]*?)(?=assessment|architectural approach|#|$)/i);
-  if (overviewMatch && overviewMatch[1]) {
+  if (overviewMatch?.[1]) {
     result.overview = overviewMatch[1].trim();
   }
   
   const architectureMatch = analysis.match(/(?:assessment|architectural approach).*?:\s*([\s\S]*?)(?=key challenges|challenges|#|$)/i);
-  if (architectureMatch && architectureMatch[1]) {
+  if (architectureMatch?.[1]) {
     result.architecture = architectureMatch[1].trim();
   }
   
   const challengesMatch = analysis.match(/(?:key challenges|challenges).*?:\s*([\s\S]*?)(?=recommendations|#|$)/i);
-  if (challengesMatch && challengesMatch[1]) {
+  if (challengesMatch?.[1]) {
     const challengesText = challengesMatch[1].trim();
     result.challenges = extractNumberedItems(challengesText);
   }
   
   const recommendationsMatch = analysis.match(/recommendations.*?:\s*([\s\S]*?)(?=#|$)/i);
-  if (recommendationsMatch && recommendationsMatch[1]) {
+  if (recommendationsMatch?.[1]) {
     const recommendationsText = recommendationsMatch[1].trim();
     result.recommendations = extractNumberedItems(recommendationsText);
   }
@@ -320,7 +320,7 @@ function extractNumberedItems(text) {
   const itemRegex = /\d+[\.\)]\s+(.*?)(?=\d+[\.\)]|$)/gs;
   let match;
   
-  while ((match = itemRegex.exec(text + "\n999. "))) {
+  while ((match = itemRegex.exec(`${text}\n999. `))) {
     if (match[1].trim()) {
       items.push(match[1].trim());
     }
@@ -329,7 +329,7 @@ function extractNumberedItems(text) {
   // If no numbered items found, try bullet points
   if (items.length === 0) {
     const bulletRegex = /[•\-\*]\s+(.*?)(?=[•\-\*]|$)/gs;
-    while ((match = bulletRegex.exec(text + "\n• "))) {
+    while ((match = bulletRegex.exec(`${text}\n• `))) {
       if (match[1].trim()) {
         items.push(match[1].trim());
       }
@@ -421,7 +421,7 @@ async function analyzeBatch(files) {
   const fileDetailsForPrompt = validFiles.map(f => {
     // Truncate file content if it's very large to avoid token limits
     const truncatedContent = f.content.length > 5000 
-      ? f.content.substring(0, 5000) + '\n... (content truncated)'
+      ? `${f.content.substring(0, 5000)}\n... (content truncated)`
       : f.content;
     
     return `File: ${f.relativePath}\n\`\`\`\n${truncatedContent}\n\`\`\``;
@@ -844,7 +844,7 @@ function printSummary() {
       const barLength = Math.round(score / 5);
       const bar = '█'.repeat(barLength);
       
-      console.log(`${label.padEnd(15)} ${score}% ${'▕' + bar + ' '.repeat(20 - barLength) + '▏'}`);
+      console.log(`${label.padEnd(15)} ${score}% ${`▕${bar}${' '.repeat(20 - barLength)}▏`}`);
     }
     console.log();
   }

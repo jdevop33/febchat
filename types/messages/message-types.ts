@@ -1,20 +1,12 @@
 import type { Message, ChatRequestOptions } from 'ai';
 import type { Vote } from '@/lib/db/schema';
 import type { Dispatch, SetStateAction } from 'react';
+import type { SharedMessageProps } from '@/types/shared/shared-types';
 
 // Message component props
-export interface MessageProps {
-  chatId: string;
+export interface MessageProps extends SharedMessageProps {
   message: Message;
   vote: Vote | undefined;
-  isLoading: boolean;
-  setMessages: (
-    messages: Message[] | ((messages: Message[]) => Message[]),
-  ) => void;
-  reload: (
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  isReadonly: boolean;
 }
 
 // Message editor props
