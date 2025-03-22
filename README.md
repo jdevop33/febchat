@@ -77,6 +77,18 @@ Try asking:
 - **AI**: Integration with OpenAI and Anthropic models
 - **Vector Search**: Pinecone for efficient bylaw retrieval
 
+## Development Tools
+
+We've added several debugging and optimization tools in the `scripts` directory:
+
+- **API Endpoint Mapping**: Scans and tests all API endpoints
+- **Component Dependency Analyzer**: Visualizes component dependencies and detects circular references
+- **Performance Profiling**: Instruments components to measure render times
+- **End-to-End Testing**: Tests the full application flow
+- **Circular Dependency Fixer**: Automatically resolves circular dependencies
+
+See [scripts/DEBUG-TOOLS-README.md](./scripts/DEBUG-TOOLS-README.md) for usage instructions.
+
 ## Deployment
 
 The application is designed to be deployed on Vercel's platform, with environment variables for API keys and database connections.

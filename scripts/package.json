@@ -1,5 +1,17 @@
 {
   "name": "febchat-scripts",
   "type": "module",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "d3": "^7.8.5",
+    "node-fetch": "^3.3.2",
+    "jsdom": "^22.1.0"
+  },
+  "scripts": {
+    "debug-api": "node debug-api-endpoints.js",
+    "analyze-deps": "node analyze-component-dependencies.js",
+    "e2e-test": "node end-to-end-test.js",
+    "fix-circular": "node fix-circular-deps.js",
+    "profile": "node performance-profiler.js"
+  }
 }
