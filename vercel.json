@@ -4,10 +4,6 @@
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "env": {
-    "NEXTAUTH_URL": {
-      "type": "url",
-      "description": "The base URL of your site for authentication",
-      "default": "https://juche.org"
-    }
+    "NEXTAUTH_URL": "https://juche.org"
   }
 }
