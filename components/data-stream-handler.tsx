@@ -23,23 +23,30 @@ export type DataStreamDelta = {
 };
 
 export function DataStreamHandler({ id }: { id: string }) {
-  // Get chat data with null check to prevent destructuring error
-  const chatResult = useChat({ id, api: '/api/chat' });
+  // Fix destructuring error: directly capture all values from useChat instead of accessing .data later
+  const { 
+    data = [], // Provide empty array default to avoid undefined
+    messages,
+    append,
+    reload,
+    isLoading
+  } = useChat({ id, api: '/api/chat' });
+  
   const { artifact, setArtifact, setMetadata } = useArtifact();
   const lastProcessedIndex = useRef(-1);
 
   useEffect(() => {
-    // Move dataStream inside the effect to avoid the exhaustive-deps warning
-    const dataStream = chatResult?.data || [];
+    // Directly use data from destructured useChat result with fallback
+    const dataStream = Array.isArray(data) ? data : [];
     
     // Additional safety check
-    if (!Array.isArray(dataStream) || dataStream.length === 0) return;
+    if (dataStream.length === 0) return;
 
     const newDeltas = dataStream.slice(lastProcessedIndex.current + 1);
     lastProcessedIndex.current = dataStream.length - 1;
 
     // Check if newDeltas is an array before trying to iterate
-    if (!Array.isArray(newDeltas) || newDeltas.length === 0) return;
+    if (newDeltas.length === 0) return;
 
     (newDeltas as DataStreamDelta[]).forEach((delta: DataStreamDelta) => {
       const artifactDefinition = artifactDefinitions.find(
@@ -99,7 +106,7 @@ export function DataStreamHandler({ id }: { id: string }) {
         }
       });
     });
-  }, [chatResult, setArtifact, setMetadata, artifact]);
+  }, [data, setArtifact, setMetadata, artifact]); // Updated dependency array to use data directly
 
   return null;
 }
