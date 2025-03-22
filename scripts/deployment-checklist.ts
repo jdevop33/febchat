@@ -11,13 +11,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { PrismaClient } from '@prisma/client';
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
+import { count, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
 
 // Checklist items
 interface CheckResult {
@@ -163,7 +163,7 @@ async function checkPineconeConnection(): Promise<CheckResult> {
 async function checkDatabaseConnection(): Promise<CheckResult> {
   try {
     // Test connection by running a simple query
-    await prisma.$queryRaw`SELECT 1`;
+    await db.execute(sql`SELECT 1`);
 
     return {
       name: 'Database Connection',
@@ -234,7 +234,8 @@ async function checkPdfFiles(): Promise<CheckResult> {
 async function checkVerificationDatabase(): Promise<CheckResult> {
   try {
     // Check if bylaw table exists and has data
-    const bylawCount = await prisma.bylaw.count();
+    const [bylawCountResult] = await db.select({ value: count() }).from(bylaw);
+    const bylawCount = bylawCountResult.value;
 
     if (bylawCount === 0) {
       return {
@@ -245,10 +246,10 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
     }
 
     // Check for key bylaws (Anti-Noise Bylaw)
-    const antiNoiseBylaw = await prisma.bylaw.findUnique({
-      where: { bylawNumber: '3210' },
-      include: { sections: true },
-    });
+    const [antiNoiseBylaw] = await db
+      .select()
+      .from(bylaw)
+      .where(eq(bylaw.bylawNumber, '3210'));
 
     if (!antiNoiseBylaw) {
       return {
@@ -258,7 +259,13 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
       };
     }
 
-    if (antiNoiseBylaw.sections.length === 0) {
+    // Check for sections
+    const sections = await db
+      .select()
+      .from(bylawSection)
+      .where(eq(bylawSection.bylawNumber, '3210'));
+
+    if (sections.length === 0) {
       return {
         name: 'Verification Database',
         status: 'warning',
@@ -329,6 +336,4 @@ async function checkVectorDatabase(): Promise<CheckResult> {
 }
 
 // Run checklist
-runChecklist().finally(async () => {
-  await prisma.$disconnect();
-});
+runChecklist();

@@ -6,10 +6,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pdfParse from 'pdf-parse';
-import { PrismaClient } from '@prisma/client';
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 async function main() {
   try {
@@ -36,19 +35,29 @@ async function main() {
     const pdfData = await pdfParse(pdfBuffer);
     const pdfText = pdfData.text;
 
-    // Create or update the bylaw record
-    await prisma.bylaw.upsert({
-      where: { bylawNumber },
-      update: {
-        title: bylawTitle,
-        isConsolidated: true,
-        consolidatedDate: 'September 30, 2013',
-        pdfPath: `/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf`,
-        officialUrl: `https://oakbay.civicweb.net/document/bylaw/3210`,
-        lastVerified: new Date(),
-        amendments: '3332,3937,4198,4594',
-      },
-      create: {
+    // Check if bylaw exists
+    const [existingBylaw] = await db
+      .select()
+      .from(bylaw)
+      .where(eq(bylaw.bylawNumber, bylawNumber));
+
+    if (existingBylaw) {
+      // Update existing bylaw
+      await db
+        .update(bylaw)
+        .set({
+          title: bylawTitle,
+          isConsolidated: true,
+          consolidatedDate: 'September 30, 2013',
+          pdfPath: `/pdfs/3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf`,
+          officialUrl: `https://oakbay.civicweb.net/document/bylaw/3210`,
+          lastVerified: new Date(),
+          amendments: '3332,3937,4198,4594',
+        })
+        .where(eq(bylaw.bylawNumber, bylawNumber));
+    } else {
+      // Create new bylaw
+      await db.insert(bylaw).values({
         bylawNumber,
         title: bylawTitle,
         isConsolidated: true,
@@ -57,13 +66,13 @@ async function main() {
         officialUrl: `https://oakbay.civicweb.net/document/bylaw/3210`,
         lastVerified: new Date(),
         amendments: '3332,3937,4198,4594',
-      },
-    });
+      });
+    }
 
     // Delete existing sections for this bylaw
-    await prisma.bylawSection.deleteMany({
-      where: { bylawNumber },
-    });
+    await db
+      .delete(bylawSection)
+      .where(eq(bylawSection.bylawNumber, bylawNumber));
 
     // Create accurate sections with exact text from the bylaw
     const sections = [
@@ -113,13 +122,12 @@ async function main() {
 
     // Create the sections in the database
     for (const section of sections) {
-      await prisma.bylawSection.create({
-        data: {
-          bylawNumber,
-          sectionNumber: section.sectionNumber,
-          title: section.title,
-          content: section.content,
-        },
+      await db.insert(bylawSection).values({
+        id: crypto.randomUUID(),
+        bylawNumber,
+        sectionNumber: section.sectionNumber,
+        title: section.title,
+        content: section.content,
       });
     }
 
@@ -129,7 +137,7 @@ async function main() {
   } catch (error) {
     console.error('Error indexing Anti-Noise Bylaw:', error);
   } finally {
-    await prisma.$disconnect();
+    // No need for disconnection with Drizzle
   }
 }
 

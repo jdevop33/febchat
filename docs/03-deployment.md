@@ -67,6 +67,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_token
 ### Database Setup
 
 1. **Vercel Postgres**:
+
    - In project dashboard: Storage → Connect Database → Vercel Postgres
    - Vercel adds environment variables automatically
 

@@ -178,7 +178,7 @@ export async function searchBylaws(
   try {
     const vectorStore = getVectorStore();
 
-    // Initialize with real data 
+    // Initialize with real data
     const { getRealBylawData } = await import('../vector/search-unified');
     const realData = await getRealBylawData();
     if (realData.length > 0) {
@@ -194,31 +194,36 @@ export async function searchBylaws(
     try {
       const fs = require('node:fs');
       const path = require('node:path');
-      
+
       // Get paths to actual bylaw PDF files
       const pdfDirectory = path.join(process.cwd(), 'public', 'pdfs');
-      
+
       // Check if directory exists
       if (!fs.existsSync(pdfDirectory)) {
         console.error(`PDF directory not found: ${pdfDirectory}`);
         return [];
       }
-      
+
       // Get list of PDF files
-      const pdfFiles = fs.readdirSync(pdfDirectory)
+      const pdfFiles = fs
+        .readdirSync(pdfDirectory)
         .filter((file: string) => file.toLowerCase().endsWith('.pdf'))
         .map((file: string) => ({
           filename: file,
           bylawNumber: file.match(/(\d{4})/) ? file.match(/(\d{4})/)[1] : '',
-          title: file.replace(/\.pdf$/i, '').replace(/-/g, ' ').trim(),
+          title: file
+            .replace(/\.pdf$/i, '')
+            .replace(/-/g, ' ')
+            .trim(),
         }));
-        
+
       // Filter by query
       const queryLower = query.toLowerCase();
       return pdfFiles
-        .filter((file: any) => 
-          file.filename.toLowerCase().includes(queryLower) ||
-          (file.title?.toLowerCase().includes(queryLower))
+        .filter(
+          (file: any) =>
+            file.filename.toLowerCase().includes(queryLower) ||
+            file.title?.toLowerCase().includes(queryLower),
         )
         .slice(0, 5)
         .map((file: any, index: number) => ({
@@ -229,12 +234,15 @@ export async function searchBylaws(
             section: '',
             category: 'general',
             filename: file.filename,
-            url: `/pdfs/${file.filename}`
+            url: `/pdfs/${file.filename}`,
           },
-          score: 0.8 - (index * 0.1), // Simple relevance score
+          score: 0.8 - index * 0.1, // Simple relevance score
         }));
     } catch (finalError) {
-      console.error('Fatal error in bylaw search, returning empty results:', finalError);
+      console.error(
+        'Fatal error in bylaw search, returning empty results:',
+        finalError,
+      );
       return []; // At the very end, return empty results rather than crash
     }
   }

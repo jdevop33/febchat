@@ -40,12 +40,8 @@ if [ -n "$VERCEL" ]; then
     echo "Database connection: $SAFE_URL"
     
     # Verify other Postgres-related environment variables
-    if [ -z "$POSTGRES_PRISMA_URL" ]; then
-      echo "⚠️ WARNING: POSTGRES_PRISMA_URL is not set, but might be needed"
-    fi
-    
     if [ -z "$POSTGRES_URL_NON_POOLING" ]; then
-      echo "⚠️ WARNING: POSTGRES_URL_NON_POOLING is not set, but might be needed"
+      echo "⚠️ WARNING: POSTGRES_URL_NON_POOLING is not set, but might be useful for non-pooled connections"
     fi
     
     # Export additional environment variables for compatibility

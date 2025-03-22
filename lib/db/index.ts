@@ -69,19 +69,28 @@ if (isBuildPhase) {
             ),
           );
 
-          const result = await Promise.race([connectionPromise, timeoutPromise]);
+          const result = await Promise.race([
+            connectionPromise,
+            timeoutPromise,
+          ]);
           console.log('DB: ✅ Successfully connected to database', result);
-          
+
           // Additional test: Try querying schema version
           try {
             const versionResult = await vercelDb.query('SELECT version()');
-            console.log('DB: PostgreSQL version:', versionResult.rows[0].version);
-            
+            console.log(
+              'DB: PostgreSQL version:',
+              versionResult.rows[0].version,
+            );
+
             // Check if tables exist
             const tablesResult = await vercelDb.query(
-              "SELECT table_name FROM information_schema.tables WHERE table_schema='public'"
+              "SELECT table_name FROM information_schema.tables WHERE table_schema='public'",
             );
-            console.log('DB: Found tables:', tablesResult.rows.map(r => r.table_name).join(', '));
+            console.log(
+              'DB: Found tables:',
+              tablesResult.rows.map((r) => r.table_name).join(', '),
+            );
           } catch (schemaError) {
             console.error('DB: Error checking schema:', schemaError);
           }
@@ -102,8 +111,11 @@ if (isBuildPhase) {
             env.POSTGRES_USER ? 'Set' : 'Not set',
           );
           console.error('DB: - NODE_ENV:', env.NODE_ENV || 'Not set');
-          console.error('DB: - Database logging level:', env.DB_LOG_LEVEL || 'Not set');
-          
+          console.error(
+            'DB: - Database logging level:',
+            env.DB_LOG_LEVEL || 'Not set',
+          );
+
           // Set a global flag to indicate DB connection failure
           globalThis.__DB_CONNECTION_FAILED = true;
         }

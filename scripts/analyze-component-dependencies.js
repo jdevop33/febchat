@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const COMPONENTS_DIR = path.join(process.cwd(), 'components');
 const DEPENDENCY_GRAPH = {};
@@ -8,26 +8,26 @@ const DEPENDENCY_GRAPH = {};
 function analyzeComponent(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const componentName = path.basename(filePath, path.extname(filePath));
-  
+
   // Extract imports
   const importRegex = /import\s+[\{\s\w,\s\}]+\s+from\s+['"]([^'"]+)['"]/g;
   const imports = [];
   let match;
-  
+
   while ((match = importRegex.exec(content)) !== null) {
     let importPath = match[1];
-    
+
     // Handle aliased paths
     if (importPath.startsWith('@/')) {
       importPath = importPath.substring(2);
     }
-    
+
     // Only track component dependencies
     if (importPath.includes('components/')) {
       imports.push(importPath);
     }
   }
-  
+
   DEPENDENCY_GRAPH[componentName] = imports;
   return { componentName, imports };
 }
@@ -35,54 +35,54 @@ function analyzeComponent(filePath) {
 // Function to find all components
 function findComponents(dir, components = []) {
   const files = fs.readdirSync(dir);
-  
+
   for (const file of files) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    
+
     if (stat.isDirectory()) {
       findComponents(filePath, components);
     } else if (file.endsWith('.tsx') || file.endsWith('.ts')) {
       components.push(filePath);
     }
   }
-  
+
   return components;
 }
 
 // Function to detect circular dependencies
 function findCircularDependencies() {
   const circularDeps = [];
-  
+
   for (const component in DEPENDENCY_GRAPH) {
     const visited = new Set();
     const pathStack = [];
-    
+
     function dfs(current) {
       if (pathStack.includes(current)) {
         const cycle = [...pathStack.slice(pathStack.indexOf(current)), current];
         circularDeps.push(cycle);
         return true;
       }
-      
+
       if (visited.has(current)) return false;
-      
+
       visited.add(current);
       pathStack.push(current);
-      
+
       const dependencies = DEPENDENCY_GRAPH[current] || [];
       for (const dep of dependencies) {
         const depComponent = path.basename(dep, path.extname(dep));
         if (dfs(depComponent)) return true;
       }
-      
+
       pathStack.pop();
       return false;
     }
-    
+
     dfs(component);
   }
-  
+
   return circularDeps;
 }
 
@@ -90,7 +90,7 @@ function findCircularDependencies() {
 const componentFiles = findComponents(COMPONENTS_DIR);
 console.log(`Found ${componentFiles.length} component files.`);
 
-componentFiles.forEach(file => {
+componentFiles.forEach((file) => {
   analyzeComponent(file);
 });
 
@@ -99,30 +99,30 @@ console.log(`Analyzed ${Object.keys(DEPENDENCY_GRAPH).length} components.`);
 // Find circular dependencies
 const circularDeps = findCircularDependencies();
 console.log(`Found ${circularDeps.length} circular dependencies:`);
-circularDeps.forEach(cycle => {
+circularDeps.forEach((cycle) => {
   console.log(`Circular dependency: ${cycle.join(' → ')}`);
 });
 
 // Generate visualization
 const visualizationData = {
-  nodes: Object.keys(DEPENDENCY_GRAPH).map(name => ({ id: name, group: 1 })),
-  links: []
+  nodes: Object.keys(DEPENDENCY_GRAPH).map((name) => ({ id: name, group: 1 })),
+  links: [],
 };
 
 Object.entries(DEPENDENCY_GRAPH).forEach(([component, deps]) => {
-  deps.forEach(dep => {
+  deps.forEach((dep) => {
     const targetName = path.basename(dep, path.extname(dep));
     visualizationData.links.push({
       source: component,
       target: targetName,
-      value: 1
+      value: 1,
     });
   });
 });
 
 fs.writeFileSync(
   path.join(process.cwd(), 'component-dependency-graph.json'),
-  JSON.stringify(visualizationData, null, 2)
+  JSON.stringify(visualizationData, null, 2),
 );
 
 // Create HTML visualization
@@ -262,7 +262,7 @@ const htmlTemplate = `
 
 fs.writeFileSync(
   path.join(process.cwd(), 'component-visualization.html'),
-  htmlTemplate
+  htmlTemplate,
 );
 
 console.log('Generated visualization files:');

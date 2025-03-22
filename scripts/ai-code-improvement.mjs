@@ -20,14 +20,14 @@ const argv = minimist(process.argv.slice(2), {
     o: 'output',
     v: 'verbose',
     h: 'help',
-    d: 'dry-run'
+    d: 'dry-run',
   },
   default: {
     output: '',
     verbose: false,
     help: false,
-    'dry-run': false
-  }
+    'dry-run': false,
+  },
 });
 
 // Show help message
@@ -68,40 +68,46 @@ const CONFIG = {
 // Main function
 async function improveCode() {
   const filePath = argv.file;
-  
+
   try {
     console.log(chalk.blue(`🔍 Analyzing and improving: ${filePath}`));
-    
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       console.error(chalk.red(`Error: File not found: ${filePath}`));
       process.exit(1);
     }
-    
+
     // Read file content
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const fileExt = path.extname(filePath);
     const fileName = path.basename(filePath);
-    
+
     // Determine file type
     const fileType = getFileType(fileExt);
-    
+
     if (argv.verbose) {
       console.log(chalk.gray(`File type detected: ${fileType}`));
-      console.log(chalk.gray(`File size: ${(fileContent.length / 1024).toFixed(2)} KB`));
+      console.log(
+        chalk.gray(`File size: ${(fileContent.length / 1024).toFixed(2)} KB`),
+      );
     }
-    
+
     // Analyze and improve the code
-    const improvedCode = await analyzeAndImprove(fileContent, fileType, fileName);
-    
+    const improvedCode = await analyzeAndImprove(
+      fileContent,
+      fileType,
+      fileName,
+    );
+
     if (!improvedCode) {
       console.error(chalk.red('Error: Failed to improve code'));
       process.exit(1);
     }
-    
+
     // Output path handling
     const outputPath = argv.output || filePath;
-    
+
     // Save the improved code or show diff
     if (argv['dry-run']) {
       console.log(chalk.yellow('\n=== ORIGINAL CODE ===\n'));
@@ -112,7 +118,6 @@ async function improveCode() {
       fs.writeFileSync(outputPath, improvedCode);
       console.log(chalk.green(`✅ Code improved and saved to: ${outputPath}`));
     }
-    
   } catch (error) {
     console.error(chalk.red('Error during code improvement:'), error);
     process.exit(1);
@@ -132,7 +137,7 @@ function getFileType(fileExt) {
     '.json': 'JSON',
     '.md': 'Markdown',
   };
-  
+
   return typeMap[fileExt] || 'Unknown';
 }
 
@@ -142,7 +147,7 @@ async function analyzeAndImprove(code, fileType, fileName) {
     if (argv.verbose) {
       console.log(chalk.gray('Sending code for analysis and improvement...'));
     }
-    
+
     // Generate a prompt based on the file type
     const prompt = `
 You are an expert ${fileType} developer tasked with improving the code in ${fileName}.
@@ -178,10 +183,10 @@ IMPORTANT: Respond ONLY with the improved code, without explanations or commenta
     });
 
     const improvedCode = response.choices[0].message.content.trim();
-    
+
     // Extract code from markdown code blocks if present
     const extractedCode = extractCodeFromMarkdown(improvedCode);
-    
+
     return extractedCode;
   } catch (error) {
     console.error(chalk.red('Error analyzing and improving code:'), error);
@@ -194,15 +199,15 @@ function extractCodeFromMarkdown(text) {
   // Check if the text is wrapped in code blocks
   const codeBlockRegex = /```(?:\w+)?\n([\s\S]+?)\n```/g;
   const matches = text.match(codeBlockRegex);
-  
+
   if (matches && matches.length > 0) {
     // Extract the content from the first code block
     const match = codeBlockRegex.exec(text);
-    if (match && match[1]) {
+    if (match?.[1]) {
       return match[1];
     }
   }
-  
+
   // If no code blocks found, return the original text
   return text;
 }

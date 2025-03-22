@@ -8,7 +8,8 @@
 import { getPineconeIndex } from './pinecone-client';
 import { getEmbeddingsModel, EmbeddingProvider } from './embedding-models';
 import * as VerificationDB from './verification-database';
-import { prisma } from './verification-database';
+import db from '@/lib/db';
+import { searchQueryLog } from '@/lib/db/schema';
 
 // Interface for search options
 export interface SearchOptions {
@@ -248,14 +249,14 @@ export async function recordSearchQuery(
   results: VerifiedSearchResult[],
 ): Promise<void> {
   try {
-    await prisma.searchQueryLog
-      .create({
-        data: {
-          query,
-          resultCount: results.length,
-          topResult: results.length > 0 ? results[0].bylawNumber : null,
-          timestamp: new Date(),
-        },
+    await db
+      .insert(searchQueryLog)
+      .values({
+        id: crypto.randomUUID(),
+        query,
+        resultCount: results.length,
+        topResult: results.length > 0 ? results[0].bylawNumber : null,
+        timestamp: new Date(),
       })
       .catch((err) => {
         // Just log error and continue - this is non-critical functionality

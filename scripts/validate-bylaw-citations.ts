@@ -11,12 +11,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import pdfParse from 'pdf-parse';
-import { PrismaClient } from '@prisma/client';
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
 import { mockBylawData } from '../lib/bylaw-search';
 import * as VerificationDB from '../lib/vector/verification-database';
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
 
 /**
  * Extract core text from a bylaw PDF
@@ -125,14 +123,17 @@ async function validateDatabaseBylawData() {
   console.log('\n🔍 Validating database bylaw data...');
 
   // Get all bylaw sections from database
-  const sections = await prisma.bylawSection
-    .findMany({
-      include: { bylaw: true },
-    })
+  const sections = await db
+    .select()
+    .from(bylawSection)
     .catch((err) => {
       console.error('Error querying database:', err);
       return null;
     });
+
+  // Get related bylaw data
+  const bylawData =
+    sections && sections.length > 0 ? await db.select().from(bylaw) : [];
 
   if (!sections || sections.length === 0) {
     console.log('No sections found in database to validate');
@@ -183,7 +184,7 @@ async function main() {
   } catch (error) {
     console.error('Error during validation:', error);
   } finally {
-    await prisma.$disconnect();
+    // No need for disconnection with Drizzle
   }
 }
 

@@ -23,9 +23,9 @@ import { textArtifact } from '@/artifacts/text/client';
 import { MultimodalInput } from '@/components/multimodal-input';
 import { Toolbar } from '@/components/toolbar';
 import { VersionFooter } from '@/components/version-footer';
-import { ArtifactCloseButton } from '@/components/artifact-close-button';
+import { ArtifactCloseButton } from '@/components/artifacts/artifact-close-button';
 import { ArtifactMessages } from './artifact-messages';
-import { ArtifactActions } from '@/components/artifact-actions';
+import { ArtifactActions } from './artifact-actions';
 
 export const artifactDefinitions = [
   textArtifact,

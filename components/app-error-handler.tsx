@@ -24,34 +24,37 @@ export function AppErrorHandler({ children }: AppErrorHandlerProps) {
   useEffect(() => {
     // Check for any initialized global error flags
     const diagnostic: Record<string, any> = {};
-    
+
     // Check database connection status if available
-    if (typeof window !== 'undefined' && (window as any).__DB_CONNECTION_FAILED) {
+    if (
+      typeof window !== 'undefined' &&
+      (window as any).__DB_CONNECTION_FAILED
+    ) {
       diagnostic.dbConnectionFailed = true;
     }
-    
+
     // Check environment
     diagnostic.environment = process.env.NODE_ENV || 'unknown';
     diagnostic.isServer = typeof window === 'undefined';
-    
+
     // Update diagnostic info
-    setErrorState(prev => ({
+    setErrorState((prev) => ({
       ...prev,
-      diagnostic
+      diagnostic,
     }));
-    
+
     // Add global error listener
     const errorHandler = (event: ErrorEvent) => {
       console.error('Global error caught:', event.error);
-      setErrorState(prev => ({
+      setErrorState((prev) => ({
         ...prev,
         hasError: true,
         error: event.error,
       }));
     };
-    
+
     window.addEventListener('error', errorHandler);
-    
+
     return () => {
       window.removeEventListener('error', errorHandler);
     };
@@ -76,23 +79,31 @@ export function AppErrorHandler({ children }: AppErrorHandlerProps) {
           <h2 className="mb-4 text-xl font-bold text-red-600 dark:text-red-400">
             Application Error
           </h2>
-          
+
           <div className="mb-4 rounded bg-red-50 p-3 text-sm dark:bg-red-900/30">
-            <p className="font-semibold">Something went wrong with the application</p>
+            <p className="font-semibold">
+              Something went wrong with the application
+            </p>
             {errorState.error && (
               <p className="mt-2">{errorState.error.message}</p>
             )}
           </div>
-          
+
           <div className="mb-4">
             <h3 className="mb-2 font-semibold">Diagnostic Information:</h3>
             <ul className="list-inside list-disc space-y-1 text-sm">
               <li>Environment: {errorState.diagnostic.environment}</li>
-              <li>Database Connection: {errorState.diagnostic.dbConnectionFailed ? 'Failed' : 'OK'}</li>
-              <li>Rendering Context: {errorState.diagnostic.isServer ? 'Server' : 'Client'}</li>
+              <li>
+                Database Connection:{' '}
+                {errorState.diagnostic.dbConnectionFailed ? 'Failed' : 'OK'}
+              </li>
+              <li>
+                Rendering Context:{' '}
+                {errorState.diagnostic.isServer ? 'Server' : 'Client'}
+              </li>
             </ul>
           </div>
-          
+
           <div className="space-x-2 text-center">
             <button
               onClick={() => window.location.reload()}

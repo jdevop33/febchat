@@ -150,9 +150,7 @@
     "components/use-scroll-to-bottom.ts": {
       "purpose": "Custom React hook to automatically scroll to the bottom of a container element when its contents change",
       "keyFunctionality": "Uses MutationObserver to detect changes in the container and scrolls to the bottom",
-      "issues": [
-        "Limited reusability and specificity to certain use cases"
-      ],
+      "issues": ["Limited reusability and specificity to certain use cases"],
       "qualityScore": 4
     },
     "components/toolbar.tsx": {
@@ -1164,9 +1162,7 @@
     },
     "lib/api/auth-api.ts": {
       "purpose": "Interact with authentication endpoints.",
-      "keyFunctionality": [
-        "Handles user login, registration, and logout."
-      ],
+      "keyFunctionality": ["Handles user login, registration, and logout."],
       "issues": [
         "Response parsing duplicated in login and register.",
         "Could offer better separation of presentation and data logic through use of middleware or helpers.",
@@ -1812,9 +1808,7 @@
       "keyFunctionality": [
         "Centralized exporting of multiple artifact components and types for ease of import and management across the app"
       ],
-      "issues": [
-        "Lack of issues; serves its purpose well as an index module"
-      ],
+      "issues": ["Lack of issues; serves its purpose well as an index module"],
       "qualityScore": 5
     },
     "components/artifacts/artifact.tsx": {
@@ -1966,9 +1960,7 @@
         "Wrapper component that manages the suspense and lazy loading of passed React components",
         "Default loading animation until the component is fully loaded"
       ],
-      "issues": [
-        "Limited customization options for styling the loading state"
-      ],
+      "issues": ["Limited customization options for styling the loading state"],
       "qualityScore": 4
     },
     "lib/bylaw/processing/pdf-extractor.ts": {

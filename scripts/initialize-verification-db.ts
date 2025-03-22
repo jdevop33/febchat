@@ -6,25 +6,28 @@
  *
  * Usage:
  * pnpm tsx scripts/initialize-verification-db.ts
+ *
+ * Updated: Migrated from Prisma to Drizzle ORM
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
 import pdfParse from 'pdf-parse';
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
 
-// Initialize Prisma client
-const prisma = new PrismaClient();
+// Import Drizzle database client
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
+import { eq, count } from 'drizzle-orm';
 
 async function main() {
   try {
     console.log('Initializing verification database...');
 
-    // Initialize database manually since there's no initializeVerificationDatabase function
+    // Initialize database manually
     console.log('Manual database initialization starting...');
 
     // Get PDF directory
@@ -36,17 +39,17 @@ async function main() {
     console.log('Verification database initialized successfully');
 
     // Optional: Print verification database stats
-    const bylawCount = await prisma.bylaw.count();
-    const sectionCount = await prisma.bylawSection.count();
+    const [bylawCountResult] = await db.select({ count: count() }).from(bylaw);
+    const [sectionCountResult] = await db
+      .select({ count: count() })
+      .from(bylawSection);
 
     console.log(`Database stats:`);
-    console.log(`- ${bylawCount} bylaws`);
-    console.log(`- ${sectionCount} bylaw sections`);
+    console.log(`- ${bylawCountResult.count} bylaws`);
+    console.log(`- ${sectionCountResult.count} bylaw sections`);
   } catch (error) {
     console.error('Initialization failed:', error);
     process.exit(1);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -81,25 +84,35 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     const pdfData = await pdfParse(pdfBuffer);
     const pdfText = pdfData.text;
 
-    // Create or update bylaw in database
-    const bylaw = await prisma.bylaw.upsert({
-      where: { bylawNumber },
-      update: {
-        title,
-        isConsolidated,
-        pdfPath: `/pdfs/${bylawFile}`,
-        officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
-        lastVerified: new Date(),
-      },
-      create: {
+    // Check if bylaw exists
+    const existingBylaws = await db
+      .select()
+      .from(bylaw)
+      .where(eq(bylaw.bylawNumber, bylawNumber));
+
+    if (existingBylaws.length) {
+      // Update existing bylaw
+      await db
+        .update(bylaw)
+        .set({
+          title,
+          isConsolidated,
+          pdfPath: `/pdfs/${bylawFile}`,
+          officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
+          lastVerified: new Date(),
+        })
+        .where(eq(bylaw.bylawNumber, bylawNumber));
+    } else {
+      // Create new bylaw
+      await db.insert(bylaw).values({
         bylawNumber,
         title,
         isConsolidated,
         pdfPath: `/pdfs/${bylawFile}`,
         officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
         lastVerified: new Date(),
-      },
-    });
+      });
+    }
 
     // Extract sections using regex patterns
     const sections: {
@@ -180,20 +193,19 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
       });
     }
 
-    // First delete any existing sections
-    await prisma.bylawSection.deleteMany({
-      where: { bylawNumber },
-    });
+    // Delete any existing sections
+    await db
+      .delete(bylawSection)
+      .where(eq(bylawSection.bylawNumber, bylawNumber));
 
     // Create new sections
     for (const section of sections) {
-      await prisma.bylawSection.create({
-        data: {
-          bylawNumber,
-          sectionNumber: section.sectionNumber,
-          title: section.title,
-          content: section.content,
-        },
+      await db.insert(bylawSection).values({
+        id: crypto.randomUUID(), // Generate UUID
+        bylawNumber,
+        sectionNumber: section.sectionNumber,
+        title: section.title,
+        content: section.content,
       });
     }
 

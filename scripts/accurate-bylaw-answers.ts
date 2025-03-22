@@ -5,12 +5,11 @@
  * for common bylaw queries.
  */
 
-import { PrismaClient } from '@prisma/client';
 import fs from 'node:fs';
 import path from 'node:path';
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 // Define accurate bylaw content for important bylaws
 const ACCURATE_BYLAW_CONTENT = {
@@ -70,38 +69,47 @@ async function storeAccurateBylawInfo() {
     for (const [bylawNumber, data] of Object.entries(ACCURATE_BYLAW_CONTENT)) {
       console.log(`\nProcessing Bylaw ${bylawNumber}: ${data.title}`);
 
-      // Ensure the bylaw exists in the database
-      await prisma.bylaw.upsert({
-        where: { bylawNumber },
-        update: {
-          title: data.title,
-          isConsolidated: true,
-          lastVerified: new Date(),
-        },
-        create: {
+      // Check if bylaw exists in the database
+      const [bylawData] = await db
+        .select()
+        .from(bylaw)
+        .where(eq(bylaw.bylawNumber, bylawNumber));
+
+      if (bylawData) {
+        // Update existing bylaw
+        await db
+          .update(bylaw)
+          .set({
+            title: data.title,
+            isConsolidated: true,
+            lastVerified: new Date(),
+          })
+          .where(eq(bylaw.bylawNumber, bylawNumber));
+      } else {
+        // Create new bylaw
+        await db.insert(bylaw).values({
           bylawNumber,
           title: data.title,
           isConsolidated: true,
           pdfPath: `/pdfs/${bylawNumber}.pdf`,
           officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
           lastVerified: new Date(),
-        },
-      });
+        });
+      }
 
       // Delete existing sections for this bylaw
-      await prisma.bylawSection.deleteMany({
-        where: { bylawNumber },
-      });
+      await db
+        .delete(bylawSection)
+        .where(eq(bylawSection.bylawNumber, bylawNumber));
 
       // Create sections with accurate content
       for (const section of data.sections) {
-        await prisma.bylawSection.create({
-          data: {
-            bylawNumber,
-            sectionNumber: section.sectionNumber,
-            title: section.title,
-            content: section.content,
-          },
+        await db.insert(bylawSection).values({
+          id: crypto.randomUUID(),
+          bylawNumber,
+          sectionNumber: section.sectionNumber,
+          title: section.title,
+          content: section.content,
         });
         console.log(
           `  ✅ Added section ${section.sectionNumber}: ${section.title}`,
@@ -113,7 +121,7 @@ async function storeAccurateBylawInfo() {
   } catch (error) {
     console.error('Error storing accurate bylaw information:', error);
   } finally {
-    await prisma.$disconnect();
+    // No need for disconnection with Drizzle
   }
 }
 

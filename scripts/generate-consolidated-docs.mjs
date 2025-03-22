@@ -19,13 +19,13 @@ const argv = minimist(process.argv.slice(2), {
   alias: {
     o: 'output',
     v: 'verbose',
-    h: 'help'
+    h: 'help',
   },
   default: {
     output: 'DOCUMENTATION.md',
     verbose: false,
-    help: false
-  }
+    help: false,
+  },
 });
 
 // Show help message
@@ -62,36 +62,41 @@ if (process.env.OPENAI_API_KEY) {
 async function consolidateDocs() {
   try {
     console.log(chalk.blue('🔍 Finding markdown files...'));
-    
+
     // Find all markdown files
     const markdownFiles = await glob('**/*.md', {
       ignore: ['node_modules/**', '.next/**', 'coverage/**'],
       nodir: true,
     });
-    
+
     console.log(chalk.green(`Found ${markdownFiles.length} markdown files`));
-    
+
     // Read and categorize markdown files
     const categorizedDocs = categorizeDocs(markdownFiles);
-    
+
     // Generate consolidated document
     let consolidatedContent;
-    
+
     if (openai) {
       // Use AI to create a better consolidated document
-      console.log(chalk.blue('Using AI to generate organized documentation...'));
+      console.log(
+        chalk.blue('Using AI to generate organized documentation...'),
+      );
       consolidatedContent = await generateAIConsolidatedDocs(categorizedDocs);
     } else {
       // Simple concatenation
-      console.log(chalk.yellow('OpenAI API key not found. Using simple concatenation.'));
+      console.log(
+        chalk.yellow('OpenAI API key not found. Using simple concatenation.'),
+      );
       consolidatedContent = generateSimpleConsolidatedDocs(categorizedDocs);
     }
-    
+
     // Write to output file
     fs.writeFileSync(argv.output, consolidatedContent);
-    
-    console.log(chalk.green(`✅ Consolidated documentation saved to ${argv.output}`));
-    
+
+    console.log(
+      chalk.green(`✅ Consolidated documentation saved to ${argv.output}`),
+    );
   } catch (error) {
     console.error(chalk.red('Error consolidating documentation:'), error);
     process.exit(1);
@@ -106,29 +111,36 @@ function categorizeDocs(filePaths) {
     guides: [],
     api: [],
     components: [],
-    other: []
+    other: [],
   };
-  
+
   for (const filePath of filePaths) {
     try {
       const content = fs.readFileSync(filePath, 'utf-8');
       const fileName = path.basename(filePath);
       const fileDir = path.dirname(filePath);
-      
+
       const docInfo = {
         path: filePath,
         name: fileName,
         dir: fileDir,
         content,
-        title: extractTitle(content) || fileName.replace('.md', '')
+        title: extractTitle(content) || fileName.replace('.md', ''),
       };
-      
+
       // Categorize based on path or content
       if (fileName.match(/^README/i) || fileName.match(/^OVERVIEW/i)) {
         categories.projectOverview.push(docInfo);
-      } else if (filePath.match(/architecture/i) || content.match(/architecture/i)) {
+      } else if (
+        filePath.match(/architecture/i) ||
+        content.match(/architecture/i)
+      ) {
         categories.architecture.push(docInfo);
-      } else if (filePath.match(/guide/i) || content.match(/guide/i) || filePath.match(/SETUP/i)) {
+      } else if (
+        filePath.match(/guide/i) ||
+        content.match(/guide/i) ||
+        filePath.match(/SETUP/i)
+      ) {
         categories.guides.push(docInfo);
       } else if (filePath.match(/api/i) || content.match(/api/i)) {
         categories.api.push(docInfo);
@@ -137,7 +149,7 @@ function categorizeDocs(filePaths) {
       } else {
         categories.other.push(docInfo);
       }
-      
+
       if (argv.verbose) {
         console.log(chalk.gray(`Processed: ${filePath}`));
       }
@@ -145,7 +157,7 @@ function categorizeDocs(filePaths) {
       console.error(chalk.yellow(`Error reading file ${filePath}:`), error);
     }
   }
-  
+
   return categories;
 }
 
@@ -158,76 +170,76 @@ function extractTitle(content) {
 // Generate a simple consolidated document by concatenation
 function generateSimpleConsolidatedDocs(categorizedDocs) {
   const sections = [];
-  
+
   // Add project overview
   sections.push('# Project Documentation\n');
-  
+
   if (categorizedDocs.projectOverview.length > 0) {
     sections.push('## Project Overview\n');
-    categorizedDocs.projectOverview.forEach(doc => {
+    categorizedDocs.projectOverview.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       // Strip original title to avoid duplication
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   // Add architecture docs
   if (categorizedDocs.architecture.length > 0) {
     sections.push('## Architecture\n');
-    categorizedDocs.architecture.forEach(doc => {
+    categorizedDocs.architecture.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   // Add guides
   if (categorizedDocs.guides.length > 0) {
     sections.push('## Guides\n');
-    categorizedDocs.guides.forEach(doc => {
+    categorizedDocs.guides.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   // Add API docs
   if (categorizedDocs.api.length > 0) {
     sections.push('## API\n');
-    categorizedDocs.api.forEach(doc => {
+    categorizedDocs.api.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   // Add component docs
   if (categorizedDocs.components.length > 0) {
     sections.push('## Components\n');
-    categorizedDocs.components.forEach(doc => {
+    categorizedDocs.components.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   // Add other docs
   if (categorizedDocs.other.length > 0) {
     sections.push('## Other Documentation\n');
-    categorizedDocs.other.forEach(doc => {
+    categorizedDocs.other.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
-      sections.push(contentWithoutTitle.trim() + '\n\n');
+      sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
-  
+
   return sections.join('\n');
 }
 
@@ -235,21 +247,22 @@ function generateSimpleConsolidatedDocs(categorizedDocs) {
 async function generateAIConsolidatedDocs(categorizedDocs) {
   // Prepare a summary of all documents
   const docSummaries = [];
-  
+
   for (const category in categorizedDocs) {
-    categorizedDocs[category].forEach(doc => {
+    categorizedDocs[category].forEach((doc) => {
       // Create a short summary of each doc (first ~300 chars)
-      const summary = doc.content.substring(0, 300) + (doc.content.length > 300 ? '...' : '');
-      
+      const summary =
+        doc.content.substring(0, 300) + (doc.content.length > 300 ? '...' : '');
+
       docSummaries.push({
         title: doc.title,
         path: doc.path,
         category,
-        summary
+        summary,
       });
     });
   }
-  
+
   // Create a prompt for the AI
   const prompt = `
 You are a technical documentation expert tasked with organizing and consolidating documentation for a project.
@@ -278,7 +291,7 @@ For each section, include a reference to the original file path.
     });
 
     const aiContent = response.choices[0].message.content.trim();
-    
+
     // Return the AI-generated content
     return aiContent;
   } catch (error) {

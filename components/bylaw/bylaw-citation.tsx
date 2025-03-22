@@ -129,9 +129,11 @@ export function BylawCitation({
   const handleViewBylaw = () => {
     // Always use modals instead of direct redirects for better UX
     setIsPdfOpen(true);
-    
+
     // Log the action
-    console.log(`User clicked to view Bylaw ${bylawNumber}, Section ${section}`);
+    console.log(
+      `User clicked to view Bylaw ${bylawNumber}, Section ${section}`,
+    );
   };
 
   // Get PDF path using local file system
@@ -139,14 +141,14 @@ export function BylawCitation({
     if (pdfPath) {
       return pdfPath;
     }
-    
+
     // Try to use bylaw number to find matching PDF
     const possiblePaths = [
       `/pdfs/${bylawNumber}.pdf`,
       `/pdfs/${bylawNumber} -*.pdf`,
-      `/pdfs/${bylawNumber}*.pdf`
+      `/pdfs/${bylawNumber}*.pdf`,
     ];
-    
+
     // In production, we'd check if these files exist
     // For now, just return the first pattern and let the PDF viewer handle fallback
     return possiblePaths[0];

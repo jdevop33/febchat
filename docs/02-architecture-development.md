@@ -48,12 +48,14 @@ febchat/
 ### Environment Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/febchat.git
    cd febchat
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```

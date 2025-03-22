@@ -11,9 +11,10 @@ Welcome to the FebChat documentation - Oak Bay Municipal Bylaws Assistant.
 5. [**Optimization & Troubleshooting**](./05-optimization-troubleshooting.md) - Performance and problem resolution
 
 ## Quick Links
+
 - New developers: Start with [Project Overview](./01-project-overview.md)
 - Setting up: See [Architecture & Development](./02-architecture-development.md)
 - Deployment: Follow [Deployment](./03-deployment.md)
 - Issues? Check [Optimization & Troubleshooting](./05-optimization-troubleshooting.md)
 
-*Last updated: March 22, 2025*
+_Last updated: March 22, 2025_

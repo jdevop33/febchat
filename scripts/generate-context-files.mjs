@@ -20,13 +20,13 @@ const argv = minimist(process.argv.slice(2), {
     o: 'output-dir',
     f: 'focus',
     v: 'verbose',
-    h: 'help'
+    h: 'help',
   },
   default: {
     'output-dir': 'docs/context',
     verbose: false,
-    help: false
-  }
+    help: false,
+  },
 });
 
 // Show help message
@@ -81,56 +81,60 @@ const CONFIG = {
     {
       id: 'architecture-overview',
       title: 'Architecture Overview',
-      description: 'High-level overview of the project architecture and structure'
+      description:
+        'High-level overview of the project architecture and structure',
     },
     {
       id: 'component-system',
       title: 'Component System',
-      description: 'Explanation of the component architecture and UI system'
+      description: 'Explanation of the component architecture and UI system',
     },
     {
       id: 'data-flow',
       title: 'Data Flow and State Management',
-      description: 'How data and state are managed across the application'
+      description: 'How data and state are managed across the application',
     },
     {
       id: 'api-integration',
       title: 'API Integration',
-      description: 'How external APIs are integrated and used'
+      description: 'How external APIs are integrated and used',
     },
     {
       id: 'authentication',
       title: 'Authentication and Authorization',
-      description: 'Implementation of auth and user permissions'
-    }
-  ]
+      description: 'Implementation of auth and user permissions',
+    },
+  ],
 };
 
 // Main function
 async function generateContextDocumentation() {
   try {
     console.log(chalk.blue('🔍 Starting context documentation generation...'));
-    
+
     // Create output directory if it doesn't exist
     if (!fs.existsSync(argv['output-dir'])) {
       fs.mkdirSync(argv['output-dir'], { recursive: true });
-      console.log(chalk.green(`Created output directory: ${argv['output-dir']}`));
+      console.log(
+        chalk.green(`Created output directory: ${argv['output-dir']}`),
+      );
     }
-    
+
     // 1. Gather data about the project
     const projectData = await gatherProjectData();
-    
+
     // 2. Generate each document
     for (const document of CONFIG.documents) {
       console.log(chalk.blue(`Generating ${document.title}...`));
       await generateDocument(document, projectData);
     }
-    
+
     // 3. Generate README index
     await generateReadme();
-    
-    console.log(chalk.green('✅ Context documentation generated successfully!'));
-    
+
+    console.log(
+      chalk.green('✅ Context documentation generated successfully!'),
+    );
   } catch (error) {
     console.error(chalk.red('Error generating context documentation:'), error);
     process.exit(1);
@@ -140,10 +144,10 @@ async function generateContextDocumentation() {
 // Gather data about the project
 async function gatherProjectData() {
   console.log(chalk.blue('Gathering project data...'));
-  
+
   // Find all source files
   let sourceFiles;
-  
+
   if (argv.focus) {
     sourceFiles = await glob(argv.focus, {
       ignore: CONFIG.excludePatterns,
@@ -160,13 +164,13 @@ async function gatherProjectData() {
       absolute: true,
     });
   }
-  
+
   console.log(chalk.green(`Found ${sourceFiles.length} source files`));
-  
+
   // Get package.json info
   const packageJsonPath = path.join(process.cwd(), 'package.json');
   let packageInfo = {};
-  
+
   if (fs.existsSync(packageJsonPath)) {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
     packageInfo = {
@@ -178,13 +182,13 @@ async function gatherProjectData() {
       scripts: packageJson.scripts || {},
     };
   }
-  
+
   // Build directory structure
   const dirStructure = buildDirectoryStructure(sourceFiles);
-  
+
   // Sample representative files (to keep prompt size manageable)
   const sampleFiles = sampleRepresentativeFiles(sourceFiles, 10);
-  
+
   return {
     sourceFiles,
     packageInfo,
@@ -196,11 +200,11 @@ async function gatherProjectData() {
 // Helper to build a simplified directory structure
 function buildDirectoryStructure(files) {
   const structure = {};
-  
+
   for (const file of files) {
     const relativePath = path.relative(process.cwd(), file);
     const parts = relativePath.split(path.sep);
-    
+
     let current = structure;
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i];
@@ -209,11 +213,11 @@ function buildDirectoryStructure(files) {
       }
       current = current[part];
     }
-    
+
     const fileName = parts[parts.length - 1];
     current[fileName] = null;
   }
-  
+
   return structure;
 }
 
@@ -221,30 +225,30 @@ function buildDirectoryStructure(files) {
 function sampleRepresentativeFiles(files, count) {
   // Group by directory
   const byDirectory = {};
-  
+
   for (const file of files) {
     const relativePath = path.relative(process.cwd(), file);
     const dir = path.dirname(relativePath);
-    
+
     if (!byDirectory[dir]) {
       byDirectory[dir] = [];
     }
-    
+
     byDirectory[dir].push(file);
   }
-  
+
   // Take a few files from each main directory
   const sampledFiles = [];
-  
+
   for (const [dir, dirFiles] of Object.entries(byDirectory)) {
     // Only sample from directories with multiple files
     if (dirFiles.length > 1) {
       // Take either 1-2 files or ~20% of files, whichever is more
       const sampleCount = Math.max(
         Math.min(2, dirFiles.length),
-        Math.floor(dirFiles.length * 0.2)
+        Math.floor(dirFiles.length * 0.2),
       );
-      
+
       // Simple random sampling
       const shuffled = [...dirFiles].sort(() => 0.5 - Math.random());
       sampledFiles.push(...shuffled.slice(0, sampleCount));
@@ -253,12 +257,12 @@ function sampleRepresentativeFiles(files, count) {
       sampledFiles.push(dirFiles[0]);
     }
   }
-  
+
   // Limit to the requested count
-  return sampledFiles.slice(0, count).map(file => {
+  return sampledFiles.slice(0, count).map((file) => {
     // Read file content
     const content = fs.readFileSync(file, 'utf-8');
-    
+
     return {
       path: path.relative(process.cwd(), file),
       content,
@@ -271,25 +275,25 @@ async function generateDocument(document, projectData) {
   try {
     // Generate a prompt based on the document type
     const prompt = createPromptForDocument(document, projectData);
-    
+
     if (argv.verbose) {
       console.log(chalk.gray(`Generating ${document.id} document...`));
     }
-    
+
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: CONFIG.maxTokens,
     });
-    
+
     const content = response.choices[0].message.content.trim();
-    
+
     // Save the document
     const outputPath = path.join(argv['output-dir'], `${document.id}.md`);
     fs.writeFileSync(outputPath, content);
-    
+
     console.log(chalk.green(`Generated ${outputPath}`));
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red(`Error generating ${document.id}:`), error);
@@ -300,7 +304,7 @@ async function generateDocument(document, projectData) {
 // Create a prompt for a specific document type
 function createPromptForDocument(document, projectData) {
   const { packageInfo, dirStructure, sampleFiles } = projectData;
-  
+
   // Base prompt with project info
   const basePrompt = `
 You are a technical documentation expert creating documentation for a Next.js project called "${packageInfo.name || 'FebChat'}".
@@ -310,13 +314,15 @@ ${packageInfo.description ? `Description: ${packageInfo.description}` : ''}
 Version: ${packageInfo.version || 'Unknown'}
 
 Key dependencies:
-${Object.keys(packageInfo.dependencies || {}).slice(0, 15).join(', ')}
+${Object.keys(packageInfo.dependencies || {})
+  .slice(0, 15)
+  .join(', ')}
 
 Directory structure:
 ${JSON.stringify(dirStructure, null, 2)}
 
 Sample files:
-${sampleFiles.map(f => `--- ${f.path} ---\n${f.content.length > 1000 ? f.content.substring(0, 1000) + '...(truncated)' : f.content}`).join('\n\n')}
+${sampleFiles.map((f) => `--- ${f.path} ---\n${f.content.length > 1000 ? `${f.content.substring(0, 1000)}...(truncated)` : f.content}`).join('\n\n')}
 
 I need you to create the following document:
 # ${document.title}
@@ -334,7 +340,7 @@ Include:
   // Add specific questions based on document type
   switch (document.id) {
     case 'architecture-overview':
-      return basePrompt + `
+      return `${basePrompt}
 Focus on:
 - Overall project architecture pattern
 - Directory structure and organization
@@ -342,9 +348,9 @@ Focus on:
 - Data flow between components
 - How the application initializes and runs
 `;
-    
+
     case 'component-system':
-      return basePrompt + `
+      return `${basePrompt}
 Focus on:
 - Component hierarchy
 - Reusable UI components
@@ -353,9 +359,9 @@ Focus on:
 - How components communicate
 - Styling approach
 `;
-    
+
     case 'data-flow':
-      return basePrompt + `
+      return `${basePrompt}
 Focus on:
 - State management approaches used
 - Data fetching strategies
@@ -363,9 +369,9 @@ Focus on:
 - State persistence
 - Server state vs. client state
 `;
-    
+
     case 'api-integration':
-      return basePrompt + `
+      return `${basePrompt}
 Focus on:
 - API client setup
 - Authentication with APIs
@@ -373,9 +379,9 @@ Focus on:
 - Request/response patterns
 - API abstraction layers
 `;
-    
+
     case 'authentication':
-      return basePrompt + `
+      return `${basePrompt}
 Focus on:
 - Authentication strategy
 - User sessions and tokens
@@ -383,7 +389,7 @@ Focus on:
 - Role-based access
 - Security considerations
 `;
-    
+
     default:
       return basePrompt;
   }
@@ -393,12 +399,12 @@ Focus on:
 async function generateReadme() {
   try {
     // Get list of generated documents
-    const docs = CONFIG.documents.map(doc => ({
+    const docs = CONFIG.documents.map((doc) => ({
       id: doc.id,
       title: doc.title,
       description: doc.description,
     }));
-    
+
     // Create README content
     const readmeContent = `# ${argv['output-dir'].split('/').pop() || 'Context'} Documentation
 
@@ -406,7 +412,7 @@ This directory contains documentation about various aspects of the codebase.
 
 ## Available Documents
 
-${docs.map(doc => `- [${doc.title}](./${doc.id}.md) - ${doc.description}`).join('\n')}
+${docs.map((doc) => `- [${doc.title}](./${doc.id}.md) - ${doc.description}`).join('\n')}
 
 ## How This Documentation Was Generated
 
@@ -422,13 +428,13 @@ Use these documents to:
 
 If you find any inaccuracies, please update the documentation accordingly.
 `;
-    
+
     // Save README
     const readmePath = path.join(argv['output-dir'], 'README.md');
     fs.writeFileSync(readmePath, readmeContent);
-    
+
     console.log(chalk.green(`Generated ${readmePath}`));
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red('Error generating README:'), error);

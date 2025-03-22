@@ -22,14 +22,14 @@ const argv = minimist(process.argv.slice(2), {
     f: 'focus',
     s: 'summary',
     v: 'verbose',
-    h: 'help'
+    h: 'help',
   },
   default: {
     output: 'ai-analysis-results.json',
     summary: false,
     verbose: false,
-    help: false
-  }
+    help: false,
+  },
 });
 
 // Show help message
@@ -122,7 +122,7 @@ async function runAnalysis() {
     // 1. Find all source files
     console.log(chalk.blue('📁 Scanning project files...'));
     let allFiles;
-    
+
     if (argv.focus) {
       allFiles = await glob(argv.focus, {
         ignore: CONFIG.excludePatterns,
@@ -139,8 +139,10 @@ async function runAnalysis() {
         absolute: true,
       });
     }
-    
-    console.log(chalk.green(`Found ${allFiles.length} source files to analyze`));
+
+    console.log(
+      chalk.green(`Found ${allFiles.length} source files to analyze`),
+    );
 
     // 2. If summary-only mode, analyze project structure only
     if (argv.summary) {
@@ -170,11 +172,12 @@ async function runAnalysis() {
 
     // 8. Save results to file
     fs.writeFileSync(argv.output, JSON.stringify(analysisResult, null, 2));
-    console.log(chalk.green(`✅ Analysis complete! Results saved to ${argv.output}`));
-    
+    console.log(
+      chalk.green(`✅ Analysis complete! Results saved to ${argv.output}`),
+    );
+
     // Print key findings to console
     printSummary();
-
   } catch (error) {
     console.error(chalk.red('❌ Error during analysis:'), error);
     process.exit(1);
@@ -186,11 +189,11 @@ async function analyzeProjectStructure(allFiles) {
   try {
     // Get directory structure
     const directoryStructure = buildDirectoryStructure(allFiles);
-    
+
     // Get package.json info
     const packageJsonPath = path.join(process.cwd(), 'package.json');
     let packageInfo = {};
-    
+
     if (fs.existsSync(packageJsonPath)) {
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
       packageInfo = {
@@ -202,7 +205,7 @@ async function analyzeProjectStructure(allFiles) {
         scripts: packageJson.scripts || {},
       };
     }
-    
+
     // Create a prompt for the AI
     const prompt = `
 You are an expert software architect analyzing a Next.js application codebase.
@@ -237,15 +240,15 @@ Be specific and actionable in your recommendations.
     });
 
     const analysis = response.choices[0].message.content.trim();
-    
+
     // Extract sections from the analysis
     const sections = extractSectionsFromAnalysis(analysis);
-    
+
     analysisResult.summary.highLevelOverview = sections.overview || '';
     analysisResult.summary.architectureEvaluation = sections.architecture || '';
     analysisResult.summary.keyChallenges = sections.challenges || [];
     analysisResult.summary.recommendations = sections.recommendations || [];
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red('Error analyzing project structure:'), error);
@@ -256,11 +259,11 @@ Be specific and actionable in your recommendations.
 // Helper to build a simplified directory structure
 function buildDirectoryStructure(files) {
   const structure = {};
-  
+
   for (const file of files) {
     const relativePath = path.relative(process.cwd(), file);
     const parts = relativePath.split(path.sep);
-    
+
     let current = structure;
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i];
@@ -269,11 +272,11 @@ function buildDirectoryStructure(files) {
       }
       current = current[part];
     }
-    
+
     const fileName = parts[parts.length - 1];
     current[fileName] = null;
   }
-  
+
   return structure;
 }
 
@@ -285,47 +288,55 @@ function extractSectionsFromAnalysis(analysis) {
     challenges: [],
     recommendations: [],
   };
-  
+
   // Simple regex-based extraction
-  const overviewMatch = analysis.match(/high-level overview.*?:\s*([\s\S]*?)(?=assessment|architectural approach|#|$)/i);
+  const overviewMatch = analysis.match(
+    /high-level overview.*?:\s*([\s\S]*?)(?=assessment|architectural approach|#|$)/i,
+  );
   if (overviewMatch?.[1]) {
     result.overview = overviewMatch[1].trim();
   }
-  
-  const architectureMatch = analysis.match(/(?:assessment|architectural approach).*?:\s*([\s\S]*?)(?=key challenges|challenges|#|$)/i);
+
+  const architectureMatch = analysis.match(
+    /(?:assessment|architectural approach).*?:\s*([\s\S]*?)(?=key challenges|challenges|#|$)/i,
+  );
   if (architectureMatch?.[1]) {
     result.architecture = architectureMatch[1].trim();
   }
-  
-  const challengesMatch = analysis.match(/(?:key challenges|challenges).*?:\s*([\s\S]*?)(?=recommendations|#|$)/i);
+
+  const challengesMatch = analysis.match(
+    /(?:key challenges|challenges).*?:\s*([\s\S]*?)(?=recommendations|#|$)/i,
+  );
   if (challengesMatch?.[1]) {
     const challengesText = challengesMatch[1].trim();
     result.challenges = extractNumberedItems(challengesText);
   }
-  
-  const recommendationsMatch = analysis.match(/recommendations.*?:\s*([\s\S]*?)(?=#|$)/i);
+
+  const recommendationsMatch = analysis.match(
+    /recommendations.*?:\s*([\s\S]*?)(?=#|$)/i,
+  );
   if (recommendationsMatch?.[1]) {
     const recommendationsText = recommendationsMatch[1].trim();
     result.recommendations = extractNumberedItems(recommendationsText);
   }
-  
+
   return result;
 }
 
 // Helper to extract numbered items from text
 function extractNumberedItems(text) {
   const items = [];
-  
+
   // Look for numbered items like "1. Item" or "1) Item"
   const itemRegex = /\d+[\.\)]\s+(.*?)(?=\d+[\.\)]|$)/gs;
   let match;
-  
+
   while ((match = itemRegex.exec(`${text}\n999. `))) {
     if (match[1].trim()) {
       items.push(match[1].trim());
     }
   }
-  
+
   // If no numbered items found, try bullet points
   if (items.length === 0) {
     const bulletRegex = /[•\-\*]\s+(.*?)(?=[•\-\*]|$)/gs;
@@ -335,12 +346,12 @@ function extractNumberedItems(text) {
       }
     }
   }
-  
+
   // If still no items found, split by newlines
   if (items.length === 0) {
-    return text.split('\n').filter(line => line.trim().length > 10);
+    return text.split('\n').filter((line) => line.trim().length > 10);
   }
-  
+
   return items;
 }
 
@@ -348,33 +359,45 @@ function extractNumberedItems(text) {
 async function analyzeFilesInBatches(allFiles) {
   const totalFiles = allFiles.length;
   const batches = Math.ceil(totalFiles / CONFIG.batchSize);
-  
-  console.log(chalk.blue(`Processing ${totalFiles} files in ${batches} batches...`));
-  
+
+  console.log(
+    chalk.blue(`Processing ${totalFiles} files in ${batches} batches...`),
+  );
+
   let processedCount = 0;
-  
+
   for (let i = 0; i < batches; i++) {
     const start = i * CONFIG.batchSize;
     const end = Math.min(start + CONFIG.batchSize, totalFiles);
     const batchFiles = allFiles.slice(start, end);
-    
+
     if (argv.verbose) {
-      console.log(chalk.gray(`Processing batch ${i + 1}/${batches}: ${batchFiles.length} files`));
+      console.log(
+        chalk.gray(
+          `Processing batch ${i + 1}/${batches}: ${batchFiles.length} files`,
+        ),
+      );
     }
-    
+
     await analyzeBatch(batchFiles);
-    
+
     // Update progress
     processedCount += batchFiles.length;
     const progressPercent = Math.round((processedCount / totalFiles) * 100);
-    console.log(chalk.green(`Progress: ${progressPercent}% (${processedCount}/${totalFiles} files)`));
-    
+    console.log(
+      chalk.green(
+        `Progress: ${progressPercent}% (${processedCount}/${totalFiles} files)`,
+      ),
+    );
+
     // Add delay between batches to avoid rate limiting
     if (i < batches - 1) {
       if (argv.verbose) {
-        console.log(chalk.gray(`Waiting ${CONFIG.apiDelay}ms before next batch...`));
+        console.log(
+          chalk.gray(`Waiting ${CONFIG.apiDelay}ms before next batch...`),
+        );
       }
-      await new Promise(resolve => setTimeout(resolve, CONFIG.apiDelay));
+      await new Promise((resolve) => setTimeout(resolve, CONFIG.apiDelay));
     }
   }
 }
@@ -382,51 +405,65 @@ async function analyzeFilesInBatches(allFiles) {
 // Analyze a batch of files
 async function analyzeBatch(files) {
   // Read file contents
-  const fileContents = files.map(file => {
+  const fileContents = files.map((file) => {
     try {
       const stats = fs.statSync(file);
-      
+
       // Skip files that are too large
       if (stats.size > CONFIG.maxFileSize) {
         if (argv.verbose) {
-          console.log(chalk.yellow(`Skipping large file: ${file} (${Math.round(stats.size / 1024)} KB)`));
+          console.log(
+            chalk.yellow(
+              `Skipping large file: ${file} (${Math.round(stats.size / 1024)} KB)`,
+            ),
+          );
         }
-        return { file, content: 'FILE_TOO_LARGE', relativePath: path.relative(process.cwd(), file) };
+        return {
+          file,
+          content: 'FILE_TOO_LARGE',
+          relativePath: path.relative(process.cwd(), file),
+        };
       }
-      
+
       const content = fs.readFileSync(file, 'utf-8');
-      return { 
-        file, 
-        content, 
+      return {
+        file,
+        content,
         relativePath: path.relative(process.cwd(), file),
-        size: stats.size
+        size: stats.size,
       };
     } catch (error) {
       console.error(chalk.red(`Error reading file ${file}:`), error);
-      return { file, content: 'ERROR_READING_FILE', relativePath: path.relative(process.cwd(), file) };
+      return {
+        file,
+        content: 'ERROR_READING_FILE',
+        relativePath: path.relative(process.cwd(), file),
+      };
     }
   });
-  
+
   // Filter out files that are too large or had errors
-  const validFiles = fileContents.filter(f => 
-    f.content !== 'FILE_TOO_LARGE' && 
-    f.content !== 'ERROR_READING_FILE'
+  const validFiles = fileContents.filter(
+    (f) => f.content !== 'FILE_TOO_LARGE' && f.content !== 'ERROR_READING_FILE',
   );
-  
+
   if (validFiles.length === 0) {
     return;
   }
-  
+
   // Create a prompt for the AI
-  const fileDetailsForPrompt = validFiles.map(f => {
-    // Truncate file content if it's very large to avoid token limits
-    const truncatedContent = f.content.length > 5000 
-      ? `${f.content.substring(0, 5000)}\n... (content truncated)`
-      : f.content;
-    
-    return `File: ${f.relativePath}\n\`\`\`\n${truncatedContent}\n\`\`\``;
-  }).join('\n\n');
-  
+  const fileDetailsForPrompt = validFiles
+    .map((f) => {
+      // Truncate file content if it's very large to avoid token limits
+      const truncatedContent =
+        f.content.length > 5000
+          ? `${f.content.substring(0, 5000)}\n... (content truncated)`
+          : f.content;
+
+      return `File: ${f.relativePath}\n\`\`\`\n${truncatedContent}\n\`\`\``;
+    })
+    .join('\n\n');
+
   const prompt = `
 You are an expert code reviewer analyzing a batch of files from a Next.js application.
 
@@ -454,25 +491,27 @@ ${fileDetailsForPrompt}
 
   try {
     if (argv.verbose) {
-      console.log(chalk.gray(`Sending ${validFiles.length} files for analysis...`));
+      console.log(
+        chalk.gray(`Sending ${validFiles.length} files for analysis...`),
+      );
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: CONFIG.maxTokens,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const analysisText = response.choices[0].message.content.trim();
-    
+
     try {
       // Parse the JSON response
       const analysis = JSON.parse(analysisText);
-      
+
       // Add to the result
       Object.assign(analysisResult.fileAnalyses, analysis);
-      
+
       return true;
     } catch (jsonError) {
       console.error(chalk.red('Error parsing JSON response:'), jsonError);
@@ -490,21 +529,21 @@ async function analyzeArchitecture(allFiles) {
   try {
     // Get file paths organized by directory
     const directoriesMap = {};
-    
+
     for (const file of allFiles) {
       const relativePath = path.relative(process.cwd(), file);
       const directory = path.dirname(relativePath);
-      
+
       if (!directoriesMap[directory]) {
         directoriesMap[directory] = [];
       }
-      
+
       directoriesMap[directory].push(path.basename(relativePath));
     }
-    
+
     // Get imports between files if available in analysis results
     const importData = extractImportRelationships();
-    
+
     const prompt = `
 You are an expert software architect analyzing a Next.js application.
 
@@ -512,8 +551,12 @@ Based on the directory structure and file organization:
 
 ${JSON.stringify(directoriesMap, null, 2)}
 
-${importData ? `And the following import relationships between files:
-${importData}` : ''}
+${
+  importData
+    ? `And the following import relationships between files:
+${importData}`
+    : ''
+}
 
 Identify:
 1. The main architectural patterns used in this codebase
@@ -541,18 +584,18 @@ Format your response as a JSON array of architectural patterns and insights, lik
       model: CONFIG.model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 1000,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const analysisText = response.choices[0].message.content.trim();
-    
+
     try {
       // Parse the JSON response
       const analysis = JSON.parse(analysisText);
-      
+
       // Add to the result
       analysisResult.architecturalPatterns = analysis;
-      
+
       return true;
     } catch (jsonError) {
       console.error(chalk.red('Error parsing JSON response:'), jsonError);
@@ -577,25 +620,28 @@ async function analyzePerformance() {
   try {
     // Get performance-related issues from file analyses
     const performanceIssues = [];
-    
-    for (const [filePath, analysis] of Object.entries(analysisResult.fileAnalyses)) {
+
+    for (const [filePath, analysis] of Object.entries(
+      analysisResult.fileAnalyses,
+    )) {
       if (analysis.issues) {
-        const perfIssues = analysis.issues.filter(issue => 
-          issue.toLowerCase().includes('performance') || 
-          issue.toLowerCase().includes('slow') ||
-          issue.toLowerCase().includes('memory') ||
-          issue.toLowerCase().includes('optimize')
+        const perfIssues = analysis.issues.filter(
+          (issue) =>
+            issue.toLowerCase().includes('performance') ||
+            issue.toLowerCase().includes('slow') ||
+            issue.toLowerCase().includes('memory') ||
+            issue.toLowerCase().includes('optimize'),
         );
-        
+
         if (perfIssues.length > 0) {
           performanceIssues.push({
             file: filePath,
-            issues: perfIssues
+            issues: perfIssues,
           });
         }
       }
     }
-    
+
     const prompt = `
 You are an expert performance engineer analyzing a Next.js application.
 
@@ -620,18 +666,18 @@ Format your response as a JSON array of performance issues and insights.
       model: CONFIG.model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 1000,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const analysisText = response.choices[0].message.content.trim();
-    
+
     try {
       // Parse the JSON response
       const analysis = JSON.parse(analysisText);
-      
+
       // Add to the result
       analysisResult.performanceIssues = analysis;
-      
+
       return true;
     } catch (jsonError) {
       console.error(chalk.red('Error parsing JSON response:'), jsonError);
@@ -649,16 +695,16 @@ async function calculateQualityMetrics() {
   // Calculate average quality scores from file analyses
   let totalScore = 0;
   let fileCount = 0;
-  
+
   for (const analysis of Object.values(analysisResult.fileAnalyses)) {
     if (analysis.qualityScore) {
       totalScore += analysis.qualityScore;
       fileCount++;
     }
   }
-  
+
   const averageQuality = fileCount > 0 ? totalScore / fileCount : 0;
-  
+
   // Set initial quality metrics based on file analyses
   analysisResult.qualityMetrics = {
     maintainability: Math.round(averageQuality * 20), // Convert 1-5 scale to percentage
@@ -666,7 +712,7 @@ async function calculateQualityMetrics() {
     testability: 0,
     consistency: 0,
   };
-  
+
   try {
     const prompt = `
 You are an expert code quality assessor analyzing a Next.js application.
@@ -691,18 +737,18 @@ Format your response as a JSON object with these metrics.
       model: CONFIG.model,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 500,
-      response_format: { type: "json_object" },
+      response_format: { type: 'json_object' },
     });
 
     const analysisText = response.choices[0].message.content.trim();
-    
+
     try {
       // Parse the JSON response
       const metrics = JSON.parse(analysisText);
-      
+
       // Update the metrics
       Object.assign(analysisResult.qualityMetrics, metrics);
-      
+
       return true;
     } catch (jsonError) {
       console.error(chalk.red('Error parsing JSON response:'), jsonError);
@@ -724,27 +770,31 @@ async function createSummary(allFiles) {
       byExtension: {},
       byDirectory: {},
     };
-    
+
     for (const file of allFiles) {
       const ext = path.extname(file);
-      const dir = path.dirname(path.relative(process.cwd(), file)).split(path.sep)[0];
-      
+      const dir = path
+        .dirname(path.relative(process.cwd(), file))
+        .split(path.sep)[0];
+
       if (!stats.byExtension[ext]) {
         stats.byExtension[ext] = 0;
       }
       stats.byExtension[ext]++;
-      
+
       if (!stats.byDirectory[dir]) {
         stats.byDirectory[dir] = 0;
       }
       stats.byDirectory[dir]++;
     }
-    
+
     // Extract key insights from analyses
-    const architecturalInsights = analysisResult.architecturalPatterns?.slice(0, 3) || [];
-    const performanceInsights = analysisResult.performanceIssues?.slice(0, 3) || [];
+    const architecturalInsights =
+      analysisResult.architecturalPatterns?.slice(0, 3) || [];
+    const performanceInsights =
+      analysisResult.performanceIssues?.slice(0, 3) || [];
     const qualityMetrics = analysisResult.qualityMetrics;
-    
+
     const prompt = `
 You are an expert software architect creating a summary analysis of a Next.js application.
 
@@ -780,15 +830,15 @@ Be concise, specific, and actionable in your recommendations.
     });
 
     const summaryText = response.choices[0].message.content.trim();
-    
+
     // Extract sections from the summary
     const sections = extractSectionsFromAnalysis(summaryText);
-    
+
     analysisResult.summary.highLevelOverview = sections.overview || '';
     analysisResult.summary.architectureEvaluation = sections.architecture || '';
     analysisResult.summary.keyChallenges = sections.challenges || [];
     analysisResult.summary.recommendations = sections.recommendations || [];
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red('Error creating summary:'), error);
@@ -800,36 +850,42 @@ Be concise, specific, and actionable in your recommendations.
 function printSummary() {
   console.log(chalk.blue.bold('\n📋 AI CODEBASE ANALYSIS SUMMARY'));
   console.log(chalk.blue('============================\n'));
-  
+
   // Print high-level overview
   if (analysisResult.summary.highLevelOverview) {
     console.log(chalk.yellow.bold('Overview:'));
     console.log(analysisResult.summary.highLevelOverview);
     console.log();
   }
-  
+
   // Print key challenges
-  if (analysisResult.summary.keyChallenges && analysisResult.summary.keyChallenges.length > 0) {
+  if (
+    analysisResult.summary.keyChallenges &&
+    analysisResult.summary.keyChallenges.length > 0
+  ) {
     console.log(chalk.yellow.bold('Key Challenges:'));
     analysisResult.summary.keyChallenges.forEach((challenge, index) => {
       console.log(`${index + 1}. ${challenge}`);
     });
     console.log();
   }
-  
+
   // Print recommendations
-  if (analysisResult.summary.recommendations && analysisResult.summary.recommendations.length > 0) {
+  if (
+    analysisResult.summary.recommendations &&
+    analysisResult.summary.recommendations.length > 0
+  ) {
     console.log(chalk.yellow.bold('Recommendations:'));
     analysisResult.summary.recommendations.forEach((recommendation, index) => {
       console.log(`${index + 1}. ${recommendation}`);
     });
     console.log();
   }
-  
+
   // Print quality metrics if available
   if (analysisResult.qualityMetrics && !argv.summary) {
     console.log(chalk.yellow.bold('Quality Metrics:'));
-    
+
     const metrics = analysisResult.qualityMetrics;
     const labels = {
       maintainability: 'Maintainability',
@@ -837,18 +893,20 @@ function printSummary() {
       testability: 'Testability',
       consistency: 'Consistency',
     };
-    
+
     for (const [key, value] of Object.entries(metrics)) {
       const label = labels[key] || key;
       const score = Math.round(value);
       const barLength = Math.round(score / 5);
       const bar = '█'.repeat(barLength);
-      
-      console.log(`${label.padEnd(15)} ${score}% ${`▕${bar}${' '.repeat(20 - barLength)}▏`}`);
+
+      console.log(
+        `${label.padEnd(15)} ${score}% ${`▕${bar}${' '.repeat(20 - barLength)}▏`}`,
+      );
     }
     console.log();
   }
-  
+
   console.log(chalk.blue.bold('Full analysis details saved to:'));
   console.log(argv.output);
 }

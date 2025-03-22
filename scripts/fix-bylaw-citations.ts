@@ -7,10 +7,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { PrismaClient } from '@prisma/client';
-
-// Initialize Prisma client
-const prisma = new PrismaClient();
+import db from '@/lib/db';
+import { bylaw, bylawSection } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 
 // Define accurate bylaw section data for key bylaws
 const accurateBylawSections = {
@@ -165,18 +164,28 @@ async function updateBylawData() {
           break;
       }
 
-      // Ensure bylaw exists in database
-      await prisma.bylaw.upsert({
-        where: { bylawNumber },
-        update: {
-          title: bylawTitle,
-          isConsolidated,
-          consolidatedDate,
-          pdfPath: `/pdfs/${bylawNumber}.pdf`, // Will be corrected by the getFilenameForBylaw function
-          officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
-          lastVerified: new Date(),
-        },
-        create: {
+      // Check if bylaw exists in database
+      const [bylawRecord] = await db
+        .select()
+        .from(bylaw)
+        .where(eq(bylaw.bylawNumber, bylawNumber));
+
+      if (bylawRecord) {
+        // Update existing bylaw
+        await db
+          .update(bylaw)
+          .set({
+            title: bylawTitle,
+            isConsolidated,
+            consolidatedDate,
+            pdfPath: `/pdfs/${bylawNumber}.pdf`, // Will be corrected by the getFilenameForBylaw function
+            officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
+            lastVerified: new Date(),
+          })
+          .where(eq(bylaw.bylawNumber, bylawNumber));
+      } else {
+        // Create new bylaw
+        await db.insert(bylaw).values({
           bylawNumber,
           title: bylawTitle,
           isConsolidated,
@@ -184,23 +193,22 @@ async function updateBylawData() {
           pdfPath: `/pdfs/${bylawNumber}.pdf`, // Will be corrected by the getFilenameForBylaw function
           officialUrl: `https://oakbay.civicweb.net/document/bylaw/${bylawNumber}`,
           lastVerified: new Date(),
-        },
-      });
+        });
+      }
 
       // Delete existing sections for this bylaw
-      await prisma.bylawSection.deleteMany({
-        where: { bylawNumber },
-      });
+      await db
+        .delete(bylawSection)
+        .where(eq(bylawSection.bylawNumber, bylawNumber));
 
       // Create sections with accurate content
       for (const section of sections) {
-        await prisma.bylawSection.create({
-          data: {
-            bylawNumber,
-            sectionNumber: section.sectionNumber,
-            title: section.title,
-            content: section.content,
-          },
+        await db.insert(bylawSection).values({
+          id: crypto.randomUUID(),
+          bylawNumber,
+          sectionNumber: section.sectionNumber,
+          title: section.title,
+          content: section.content,
         });
         console.log(
           `  ✅ Added section ${section.sectionNumber}: ${section.title}`,
@@ -219,7 +227,7 @@ async function updateBylawData() {
   } catch (error) {
     console.error('Error updating bylaw data:', error);
   } finally {
-    await prisma.$disconnect();
+    // No need for disconnection with Drizzle
   }
 }
 

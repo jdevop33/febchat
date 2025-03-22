@@ -77,11 +77,13 @@ async function testDatabaseConnection() {
       try {
         // Use dynamic import for ESM compatibility
         const { sql } = await import('drizzle-orm');
-        
+
         // Import Vercel Postgres dynamically
         const { db: vercelPostgresDb } = await import('@vercel/postgres');
-        const { drizzle: vercelDrizzleImport } = await import('drizzle-orm/vercel-postgres');
-        
+        const { drizzle: vercelDrizzleImport } = await import(
+          'drizzle-orm/vercel-postgres'
+        );
+
         const vercelDb = vercelDrizzleImport(vercelPostgresDb);
 
         const result = await vercelDb.execute(

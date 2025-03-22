@@ -5,6 +5,7 @@ This directory contains a collection of AI-powered tools designed to help analyz
 ## Prerequisites
 
 1. Make sure you have an `.env.local` file with your OpenAI API key:
+
    ```
    OPENAI_API_KEY=your-api-key-here
    ```
@@ -25,6 +26,7 @@ npx tsx scripts/ai-code-audit.mjs --all --output-dir ai-audit
 ```
 
 Options:
+
 - `--all`: Run all audit processes
 - `--analyze`: Run codebase analysis only
 - `--improve`: Run code improvement on key files only
@@ -36,6 +38,7 @@ Options:
 - `--help`: Show help message
 
 Examples:
+
 ```bash
 # Run analysis only
 npx tsx scripts/ai-code-audit.mjs --analyze
@@ -56,6 +59,7 @@ npx tsx scripts/ai-codebase-analyzer.mjs --output ai-analysis-results.json
 ```
 
 Options:
+
 - `--output <file>`: Output file for analysis results (default: ai-analysis-results.json)
 - `--focus <pattern>`: Focus analysis on specific files (glob pattern)
 - `--summary`: Only generate a high-level summary (faster)
@@ -71,6 +75,7 @@ npx tsx scripts/ai-code-improvement.mjs --file components/message.tsx
 ```
 
 Options:
+
 - `--file <filepath>`: Path to the file to analyze and improve (required)
 - `--output <filepath>`: Output path for improved code (defaults to modifying the input file)
 - `--dry-run`: Don't write changes, just show the improvements
@@ -86,6 +91,7 @@ npx tsx scripts/generate-context-files.mjs --output-dir docs/context
 ```
 
 Options:
+
 - `--output-dir <dir>`: Directory to save generated files (default: docs/context)
 - `--focus <pattern>`: Focus on specific files (glob pattern)
 - `--verbose`: Show detailed logs during generation

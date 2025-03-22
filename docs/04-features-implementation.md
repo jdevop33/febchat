@@ -7,14 +7,18 @@
 ### Storage Options
 
 **Development**: Files stored in `/public/pdfs/` with utility functions:
+
 - `getLocalPdfPath`: Local PDF path
 - `getExternalPdfUrl`: External PDF URL
 - `getBestPdfUrl`: Environment-aware URL selection
 
 **Production**: Vercel Blob Storage (recommended):
+
 ```typescript
 import { put } from '@vercel/blob';
-const { url } = await put(`bylaws/${bylawNumber}.pdf`, blob, { access: 'public' });
+const { url } = await put(`bylaws/${bylawNumber}.pdf`, blob, {
+  access: 'public',
+});
 ```
 
 ### PDF Processing Pipeline
@@ -90,7 +94,7 @@ async function searchBylaws(query) {
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) return new Response('Unauthorized', { status: 401 });
-  
+
   const { query } = await request.json();
   const results = await searchBylaws(query);
   return NextResponse.json(results);
@@ -137,6 +141,7 @@ export async function searchBylawsTool(query: string) {
 ### BylawCitation Component
 
 Provides interactive elements for bylaw citations:
+
 - Title and section display
 - Expandable excerpt view
 - Copy functionality

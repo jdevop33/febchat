@@ -30,11 +30,13 @@ The solution is to extract common types into a shared location that all componen
 ### Modified files:
 
 1. `types/artifacts/artifact-types.ts`
+
    - Now imports from `shared-types.ts`
    - Re-exports shared types for backward compatibility
    - Defines component-specific types that extend shared types
 
 2. `types/documents/document-types.ts`
+
    - Now imports from `shared-types.ts`
    - Uses shared types for properties
    - Re-exports `EditorCommonProps` as an alias for `SharedEditorProps`

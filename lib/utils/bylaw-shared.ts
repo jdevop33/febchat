@@ -6,10 +6,10 @@
  */
 
 // Import the centralized bylaw data
-import { 
-  bylawTitleMap, 
+import {
+  bylawTitleMap,
   VALIDATED_BYLAWS,
-  knownBylawUrls as _knownBylawUrls 
+  knownBylawUrls as _knownBylawUrls,
 } from './bylaw-maps';
 
 /**
@@ -47,15 +47,15 @@ export function getBestPdfUrl(bylawNumber: string, title?: string): string {
   // Return the best available URL:
   // 1. If we have a known direct URL, use that
   // 2. Otherwise construct a standard URL pattern
-  
+
   // First try the external PDF URL
   const externalUrl = getExternalPdfUrl(bylawNumber, title);
-  
+
   // If we have a specific URL, use it
   if (externalUrl.includes(bylawNumber)) {
     return externalUrl;
   }
-  
+
   // Otherwise use a standard URL format
   return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
 }

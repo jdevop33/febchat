@@ -202,39 +202,41 @@ async function performKeywordSearch(
 
   // For the real demo, we should use actual database queries instead of mock data
   logger.warn('Keyword search fallback is being used - results may be limited');
-  
+
   try {
     // Read actual bylaw data from files - more reliable than mock data
     const fs = require('node:fs');
     const path = require('node:path');
-    
+
     // Get paths to actual bylaw PDF files
     const pdfDirectory = path.join(process.cwd(), 'public', 'pdfs');
-    
+
     // Check if directory exists
     if (!fs.existsSync(pdfDirectory)) {
       logger.error(`PDF directory not found: ${pdfDirectory}`);
       return [];
     }
-    
+
     // Get list of PDF files
-    const pdfFiles = fs.readdirSync(pdfDirectory)
+    const pdfFiles = fs
+      .readdirSync(pdfDirectory)
       .filter((file: string) => file.toLowerCase().endsWith('.pdf'))
       .map((file: string) => ({
         filename: file,
         bylawNumber: extractBylawNumber(file),
         title: formatBylawTitle(file),
       }));
-      
+
     // Filter by query
     const queryLower = query.toLowerCase();
     const matchingFiles = pdfFiles
-      .filter((file: any) => 
-        file.filename.toLowerCase().includes(queryLower) ||
-        (file.title?.toLowerCase().includes(queryLower))
+      .filter(
+        (file: any) =>
+          file.filename.toLowerCase().includes(queryLower) ||
+          file.title?.toLowerCase().includes(queryLower),
       )
       .slice(0, limit);
-      
+
     // Convert to search results
     return matchingFiles.map((file: any, index: number) => ({
       text: `Bylaw ${file.bylawNumber || 'Unknown'}: ${file.title || file.filename}`,
@@ -243,22 +245,22 @@ async function performKeywordSearch(
         title: file.title || file.filename,
         section: '',
         filename: file.filename,
-        url: `/pdfs/${file.filename}`
+        url: `/pdfs/${file.filename}`,
       },
-      score: 0.8 - (index * 0.1), // Simple relevance score
-      id: `file-${index}`
+      score: 0.8 - index * 0.1, // Simple relevance score
+      id: `file-${index}`,
     }));
   } catch (error) {
     logger.error('Error in keyword search fallback:', error);
     return [];
   }
-  
+
   // Helper function to extract bylaw number from filename
   function extractBylawNumber(filename: string): string | null {
     const match = filename.match(/(\d{4})/);
     return match ? match[1] : null;
   }
-  
+
   // Helper function to format bylaw title
   function formatBylawTitle(filename: string): string {
     return filename
@@ -277,15 +279,23 @@ export async function getRealBylawData(): Promise<BylawChunk[]> {
     // Attempt to load from verified bylaw answers file
     const fs = require('node:fs');
     const path = require('node:path');
-    
-    const verifiedDataPath = path.join(process.cwd(), 'data', 'verified-bylaw-answers.json');
-    
+
+    const verifiedDataPath = path.join(
+      process.cwd(),
+      'data',
+      'verified-bylaw-answers.json',
+    );
+
     if (fs.existsSync(verifiedDataPath)) {
-      const verifiedData = JSON.parse(fs.readFileSync(verifiedDataPath, 'utf8'));
-      
+      const verifiedData = JSON.parse(
+        fs.readFileSync(verifiedDataPath, 'utf8'),
+      );
+
       if (Array.isArray(verifiedData) && verifiedData.length > 0) {
-        logger.info(`Loaded ${verifiedData.length} verified bylaw entries from file`);
-        
+        logger.info(
+          `Loaded ${verifiedData.length} verified bylaw entries from file`,
+        );
+
         // Convert to BylawChunk format
         return verifiedData.map((item: any) => ({
           text: item.text || item.content || item.answer || '',
@@ -301,7 +311,7 @@ export async function getRealBylawData(): Promise<BylawChunk[]> {
         }));
       }
     }
-    
+
     // Fallback to empty array if no verified data
     logger.warn('No verified bylaw data found, using empty dataset');
     return [];

@@ -5,11 +5,11 @@ import type {
   Message,
 } from 'ai';
 import type { Dispatch, SetStateAction } from 'react';
-import { 
-  ArtifactKind, 
-  artifactKinds, 
+import {
+  ArtifactKind,
+  artifactKinds,
   type UIArtifact,
-  type SharedMessageProps 
+  type SharedMessageProps,
 } from '@/types/shared/shared-types';
 
 // Re-export for backward compatibility

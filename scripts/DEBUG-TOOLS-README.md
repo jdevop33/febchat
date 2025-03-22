@@ -22,6 +22,7 @@ npm run debug-api
 ```
 
 This will:
+
 - Find all API routes in the application
 - Log them to the console
 - Generate a test file in `scripts/api-endpoint-tests.js`
@@ -35,6 +36,7 @@ npm run analyze-deps
 ```
 
 This will:
+
 - Find all component dependencies
 - Detect circular dependencies
 - Generate a visualization in `component-visualization.html`
@@ -51,6 +53,7 @@ npm run e2e-test
 Make sure your application is running at `http://localhost:3000` before running this test.
 
 The script will:
+
 - Register/login a test user
 - Create a new chat
 - Wait for AI response
@@ -67,6 +70,7 @@ npm run profile
 ```
 
 This will:
+
 - Add performance monitoring code to key components
 - Create backups of the original files (`.bak` extension)
 - Log render times to the console when you run the application
@@ -80,6 +84,7 @@ npm run fix-circular
 ```
 
 This will:
+
 - Extract types from components with circular dependencies
 - Update the shared types file (as `.updated` file)
 - Fix imports in the components (as `.fixed` files)

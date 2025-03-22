@@ -9,8 +9,10 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
+// Main application tables
 export const user = pgTable('User', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   email: varchar('email', { length: 64 }).notNull(),
@@ -113,3 +115,103 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+// Bylaw verification tables (migrated from Prisma)
+export const bylaw = pgTable('Bylaw', {
+  bylawNumber: varchar('bylawNumber', { length: 20 }).primaryKey().notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  isConsolidated: boolean('isConsolidated').notNull().default(false),
+  pdfPath: varchar('pdfPath', { length: 255 }).notNull(),
+  officialUrl: varchar('officialUrl', { length: 255 }).notNull(),
+  lastVerified: timestamp('lastVerified').notNull(),
+  consolidatedDate: varchar('consolidatedDate', { length: 100 }),
+  enactmentDate: varchar('enactmentDate', { length: 100 }),
+  amendments: text('amendments'),
+});
+
+export type Bylaw = InferSelectModel<typeof bylaw>;
+
+export const bylawSection = pgTable(
+  'BylawSection',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    bylawNumber: varchar('bylawNumber', { length: 20 })
+      .notNull()
+      .references(() => bylaw.bylawNumber, {
+        onDelete: 'cascade',
+      }),
+    sectionNumber: varchar('sectionNumber', { length: 50 }).notNull(),
+    title: varchar('title', { length: 255 }),
+    content: text('content').notNull(),
+  },
+  (table) => ({
+    unq: primaryKey({ columns: [table.bylawNumber, table.sectionNumber] }),
+  }),
+);
+
+export type BylawSection = InferSelectModel<typeof bylawSection>;
+
+export const citationFeedback = pgTable('CitationFeedback', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  bylawNumber: varchar('bylawNumber', { length: 20 })
+    .notNull()
+    .references(() => bylaw.bylawNumber, {
+      onDelete: 'cascade',
+    }),
+  section: varchar('section', { length: 50 }).notNull(),
+  feedback: varchar('feedback', { length: 20 }).notNull(),
+  userComment: text('userComment'),
+  timestamp: timestamp('timestamp').notNull(),
+});
+
+export type CitationFeedback = InferSelectModel<typeof citationFeedback>;
+
+export const vectorDatabaseEntry = pgTable(
+  'VectorDatabaseEntry',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    bylawNumber: varchar('bylawNumber', { length: 20 }).notNull(),
+    vectorId: varchar('vectorId', { length: 100 }).notNull(),
+    section: varchar('section', { length: 50 }),
+    timestamp: timestamp('timestamp').notNull(),
+    metadata: json('metadata'),
+  },
+  (table) => ({
+    unq: primaryKey({ columns: [table.bylawNumber, table.vectorId] }),
+  }),
+);
+
+export type VectorDatabaseEntry = InferSelectModel<typeof vectorDatabaseEntry>;
+
+export const bylawUpdate = pgTable('BylawUpdate', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  bylawNumber: varchar('bylawNumber', { length: 20 }).notNull(),
+  updateType: varchar('updateType', { length: 20 }).notNull(),
+  timestamp: timestamp('timestamp').notNull(),
+  details: text('details'),
+});
+
+export type BylawUpdate = InferSelectModel<typeof bylawUpdate>;
+
+export const webScrapeLog = pgTable('WebScrapeLog', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  url: varchar('url', { length: 255 }).notNull(),
+  timestamp: timestamp('timestamp').notNull(),
+  status: varchar('status', { length: 20 }).notNull(),
+  newBylaws: integer('newBylaws').notNull().default(0),
+  updatedBylaws: integer('updatedBylaws').notNull().default(0),
+  errorDetails: text('errorDetails'),
+});
+
+export type WebScrapeLog = InferSelectModel<typeof webScrapeLog>;
+
+export const searchQueryLog = pgTable('SearchQueryLog', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  query: varchar('query', { length: 500 }).notNull(),
+  resultCount: integer('resultCount').notNull(),
+  topResult: varchar('topResult', { length: 255 }),
+  timestamp: timestamp('timestamp').notNull(),
+  userFeedback: varchar('userFeedback', { length: 20 }),
+});
+
+export type SearchQueryLog = InferSelectModel<typeof searchQueryLog>;

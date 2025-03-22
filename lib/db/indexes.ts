@@ -13,17 +13,15 @@ function getDbForIndexes() {
     process.env.NODE_ENV === 'production' &&
     process.env.NEXT_PHASE === 'build'
   ) {
-    console.log(
-      'Production build detected - using mock database for indexes',
-    );
+    console.log('Production build detected - using mock database for indexes');
     return {
       execute: async (query: any) => {
         console.log('Running database query:', query);
         return { rowCount: 0 };
-      }
+      },
     };
   }
-  
+
   // Otherwise use the real DB connection
   return db;
 }
@@ -39,7 +37,7 @@ export async function createDatabaseIndexes() {
   try {
     // Get the appropriate database instance
     const dbInstance = getDbForIndexes();
-    
+
     // Create indexes for frequently queried columns
     // These are examples - adjust based on your actual query patterns
 
@@ -79,7 +77,7 @@ export async function indexExists(indexName: string): Promise<boolean> {
   try {
     // Get the appropriate database instance
     const dbInstance = getDbForIndexes();
-    
+
     // This query works for PostgreSQL
     const result = await dbInstance.execute(
       sql`SELECT 1 FROM pg_indexes WHERE indexname = ${indexName}`,

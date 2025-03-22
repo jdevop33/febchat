@@ -1,16 +1,16 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const API_ROUTES_DIR = path.join(process.cwd(), 'app');
 
 // Function to find all API routes
 function findApiRoutes(dir, routes = []) {
   const files = fs.readdirSync(dir);
-  
+
   for (const file of files) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    
+
     if (stat.isDirectory()) {
       findApiRoutes(filePath, routes);
     } else if (file === 'route.ts' && filePath.includes('/api/')) {
@@ -19,15 +19,15 @@ function findApiRoutes(dir, routes = []) {
         .replace('/app', '')
         .replace('/route.ts', '')
         .replace(/\/\[\.\.\.(.*)\]/, '/*');
-      
+
       routes.push({
         path: apiPath,
         filePath: relativePath,
-        methods: getApiMethods(filePath)
+        methods: getApiMethods(filePath),
       });
     }
   }
-  
+
   return routes;
 }
 
@@ -35,13 +35,13 @@ function findApiRoutes(dir, routes = []) {
 function getApiMethods(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const methods = [];
-  
+
   if (content.includes('export async function GET')) methods.push('GET');
   if (content.includes('export async function POST')) methods.push('POST');
   if (content.includes('export async function PUT')) methods.push('PUT');
   if (content.includes('export async function PATCH')) methods.push('PATCH');
   if (content.includes('export async function DELETE')) methods.push('DELETE');
-  
+
   return methods;
 }
 
@@ -51,9 +51,11 @@ console.log('API Routes Found:', apiRoutes.length);
 console.table(apiRoutes);
 
 // Generate test file
-const testFileContent = apiRoutes.map(route => {
-  const methods = route.methods.map(method => {
-    return `
+const testFileContent = apiRoutes
+  .map((route) => {
+    const methods = route.methods
+      .map((method) => {
+        return `
 // Test ${method} ${route.path}
 async function test${method}${route.path.replace(/\//g, '_').replace(/[^\w]/g, '')}() {
   try {
@@ -77,14 +79,16 @@ async function test${method}${route.path.replace(/\//g, '_').replace(/[^\w]/g, '
   }
 }
 `;
-  }).join('\n');
-  
-  return methods;
-}).join('\n');
+      })
+      .join('\n');
+
+    return methods;
+  })
+  .join('\n');
 
 fs.writeFileSync(
-  path.join(process.cwd(), 'scripts', 'api-endpoint-tests.js'), 
-  `// Auto-generated API tests\n${testFileContent}\n\n// Run all tests\n(async () => {\n  // Add test function calls here\n})();`
+  path.join(process.cwd(), 'scripts', 'api-endpoint-tests.js'),
+  `// Auto-generated API tests\n${testFileContent}\n\n// Run all tests\n(async () => {\n  // Add test function calls here\n})();`,
 );
 
 console.log('Generated API test file in scripts/api-endpoint-tests.js');

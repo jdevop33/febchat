@@ -19,7 +19,7 @@ export default function Page() {
 
   // Add debug information - check environment setup
   useEffect(() => {
-    console.log("Login page mounted - checking app status");
+    console.log('Login page mounted - checking app status');
     setDebugInfo(`App Status: ${process.env.NODE_ENV || 'unknown'}`);
   }, []);
 
@@ -31,8 +31,8 @@ export default function Page() {
   );
 
   useEffect(() => {
-    console.log("Auth state changed:", state.status);
-    
+    console.log('Auth state changed:', state.status);
+
     if (state.status === 'failed') {
       toast.error('Invalid credentials!');
     } else if (state.status === 'invalid_data') {
@@ -57,9 +57,7 @@ export default function Page() {
             Use your email and password to sign in
           </p>
           {/* Add debug information */}
-          <div className="mt-2 text-xs text-gray-400">
-            {debugInfo}
-          </div>
+          <div className="mt-2 text-xs text-gray-400">{debugInfo}</div>
           <div className="mt-1 text-xs text-gray-400">
             Auth Status: {state.status}
           </div>

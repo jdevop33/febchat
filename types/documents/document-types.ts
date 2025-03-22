@@ -1,9 +1,9 @@
 import type { Document } from '@/lib/db/schema';
-import type { 
-  ArtifactKind, 
-  UIArtifact, 
+import type {
+  ArtifactKind,
+  UIArtifact,
   SharedDocumentProps,
-  SharedEditorProps 
+  SharedEditorProps,
 } from '@/types/shared/shared-types';
 
 // Document types
