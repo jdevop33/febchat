@@ -81,8 +81,18 @@ export function EnhancedMarkdown({ children, className }: EnhancedMarkdownProps)
         }
       }
       
+      // Fallback validation list if imports fail
+      const fallbackValidBylaws = [
+        "3210", "3531", "4100", "4247", "4742", "4849", 
+        "4861", "4891", "4892", "3578", "4672", "3545", 
+        "4371", "4183", "3946", "4013"
+      ];
+      
       // Safe validation check to ensure VALIDATED_BYLAWS exists and is an array
-      const validatedBylaws = VALIDATED_BYLAWS && Array.isArray(VALIDATED_BYLAWS) ? VALIDATED_BYLAWS : [];
+      const validatedBylaws = VALIDATED_BYLAWS && Array.isArray(VALIDATED_BYLAWS) && VALIDATED_BYLAWS.length > 0 
+        ? VALIDATED_BYLAWS 
+        : fallbackValidBylaws;
+        
       const isValidBylaw = validatedBylaws.includes(bylawNumber);
       
       if (bylawNumber && isValidBylaw) {

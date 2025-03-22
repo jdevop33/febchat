@@ -72,20 +72,37 @@ export function BylawCitation({
     // If explicitly marked as verified, trust that
     if (isVerified) {
       setValidBylaw(true);
-    } else {
-      try {
-        // First check if the import worked correctly
-        if (typeof VALIDATED_BYLAWS !== 'undefined' && Array.isArray(VALIDATED_BYLAWS)) {
-          // Check against our known list
-          setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
-        } else {
-          // Fallback to basic validation - assume bylaw is valid if number is provided
-          console.warn('VALIDATED_BYLAWS not available, falling back to basic validation');
-          setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
-        }
-      } catch (error) {
-        console.error('Error checking bylaw validation:', error);
-        // Fallback validation - any bylaw number is considered valid
+      return;
+    }
+    
+    // Fallback validation list if imports fail
+    const fallbackValidBylaws = [
+      "3210", "3531", "4100", "4247", "4742", "4849", 
+      "4861", "4891", "4892", "3578", "4672", "3545", 
+      "4371", "4183", "3946", "4013"
+    ];
+    
+    try {
+      // First check if the import worked correctly
+      if (typeof VALIDATED_BYLAWS !== 'undefined' && Array.isArray(VALIDATED_BYLAWS) && VALIDATED_BYLAWS.length > 0) {
+        // Check against our known list
+        setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
+      } else if (fallbackValidBylaws.includes(bylawNumber)) {
+        // Use our hardcoded fallback list
+        console.warn('Using fallback bylaw validation list');
+        setValidBylaw(true);
+      } else {
+        // Fallback to basic validation - assume bylaw is valid if number is provided
+        console.warn('No validation lists available, falling back to basic validation');
+        setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
+      }
+    } catch (error) {
+      console.error('Error checking bylaw validation:', error);
+      // Try fallback list even if there was an error
+      if (fallbackValidBylaws.includes(bylawNumber)) {
+        setValidBylaw(true);
+      } else {
+        // Last resort fallback - any bylaw number is considered valid
         setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
       }
     }
@@ -93,13 +110,17 @@ export function BylawCitation({
 
   // Function to handle PDF not found
   const handlePdfNotFound = () => {
-    toast.error('PDF not found', {
-      description: `We couldn't find the PDF for Bylaw No. ${bylawNumber} in our system. Please check the external link for the official document.`,
+    // Show a softer message since PDFs are just placeholders now
+    toast.info('Opening external site', {
+      description: `Redirecting you to Oak Bay's municipal website for Bylaw No. ${bylawNumber} information.`,
     });
 
     // Auto-open external link if PDF not found (browser-only)
     if (typeof window !== 'undefined') {
-      window.open(externalUrl, '_blank');
+      // Use timeout to ensure toast is displayed before redirect
+      setTimeout(() => {
+        window.open(externalUrl, '_blank');
+      }, 1000);
     }
   };
 
@@ -112,8 +133,24 @@ export function BylawCitation({
     return `/pdfs/placeholder.pdf`;
   };
 
-  // Get a simplified external URL (for testing)
-  const externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  // Get external URL for the bylaw (with error handling)
+  let externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  try {
+    // Try to use the correct URL if the import worked
+    if (bylawNumber && typeof window !== 'undefined') {
+      // Check if we have the official URL from props
+      if (officialUrl) {
+        externalUrl = officialUrl;
+      } else {
+        // Try to build one with the usual pattern
+        externalUrl = `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
+      }
+    }
+  } catch (error) {
+    console.error('Error generating external URL:', error);
+    // Fallback to general bylaws page
+    externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  }
 
   // Various action handlers
   const handleViewPdf = () => {
