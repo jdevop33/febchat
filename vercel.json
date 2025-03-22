@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "./build-with-db.sh",
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "github": {
+    "enabled": true,
+    "silent": false
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  }
+}
