@@ -2,8 +2,12 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
-    // Partial Prerendering (PPR) is experimental and can cause issues
-    // ppr: true,
+    // Modern features for Next.js 15
+    typedRoutes: true,
+    serverActions: {
+      allowedOrigins: ['app.fitforgov.com', 'localhost:3000'],
+    },
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   eslint: {
     // Don't run ESLint during build to prevent deployment failures for warnings

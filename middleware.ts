@@ -71,7 +71,7 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
   
-  // Fix wrong redirects to juche.org or other domains
+  // Fix wrong redirects to external domains
   if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
     const url = new URL(request.url);
     const callbackUrl = url.searchParams.get('callbackUrl');
