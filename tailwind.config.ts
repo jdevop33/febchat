@@ -1,13 +1,12 @@
 import type { Config } from 'tailwindcss';
 
-const config = {
+const config: Config = {
   darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  prefix: '',
   theme: {
     fontFamily: {
       sans: ['geist', 'sans-serif'],
@@ -36,12 +35,9 @@ const config = {
         focus: '0 0 0 3px hsla(var(--ring) / 0.4)',
       },
       colors: {
-        background: {
-          DEFAULT: 'hsl(var(--background))'
-        },
-        foreground: {
-          DEFAULT: 'hsl(var(--foreground))'
-        },
+        brand: 'hsl(var(--brand))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
@@ -116,7 +112,6 @@ const config = {
         'slide-in': 'slide-in 0.3s ease-out',
         'slide-out': 'slide-out 0.3s ease-in',
         'scale-in': 'scale-in 0.2s ease-out',
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         'fade-in': {
@@ -139,21 +134,9 @@ const config = {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
-        'pulse': { // Added this keyframe definition
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.5' },
-        },
       },
     },
   },
-  // TailwindCSS options
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
-  plugins: [
-    require('tailwindcss-animate'),
-    require('@tailwindcss/typography'),
-  ],
-} satisfies Config;
-
+  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
+};
 export default config;
