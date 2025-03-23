@@ -274,7 +274,7 @@ importers:
         specifier: ^8.27.0
         version: 8.27.0(eslint@8.57.1)(typescript@5.8.2)
       autoprefixer:
-        specifier: ^10.4.16
+        specifier: 10.4.16
         version: 10.4.16(postcss@8.4.47)
       chalk:
         specifier: ^5.3.0
@@ -307,7 +307,7 @@ importers:
         specifier: ^10.4.5
         version: 10.4.5
       postcss:
-        specifier: ^8.4.47
+        specifier: 8.4.47
         version: 8.4.47
       prettier:
         specifier: ^3.5.2
@@ -316,7 +316,7 @@ importers:
         specifier: ^0.6.11
         version: 0.6.11(prettier@3.5.3)
       tailwindcss:
-        specifier: ^3.4.14
+        specifier: 3.4.14
         version: 3.4.14
       tailwindcss-animate:
         specifier: ^1.0.7
