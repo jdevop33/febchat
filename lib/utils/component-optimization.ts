@@ -79,7 +79,7 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
         fallback:
           fallback ||
           React.createElement('div', {
-            className: 'h-10 w-full custom-pulse bg-muted rounded-md',
+            className: 'h-10 w-full animate-pulse bg-muted rounded-md',
           }),
       },
       React.createElement(LazyComponent, props),
