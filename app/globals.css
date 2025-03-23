@@ -41,6 +41,15 @@
   .custom-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+  
+  /* Tailwind v4 compatibility classes for border radius */
+  .rounded-md {
+    border-radius: 0.375rem;
+  }
+  
+  .rounded-lg {
+    border-radius: 0.5rem;
+  }
 }
 
 /* Use Tailwind's built-in pulse animation */
@@ -200,7 +209,8 @@
   *[class^='text-'] {
     color: transparent;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    @apply select-none rounded-md bg-foreground/20;
+    @apply select-none bg-foreground/20;
+    border-radius: 0.375rem;
   }
 
   .skeleton-bg {
