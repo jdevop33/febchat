@@ -89,7 +89,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))] antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -109,9 +109,7 @@ export default async function RootLayout({
             }}
           />
           <ErrorBoundary>
-            <AppErrorHandler>
-              <div className="grid min-h-screen">{children}</div>
-            </AppErrorHandler>
+            <div className="grid min-h-screen">{children}</div>
           </ErrorBoundary>
         </ThemeProvider>
       </body>
