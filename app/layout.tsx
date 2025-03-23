@@ -8,8 +8,8 @@ import { AppErrorHandler } from '@/components/app/app-error-handler';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://oakbay.ca'),
-  title: 'Oak Bay Bylaws Assistant',
+  metadataBase: new URL('https://app.fitforgov.com'),
+  title: 'FitForGov Assistant',
   description:
     'AI-powered assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.',
   authors: [{ name: 'Oak Bay Municipality' }],
