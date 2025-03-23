@@ -5,10 +5,9 @@
  * Run with: npx tsx scripts/test-db-connection.ts
  */
 
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import { config } from 'dotenv';
+import { createDatabaseClient } from '../lib/db';
 
 // Load environment variables
 config({ path: '.env.local' });
@@ -32,71 +31,36 @@ async function testDatabaseConnection() {
   console.log('Connection string found. Testing connection...');
 
   try {
-    // Try to connect using postgres.js first
-    console.log('Attempting to connect with postgres.js...');
-    const client = postgres(connectionString, {
-      max: 1,
-      ssl: true,
-      idle_timeout: 20,
-      connect_timeout: 30,
-    });
+    // Create database client using our unified approach
+    console.log('Initializing database client...');
+    const db = createDatabaseClient();
 
     try {
-      // Execute a simple query
-      const result = await client.unsafe('SELECT 1 as connected');
-      console.log('✅ postgres.js connection successful!');
-      console.log('Result:', result);
-    } catch (pgError) {
-      console.error('❌ postgres.js query failed:', pgError);
-    } finally {
-      // Always close the connection
-      await client.end();
-      console.log('postgres.js connection closed.');
-    }
-
-    // Try to connect using Drizzle
-    console.log('\nAttempting to connect with Drizzle ORM...');
-    const db = drizzle(postgres(connectionString, { ssl: true }));
-
-    try {
+      // Test query using our database client
+      console.log('Executing test query...');
       const result = await db.execute(
         sql`SELECT current_database() as db_name, version() as pg_version`,
       );
-      console.log('✅ Drizzle ORM connection successful!');
+      console.log('✅ Database connection successful!');
       console.log('Database info:', result);
-    } catch (drizzleError) {
-      console.error('❌ Drizzle query failed:', drizzleError);
-    }
-
-    // Try Vercel Postgres connection if available
-    if (process.env.POSTGRES_URL) {
-      console.log(
-        '\nAttempting to connect with Vercel Postgres integration...',
+      
+      // Check for expected tables
+      console.log('\nChecking for database tables...');
+      const tablesResult = await db.execute(
+        sql`SELECT table_name FROM information_schema.tables WHERE table_schema='public'`,
       );
-
-      try {
-        // Use dynamic import for ESM compatibility
-        const { sql } = await import('drizzle-orm');
-
-        // Import Vercel Postgres dynamically
-        const { db: vercelPostgresDb } = await import('@vercel/postgres');
-        const { drizzle: vercelDrizzleImport } = await import(
-          'drizzle-orm/vercel-postgres'
-        );
-
-        const vercelDb = vercelDrizzleImport(vercelPostgresDb);
-
-        const result = await vercelDb.execute(
-          sql`SELECT current_database() as db_name`,
-        );
-        console.log('✅ Vercel Postgres connection successful!');
-        console.log('Database info:', result);
-      } catch (vercelError) {
-        console.error('❌ Vercel Postgres connection failed:', vercelError);
+      
+      if (tablesResult.length === 0) {
+        console.warn('⚠️ No tables found in the database. You may need to run migrations.');
+      } else {
+        console.log('✅ Found tables:', tablesResult.map((r: any) => r.table_name).join(', '));
       }
+      
+      console.log('\n✅ Database connection tests completed successfully!');
+    } catch (queryError) {
+      console.error('❌ Database query failed:', queryError);
+      process.exit(1);
     }
-
-    console.log('\n✅ Database connection tests completed!');
   } catch (error) {
     console.error('❌ Database connection test failed:', error);
     process.exit(1);

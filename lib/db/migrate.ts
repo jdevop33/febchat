@@ -9,19 +9,14 @@ const runMigrate = async () => {
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
   if (!connectionString) {
-    console.log(
-      '⚠️ Database connection URL is not defined, skipping migrations',
-    );
+    console.error('⚠️ Database connection URL is not defined, skipping migrations');
     return;
   }
-
-  // Always run database operations
-  // CI environment check removed
 
   try {
     const connection = postgres(connectionString, {
       max: 1,
-      ssl: true,
+      ssl: process.env.DB_USE_SSL !== 'false',
     });
     const db = drizzle(connection);
 

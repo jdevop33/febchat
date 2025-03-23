@@ -32,11 +32,8 @@ else
   # We'll allow build to continue and handle missing API key gracefully
 fi
 
-# Always use real database connections
-if false; then
-  echo "This condition is intentionally disabled"
-# Check if we're running in Vercel environment
-elif [ -n "${VERCEL:-}" ]; then
+# Database environment setup
+if [ -n "${VERCEL:-}" ]; then
   echo "🚀 Vercel deployment environment detected"
   
   # Check for Vercel Postgres integration
@@ -96,16 +93,30 @@ else
   fi
 fi
 
+# Set database SSL mode for development environments
+if [ "${NODE_ENV}" != "production" ]; then
+  export DB_USE_SSL="false"
+  echo "Setting DB_USE_SSL=false for development environment"
+fi
+
 # Set a generous timeout for the build
 echo "Setting NODE_OPTIONS to increase memory limit and timeout"
 export NODE_OPTIONS="--max-old-space-size=4096 --max-http-header-size=16384"
 
+# Skip migrations if requested, otherwise run them
+if [ "${SKIP_MIGRATIONS:-false}" = "true" ]; then
+  echo "Skipping database migrations as requested by SKIP_MIGRATIONS=true"
+else
+  echo "Running database migrations..."
+  pnpm db:migrate
+fi
+
 # Run Next.js build with optimized settings
 echo "Building Next.js application..."
 
-# Use pnpm build instead of next build directly
-# This ensures we use the correct build command from package.json
-pnpm build
+# Use next build directly to avoid recursion
+# This ensures we run the actual Next.js build process
+pnpm next build
 
 echo "✅ Build completed successfully!"
 exit 0
