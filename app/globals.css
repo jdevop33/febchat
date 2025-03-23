@@ -195,7 +195,8 @@
 
   *[class^='text-'] {
     color: transparent;
-    @apply animate-pulse select-none rounded-md bg-foreground/20;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    @apply select-none rounded-md bg-foreground/20;
   }
 
   .skeleton-bg {
@@ -203,7 +204,8 @@
   }
 
   .skeleton-div {
-    @apply animate-pulse bg-foreground/20;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    @apply bg-foreground/20;
   }
 }
 
