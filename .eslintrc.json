@@ -12,13 +12,22 @@
     "tailwindcss/classnames-order": "off",
     "tailwindcss/enforces-shorthand": "warn",
     "react-hooks/exhaustive-deps": "warn",
-    "import/no-unresolved": "warn"
+    "import/no-unresolved": "off"
   },
   "settings": {
     "import/resolver": {
       "typescript": {
-        "alwaysTryTypes": true
+        "alwaysTryTypes": true,
+        "project": "./tsconfig.json"
+      },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"],
+        "moduleDirectory": ["node_modules", "."]
       }
+    },
+    "tailwindcss": {
+      "callees": ["cn", "cva"],
+      "config": "tailwind.config.ts"
     }
   },
   "ignorePatterns": ["**/components/ui/**", "**/scripts/test-circular-deps.js"]

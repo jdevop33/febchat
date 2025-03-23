@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "target": "es6",
+    "module": "esnext",
+    "checkJs": false
+  },
+  "exclude": ["node_modules", ".next", "out"],
+  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"]
+}

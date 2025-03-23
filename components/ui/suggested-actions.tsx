@@ -11,9 +11,10 @@ interface SuggestedActionsProps {
     message: Message | CreateMessage,
     chatRequestOptions?: ChatRequestOptions,
   ) => Promise<string | null | undefined>;
+  disabled?: boolean;
 }
 
-function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
+function PureSuggestedActions({ chatId, append, disabled }: SuggestedActionsProps) {
   const suggestedActions = [
     {
       title: 'What are the rules',
@@ -51,6 +52,8 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
           <Button
             variant="ghost"
             onClick={async () => {
+              if (disabled) return;
+              
               window.history.replaceState({}, '', `/chat/${chatId}`);
 
               append({
@@ -58,6 +61,7 @@ function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
                 content: suggestedAction.action,
               });
             }}
+            disabled={disabled}
             className="h-auto w-full flex-1 items-start justify-start gap-1 rounded-xl border bg-background px-4 py-3.5 text-left text-sm sm:flex-col"
           >
             <span className="font-medium">{suggestedAction.title}</span>

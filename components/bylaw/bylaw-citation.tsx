@@ -58,6 +58,7 @@ export function BylawCitation({
   const [expanded, setExpanded] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [validBylaw, setValidBylaw] = useState(true);
+  const [validationStatus, setValidationStatus] = useState<'loading' | 'valid' | 'warning' | 'invalid'>('loading');
   const [citationFormat, setCitationFormat] = useState<
     'standard' | 'legal' | 'apa'
   >('standard');
@@ -69,30 +70,21 @@ export function BylawCitation({
 
   // Validate bylaw number on component mount
   useEffect(() => {
+    // Start with loading state
+    setValidationStatus('loading');
+    
     // If explicitly marked as verified, trust that
     if (isVerified) {
       setValidBylaw(true);
+      setValidationStatus('valid');
       return;
     }
 
     // Fallback validation list if imports fail
     const fallbackValidBylaws = [
-      '3210',
-      '3531',
-      '4100',
-      '4247',
-      '4742',
-      '4849',
-      '4861',
-      '4891',
-      '4892',
-      '3578',
-      '4672',
-      '3545',
-      '4371',
-      '4183',
-      '3946',
-      '4013',
+      '3210', '3531', '4100', '4247', '4742', '4849', '4861', '4891', 
+      '4892', '3578', '4672', '3545', '4371', '4183', '3946', '4013',
+      // Add any other known valid bylaws here
     ];
 
     try {
@@ -103,26 +95,36 @@ export function BylawCitation({
         VALIDATED_BYLAWS.length > 0
       ) {
         // Check against our known list
-        setValidBylaw(VALIDATED_BYLAWS.includes(bylawNumber));
+        const isValid = VALIDATED_BYLAWS.includes(bylawNumber);
+        setValidBylaw(isValid);
+        setValidationStatus(isValid ? 'valid' : 'invalid');
       } else if (fallbackValidBylaws.includes(bylawNumber)) {
         // Use our hardcoded fallback list
         console.warn('Using fallback bylaw validation list');
         setValidBylaw(true);
+        setValidationStatus('valid');
       } else {
-        // Fallback to basic validation - assume bylaw is valid if number is provided
+        // Fallback to basic validation - assume bylaw is valid if number format is correct
         console.warn(
-          'No validation lists available, falling back to basic validation',
+          'No validation lists available, using format-based validation',
         );
-        setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
+        
+        // Check if it looks like a bylaw number (3-5 digits, potentially followed by a letter)
+        const isLikelyValid = /^\d{3,5}[A-Za-z]?$/.test(bylawNumber);
+        setValidBylaw(isLikelyValid);
+        setValidationStatus(isLikelyValid ? 'warning' : 'invalid');
       }
     } catch (error) {
       console.error('Error checking bylaw validation:', error);
       // Try fallback list even if there was an error
       if (fallbackValidBylaws.includes(bylawNumber)) {
         setValidBylaw(true);
+        setValidationStatus('valid');
       } else {
-        // Last resort fallback - any bylaw number is considered valid
-        setValidBylaw(!!bylawNumber && bylawNumber.length > 0);
+        // For numeric bylaw numbers, set warning; otherwise invalid
+        const isNumeric = /^\d+$/.test(bylawNumber);
+        setValidBylaw(isNumeric); 
+        setValidationStatus(isNumeric ? 'warning' : 'invalid');
       }
     }
   }, [bylawNumber, isVerified]);
@@ -138,22 +140,34 @@ export function BylawCitation({
     );
   };
 
-  // Get PDF path using local file system
+  // Verification status UI helpers
+  const getValidationStatusIcon = () => {
+    switch (validationStatus) {
+      case 'valid':
+        return <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">Verified</span>;
+      case 'warning':
+        return <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Likely Valid</span>;
+      case 'invalid':
+        return <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/40 dark:text-red-300">Unverified</span>;
+      case 'loading':
+      default:
+        return <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">Checking...</span>;
+    }
+  };
+
+  // Get PDF path and URL with better error handling
   const getPdfPath = () => {
     if (pdfPath) {
       return pdfPath;
     }
 
-    // Try to use bylaw number to find matching PDF
-    const possiblePaths = [
-      `/pdfs/${bylawNumber}.pdf`,
-      `/pdfs/${bylawNumber} -*.pdf`,
-      `/pdfs/${bylawNumber}*.pdf`,
-    ];
-
-    // In production, we'd check if these files exist
-    // For now, just return the first pattern and let the PDF viewer handle fallback
-    return possiblePaths[0];
+    try {
+      // Try to use bylaw number to find matching PDF - be conservative to avoid 404s
+      return `/pdfs/${bylawNumber}.pdf`;
+    } catch (e) {
+      console.error('Error generating PDF path:', e);
+      return null;
+    }
   };
 
   // Get external URL for the bylaw (with error handling)

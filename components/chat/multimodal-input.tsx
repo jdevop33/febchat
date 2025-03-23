@@ -7,7 +7,6 @@ import type {
   Message,
 } from 'ai';
 import cx from 'classnames';
-import type React from 'react';
 import {
   useRef,
   useEffect,
@@ -43,6 +42,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
+  disabled,
 }: {
   chatId: string;
   input: string;
@@ -64,6 +64,7 @@ function PureMultimodalInput({
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
   className?: string;
+  disabled?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -118,6 +119,8 @@ function PureMultimodalInput({
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
 
   const submitForm = useCallback(() => {
+    if (disabled) return;
+    
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
     handleSubmit(undefined, {
@@ -138,6 +141,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    disabled,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -199,7 +203,7 @@ function PureMultimodalInput({
         attachments.length === 0 &&
         uploadQueue.length === 0 &&
         input.length === 0 && (
-          <SuggestedActions append={append} chatId={chatId} />
+          <SuggestedActions append={append} chatId={chatId} disabled={disabled} />
         )}
 
       <input
@@ -209,6 +213,7 @@ function PureMultimodalInput({
         multiple
         onChange={handleFileChange}
         tabIndex={-1}
+        disabled={disabled || isLoading}
       />
 
       {(attachments.length > 0 || uploadQueue.length > 0) && (
@@ -244,6 +249,7 @@ function PureMultimodalInput({
         autoFocus
         aria-label="Message input area"
         aria-describedby="message-input-instructions"
+        disabled={disabled || isLoading}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -274,18 +280,16 @@ function PureMultimodalInput({
         line.
       </div>
 
-      <div className="absolute bottom-0 flex w-fit flex-row justify-start p-2">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading} />
-      </div>
-
-      <div className="absolute bottom-0 right-0 flex w-fit flex-row justify-end p-2">
+      <div className="absolute bottom-0 right-0 flex h-10 items-center justify-end gap-2 p-2">
+        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading || !!disabled} />
         {isLoading ? (
-          <StopButton stop={stop} setMessages={setMessages} />
+          <StopButton stop={stop} setMessages={setMessages} disabled={disabled} />
         ) : (
           <SendButton
-            input={input}
             submitForm={submitForm}
+            input={input}
             uploadQueue={uploadQueue}
+            disabled={disabled}
           />
         )}
       </div>
@@ -293,106 +297,131 @@ function PureMultimodalInput({
   );
 }
 
-export const MultimodalInput = memo(
-  PureMultimodalInput,
-  (prevProps, nextProps) => {
-    if (prevProps.input !== nextProps.input) return false;
-    if (prevProps.isLoading !== nextProps.isLoading) return false;
-    if (!equal(prevProps.attachments, nextProps.attachments)) return false;
-
-    return true;
-  },
-);
+export const MultimodalInput = memo(PureMultimodalInput, (prev, next) => {
+  if (
+    prev.input !== next.input ||
+    prev.isLoading !== next.isLoading ||
+    prev.disabled !== next.disabled ||
+    !equal(prev.attachments, next.attachments) ||
+    prev.messages.length !== next.messages.length
+  ) {
+    return false;
+  }
+  return true;
+});
 
 function PureAttachmentsButton({
   fileInputRef,
   isLoading,
 }: {
-  fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement> | null;
   isLoading: boolean;
 }) {
   return (
     <Button
-      className="h-fit rounded-md rounded-bl-lg p-[7px] hover:bg-zinc-200 dark:border-zinc-700 hover:dark:bg-zinc-900"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={isLoading}
-      data-attachment-button
-      aria-label="Attach files"
-      title="Attach files to your message"
       variant="ghost"
+      size="icon"
+      className="mr-1"
+      aria-label="Attach files"
+      onClick={() => fileInputRef?.current?.click()}
+      disabled={isLoading}
     >
-      <PaperclipIcon size={14} />
+      <PaperclipIcon />
     </Button>
   );
 }
 
-const AttachmentsButton = memo(PureAttachmentsButton);
+const AttachmentsButton = memo(PureAttachmentsButton, (prev, next) => {
+  if (prev.isLoading !== next.isLoading) return false;
+  return true;
+});
 
 function PureStopButton({
   stop,
   setMessages,
+  disabled,
 }: {
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
+  disabled?: boolean;
 }) {
   return (
     <Button
-      className="h-fit rounded-full border p-1.5 dark:border-zinc-600"
+      variant="ghost"
+      size="icon"
+      className="rounded-full bg-black text-white hover:bg-black/90 dark:bg-muted dark:text-white/90 dark:hover:bg-zinc-800"
       onClick={(event) => {
         event.preventDefault();
+        
+        // Adding a spinning message to indicate we're stopping generation
+        setMessages((messages) => {
+          // Find the last assistant message and mark it as incomplete
+          const lastAssistantMessageIndex = [...messages]
+            .reverse()
+            .findIndex((message) => message.role === 'assistant');
+          
+          if (lastAssistantMessageIndex >= 0) {
+            const newMessages = [...messages];
+            const actualIndex = messages.length - 1 - lastAssistantMessageIndex;
+            
+            // Mark the message as user-stopped
+            newMessages[actualIndex] = {
+              ...newMessages[actualIndex],
+              content: newMessages[actualIndex].content + ' [Stopped by user]',
+            };
+            
+            return newMessages;
+          }
+          
+          return messages;
+        });
+        
         stop();
-        setMessages((messages) => sanitizeUIMessages(messages));
       }}
-      aria-label="Stop generating response"
-      title="Stop the AI from generating more text"
+      aria-label="Stop generating"
+      disabled={disabled}
     >
-      <StopIcon size={14} aria-hidden="true" />
-      <span className="sr-only">Stop generating</span>
+      <StopIcon />
     </Button>
   );
 }
 
-const StopButton = memo(PureStopButton);
+const StopButton = memo(PureStopButton, (prev, next) => {
+  if (prev.disabled !== next.disabled) return false;
+  return true;
+});
 
 function PureSendButton({
   submitForm,
   input,
   uploadQueue,
+  disabled,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
+  disabled?: boolean;
 }) {
-  const isDisabled = input.length === 0 || uploadQueue.length > 0;
-  const buttonLabel = isDisabled
-    ? uploadQueue.length > 0
-      ? 'Please wait for uploads to complete'
-      : 'Enter a message to send'
-    : 'Send message';
-
   return (
     <Button
-      className="h-fit rounded-full border p-1.5 dark:border-zinc-600"
-      onClick={(event) => {
-        event.preventDefault();
-        submitForm();
-      }}
-      disabled={isDisabled}
-      aria-label={buttonLabel}
-      title={buttonLabel}
+      type="button"
+      onClick={submitForm}
+      disabled={
+        disabled || 
+        (!input.trim() && uploadQueue.length === 0 && !input.length)
+      }
+      size="icon"
+      variant="ghost"
+      className="rounded-full bg-black text-white hover:bg-black/90 dark:bg-muted dark:text-white/90 dark:hover:bg-zinc-800"
     >
-      <ArrowUpIcon size={14} aria-hidden="true" />
-      <span className="sr-only">Send</span>
+      <ArrowUpIcon />
     </Button>
   );
 }
 
-const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
-  if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
-    return false;
-  if (prevProps.input !== nextProps.input) return false;
+const SendButton = memo(PureSendButton, (prev, next) => {
+  if (prev.uploadQueue.length !== next.uploadQueue.length) return false;
+  if (prev.input !== next.input) return false;
+  if (prev.disabled !== next.disabled) return false;
   return true;
 });
