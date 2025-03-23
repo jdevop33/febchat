@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:optimized": "cross-env NODE_OPTIONS=--max_old_space_size=4096 NEXT_TELEMETRY_DISABLED=1 next build",
     "build:full": "./build-with-db.sh",
-    "build:vercel": "CUSTOM_BUILD_CMD='next build' ./build-with-db.sh",
+    "build:vercel": "cross-env CUSTOM_BUILD_CMD=\"pnpm run build:optimized\" ./build-with-db.sh",
     "start": "next start",
     "deploy": "vercel --prod",
     "deploy:force": "vercel --prod --force",
@@ -134,6 +135,7 @@
     "@typescript-eslint/parser": "^7.1.0",
     "autoprefixer": "^10.4.18",
     "chalk": "^5.3.0",
+    "cross-env": "^7.0.3",
     "d3": "^7.9.0",
     "drizzle-kit": "^0.30.5",
     "eslint": "^8.57.0",
