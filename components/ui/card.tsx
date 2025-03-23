@@ -7,10 +7,10 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border border-border shadow-sm',
+        default: 'border border-[hsl(var(--border))] shadow-sm',
         elevated: 'shadow-md hover:shadow-lg',
         ghost: 'border-0 shadow-none',
-        outline: 'border border-border',
+        outline: 'border border-[hsl(var(--border))]',
         flat: 'border-0 bg-muted/40',
       },
       padding: {
