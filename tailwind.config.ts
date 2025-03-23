@@ -116,7 +116,7 @@ const config = {
         'slide-in': 'slide-in 0.3s ease-out',
         'slide-out': 'slide-out 0.3s ease-in',
         'scale-in': 'scale-in 0.2s ease-out',
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', // Added this line
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         'fade-in': {
@@ -153,22 +153,6 @@ const config = {
   plugins: [
     require('tailwindcss-animate'),
     require('@tailwindcss/typography'),
-    // Your custom plugin can be kept to ensure it works, but it's redundant now
-    function({ addUtilities }: { addUtilities: any }) {
-      addUtilities({
-        '.animate-pulse': {
-          'animation': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        },
-        '@keyframes pulse': {
-          '0%, 100%': {
-            opacity: '1',
-          },
-          '50%': {
-            opacity: '.5',
-          },
-        },
-      });
-    },
   ],
 } satisfies Config;
 
