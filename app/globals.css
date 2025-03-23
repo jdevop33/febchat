@@ -37,6 +37,10 @@
   .ring-ring {
     @apply ring-[hsl(var(--ring))];
   }
+  
+  .custom-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
 }
 
 /* Use Tailwind's built-in pulse animation */
