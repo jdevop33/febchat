@@ -110,14 +110,6 @@ const config = {
           ring: 'hsl(var(--sidebar-ring))',
         },
       },
-      animation: {
-        'fade-in': 'fade-in 0.3s ease-in-out',
-        'fade-out': 'fade-out 0.3s ease-in-out',
-        'slide-in': 'slide-in 0.3s ease-out',
-        'slide-out': 'slide-out 0.3s ease-in',
-        'scale-in': 'scale-in 0.2s ease-out',
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
@@ -142,6 +134,26 @@ const config = {
         'pulse': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
+        },
+      },
+      motion: {
+        'fade-in': {
+          animation: 'fade-in 0.3s ease-in-out',
+        },
+        'fade-out': {
+          animation: 'fade-out 0.3s ease-in-out',
+        },
+        'slide-in': {
+          animation: 'slide-in 0.3s ease-out',
+        },
+        'slide-out': {
+          animation: 'slide-out 0.3s ease-in',
+        },
+        'scale-in': {
+          animation: 'scale-in 0.2s ease-out',
+        },
+        'pulse': {
+          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         },
       },
     },

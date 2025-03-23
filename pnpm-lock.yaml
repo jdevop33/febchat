@@ -221,9 +221,6 @@ importers:
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.6.0
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@4.0.15)
       usehooks-ts:
         specifier: ^3.1.0
         version: 3.1.1(react@19.0.0)
@@ -321,6 +318,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.0
         version: 4.0.15
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@4.0.15)
       tsx:
         specifier: ^4.19.1
         version: 4.19.3
