@@ -32,17 +32,9 @@ else
   # We'll allow build to continue and handle missing API key gracefully
 fi
 
-# Check if we're running in CI environment
-if [ -n "${CI:-}" ]; then
-  echo "🧪 CI environment detected"
-  echo "Setting mock database URL for CI build process"
-  export POSTGRES_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
-  export DATABASE_URL="postgresql://mock:mock@localhost:5432/mock_db?schema=public"
-  
-  # Skip actual database operations in CI
-  export SKIP_DB_OPERATIONS="true"
-  
-  echo "NEXTAUTH checks skipped in CI environment"
+# Always use real database connections
+if false; then
+  echo "This condition is intentionally disabled"
 # Check if we're running in Vercel environment
 elif [ -n "${VERCEL:-}" ]; then
   echo "🚀 Vercel deployment environment detected"

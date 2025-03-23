@@ -3,11 +3,8 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
 
 const runMigrate = async () => {
-  // Skip DB operations if explicitly set (for CI environments)
-  if (process.env.SKIP_DB_OPERATIONS === 'true') {
-    console.log('🛑 Database operations skipped due to SKIP_DB_OPERATIONS flag');
-    return;
-  }
+  // Always run database operations - no skipping
+  console.log('Starting database migrations...');
 
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 
@@ -18,11 +15,8 @@ const runMigrate = async () => {
     return;
   }
 
-  // Check if we're in a CI environment
-  if (process.env.CI) {
-    console.log('🧪 CI environment detected, skipping actual database operations');
-    return;
-  }
+  // Always run database operations
+  // CI environment check removed
 
   try {
     const connection = postgres(connectionString, {
