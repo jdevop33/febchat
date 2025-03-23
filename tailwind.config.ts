@@ -110,6 +110,14 @@ const config = {
           ring: 'hsl(var(--sidebar-ring))',
         },
       },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease-in-out',
+        'fade-out': 'fade-out 0.3s ease-in-out',
+        'slide-in': 'slide-in 0.3s ease-out',
+        'slide-out': 'slide-out 0.3s ease-in',
+        'scale-in': 'scale-in 0.2s ease-out',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite', // Added this line
+      },
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
@@ -131,40 +139,33 @@ const config = {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
-        'pulse': {
+        'pulse': { // Added this keyframe definition
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
         },
       },
-      motion: {
-        'fade-in': {
-          animation: 'fade-in 0.3s ease-in-out',
-        },
-        'fade-out': {
-          animation: 'fade-out 0.3s ease-in-out',
-        },
-        'slide-in': {
-          animation: 'slide-in 0.3s ease-out',
-        },
-        'slide-out': {
-          animation: 'slide-out 0.3s ease-in',
-        },
-        'scale-in': {
-          animation: 'scale-in 0.2s ease-out',
-        },
-        'pulse': {
-          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        },
-      },
     },
   },
-  // TailwindCSS v4 options
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
+  // Remove Tailwind v4 option
   plugins: [
     require('tailwindcss-animate'),
     require('@tailwindcss/typography'),
+    // Your custom plugin can be kept to ensure it works, but it's redundant now
+    function({ addUtilities }: { addUtilities: any }) {
+      addUtilities({
+        '.animate-pulse': {
+          'animation': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        },
+        '@keyframes pulse': {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '.5',
+          },
+        },
+      });
+    },
   ],
 } satisfies Config;
 
