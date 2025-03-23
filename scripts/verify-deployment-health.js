@@ -116,16 +116,16 @@ function checkDomain(target) {
 async function checkAuthRedirects() {
   console.log(`\n${colors.cyan}Checking auth redirects...${colors.reset}`);
   
-  const response = await makeRequest({ path: '/login?callbackUrl=https://juche.org', expectedStatus: 200 });
+  const response = await makeRequest({ path: '/login?callbackUrl=https://app.fitforgov.com', expectedStatus: 200 });
   
   if (!response.success) {
     console.log(`${colors.red}✗ Login page returned unexpected status: ${response.status}${colors.reset}`);
     return false;
   }
   
-  // Check if the HTML contains references to juche.org
-  if (response.body.includes('juche.org')) {
-    console.log(`${colors.red}✗ Found "juche.org" in the login page response${colors.reset}`);
+  // Check if the HTML contains references to app.fitforgov.com
+  if (response.body.includes('app.fitforgov.com')) {
+    console.log(`${colors.red}✗ Found "app.fitforgov.com" in the login page response${colors.reset}`);
     console.log(`  This indicates that the middleware is not properly sanitizing callbackUrl parameters`);
     return false;
   } else {

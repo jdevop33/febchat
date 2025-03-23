@@ -39,6 +39,25 @@
   }
 }
 
+/* Define custom animation for pulse effect */
+@keyframes custom-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.custom-pulse {
+  animation: custom-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Replace all animate-pulse usage with custom-pulse */
+.animate-pulse {
+  animation: custom-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 @layer base {
   :root {
     /* Main brand color - indigo */
@@ -193,7 +212,7 @@
 
   *[class^='text-'] {
     color: transparent;
-    @apply animate-pulse select-none rounded-md bg-foreground/20;
+    @apply custom-pulse select-none rounded-md bg-foreground/20;
   }
 
   .skeleton-bg {
@@ -201,7 +220,7 @@
   }
 
   .skeleton-div {
-    @apply animate-pulse bg-foreground/20;
+    @apply custom-pulse bg-foreground/20;
   }
 }
 

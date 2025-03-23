@@ -98,7 +98,7 @@ We've added several security features to the deployment:
 
 ### Login/Auth Issues
 
-If you see redirects to `juche.org` or other domains:
+If you see redirects to `app.fitforgov.com` or other domains:
 
 1. Check that `NEXTAUTH_URL` is set exactly to `https://app.fitforgov.com` 
 2. Ensure the middleware is deployed correctly
