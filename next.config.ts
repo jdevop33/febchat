@@ -2,12 +2,16 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
+    // Partial Prerendering (PPR) is stable in Next.js 15+
+    ppr: true,
     // Modern features for Next.js 15
     typedRoutes: true,
+    // Enable optimized React 19 features
+    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
     serverActions: {
       allowedOrigins: ['app.fitforgov.com', 'localhost:3000'],
+      bodySizeLimit: '2mb',
     },
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   eslint: {
     // Don't run ESLint during build to prevent deployment failures for warnings
@@ -27,7 +31,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Next.js 14+ doesn't support the env key in next.config.js
+  // Next.js 15+ doesn't support the env key in next.config.js
   // Use process.env variables directly in your app instead
   // See: https://nextjs.org/docs/pages/api-reference/next-config-js
   env: undefined,
