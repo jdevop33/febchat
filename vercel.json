@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "chmod +x ./build-with-db.sh && ./build-with-db.sh",
-  "framework": "nextjs",
-  "installCommand": "pnpm install",
-  "env": {
-    "NEXTAUTH_URL": "https://app.fitforgov.com"
-  }
-}
