@@ -6,8 +6,7 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('custom-pulse bg-muted', className)}
-      style={{ borderRadius: '0.375rem' }}
+      className={cn('skeleton-item', className)}
       {...props}
     />
   );

@@ -23,32 +23,26 @@
   
   /* Compatibility classes for Tailwind v4 */
   .bg-background {
-    @apply bg-[hsl(var(--background))];
+    background-color: hsl(var(--background));
   }
   
   .text-foreground {
-    @apply text-[hsl(var(--foreground))];
+    color: hsl(var(--foreground));
   }
   
   .border-border {
-    @apply border-[hsl(var(--border))];
+    border-color: hsl(var(--border));
   }
   
   .ring-ring {
-    @apply ring-[hsl(var(--ring))];
+    --tw-ring-color: hsl(var(--ring));
   }
   
-  .custom-pulse {
+  /* Generic skeleton class for use across components */
+  .skeleton-item {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  /* Tailwind v4 compatibility classes for border radius */
-  .rounded-md {
     border-radius: 0.375rem;
-  }
-  
-  .rounded-lg {
-    border-radius: 0.5rem;
+    background-color: hsla(var(--foreground), 0.2);
   }
 }
 
@@ -206,20 +200,22 @@
     pointer-events: none !important;
   }
 
+  /* Custom skeleton classes that don't rely on Tailwind utilities */
   *[class^='text-'] {
     color: transparent;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    @apply select-none bg-foreground/20;
     border-radius: 0.375rem;
+    background-color: hsla(var(--foreground), 0.2);
+    user-select: none;
   }
 
-  .skeleton-bg {
-    @apply bg-foreground/10;
+  /* These classes are similar to .skeleton-item but scoped to the .skeleton parent */
+  .bg-foreground\/20, .bg-muted-foreground\/20 {
+    background-color: hsla(var(--foreground), 0.2);
   }
-
-  .skeleton-div {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    @apply bg-foreground/20;
+  
+  .bg-foreground\/10, .bg-muted-foreground\/10 {
+    background-color: hsla(var(--foreground), 0.1);
   }
 }
 
