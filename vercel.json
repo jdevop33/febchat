@@ -1,12 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "chmod +x ./build-with-db.sh && pnpm build:vercel",
+  "buildCommand": "pnpm build",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "env": {
     "NEXTAUTH_URL": "https://app.fitforgov.com"
   },
-  "ignoreCommand": "echo skipping linting checks for deployment!",
   "headers": [
     {
       "source": "/(.*)",
@@ -34,4 +33,4 @@
       ]
     }
   ]
-}
+} 
