@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm build",
+  "framework": "nextjs",
+  "installCommand": "pnpm install",
+  "env": {
+    "NEXTAUTH_URL": "https://app.fitforgov.com"
+  },
+  "ignoreCommand": "echo skipping linting checks for deployment!"
+} 

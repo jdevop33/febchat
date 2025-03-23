@@ -57,7 +57,31 @@ async function rateLimit(
 }
 
 export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, host, protocol } = request.nextUrl;
+  
+  // Domain validation and redirection
+  const productionHost = 'app.fitforgov.com';
+  const currentUrl = `${protocol}//${host}`;
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // In production, enforce domain
+  if (isProduction && host !== productionHost && !host.includes('vercel.app')) {
+    // Redirect to the proper domain while preserving the path
+    const url = new URL(pathname, `https://${productionHost}`);
+    return NextResponse.redirect(url);
+  }
+  
+  // Fix wrong redirects to juche.org or other domains
+  if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+    const url = new URL(request.url);
+    const callbackUrl = url.searchParams.get('callbackUrl');
+    
+    // If callback URL is pointing to the wrong domain, fix it
+    if (callbackUrl && !callbackUrl.includes(host)) {
+      url.searchParams.set('callbackUrl', `${currentUrl}/`);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // Apply rate limiting based on path
   let maxRequests = API_PATHS_MAX_REQUESTS;
@@ -98,5 +122,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/:id', '/api/:path*', '/login', '/register'],
+  matcher: ['/', '/:path*', '/api/:path*', '/login', '/register'],
 };

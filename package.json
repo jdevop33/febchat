@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "./build-with-db.sh",
+    "build": "next build",
     "start": "next start",
     "deploy": "vercel --prod",
+    "deploy:fix": "node scripts/fix-deployment.js",
+    "deploy:prepare": "node scripts/fix-deployment.js --build && pnpm run deploy",
     "lint": "next lint || true && biome lint --write --unsafe || true",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
     "format": "prettier --write .",

@@ -15,6 +15,9 @@ interface ExtendedSession extends Session {
   user: User;
 }
 
+// Ensure we have the correct URL
+const SITE_URL = process.env.NEXTAUTH_URL || 'https://app.fitforgov.com';
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -22,6 +25,8 @@ export const {
   signOut,
 } = NextAuth({
   ...authConfig,
+  // Force the base URL to be the production URL
+  basePath: '/api/auth',
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -88,6 +93,15 @@ export const {
       }
 
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Force redirects to stay on our domain
+      if (url.startsWith('/')) {
+        return `${SITE_URL}${url}`;
+      } else if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      return SITE_URL;
     },
   },
 });
