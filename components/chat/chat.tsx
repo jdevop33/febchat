@@ -37,7 +37,7 @@ export function Chat({
   >('connected');
   
   // Store reload function in a ref to avoid dependency cycles
-  const reloadFnRef = useRef<() => Promise<string | null | undefined>>();
+  const reloadFnRef = useRef<(() => Promise<string | null | undefined>) | null>(null);
   
   // Initialize chat visibility
   const { setVisibilityType } = useChatVisibility({
@@ -238,18 +238,21 @@ export function Chat({
               <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400" />
               <span className="text-amber-800 dark:text-amber-300">Connection issue detected</span>
               <button
-                onClick={handleRetry}
-                className="ml-2 flex items-center gap-1 rounded bg-amber-200 px-3 py-1 text-sm font-medium text-amber-900 hover:bg-amber-300 dark:bg-amber-700/50 dark:text-amber-100 dark:hover:bg-amber-700"
-              >
-                <RefreshCw className="size-3" />
-                Retry
-              </button>
-              <button
-                onClick={() => setHasError(false)}
-                className="ml-1 rounded-full p-1 text-amber-600 hover:bg-amber-200 dark:text-amber-400 dark:hover:bg-amber-800"
-              >
-                <X className="size-4" />
-              </button>
+  onClick={handleRetry}
+  className="ml-2 flex items-center gap-1 rounded bg-amber-200 px-3 py-1 text-sm font-medium text-amber-900 hover:bg-amber-300 dark:bg-amber-700/50 dark:text-amber-100 dark:hover:bg-amber-700"
+  aria-label="Retry connection"
+>
+  <RefreshCw className="size-3" aria-hidden="true" />
+  <span>Retry</span>
+</button>
+<button
+  onClick={() => setHasError(false)}
+  className="ml-1 rounded-full p-1 text-amber-600 hover:bg-amber-200 dark:text-amber-400 dark:hover:bg-amber-800"
+  aria-label="Dismiss error message"
+>
+  <X className="size-4" aria-hidden="true" />
+  <span className="sr-only">Close</span>
+</button>
             </div>
           </div>
         )}

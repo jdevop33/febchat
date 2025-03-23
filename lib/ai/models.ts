@@ -15,6 +15,26 @@ if (!process.env.ANTHROPIC_API_KEY) {
 }
 
 /**
+ * Custom provider for AI models
+ */
+export const myProvider = {
+  languageModel: (modelName: string) => {
+    return {
+      name: modelName,
+      model: MODEL_ID,
+      provider: 'anthropic'
+    };
+  },
+  imageModel: (modelName: string) => {
+    return {
+      name: modelName,
+      model: 'claude-3-sonnet-20240229',
+      provider: 'anthropic'
+    };
+  }
+};
+
+/**
  * Direct API helper for Anthropic
  */
 export const callAnthropic = async (messages: any[], system: string, options = {}) => {
