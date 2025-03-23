@@ -83,6 +83,11 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  // Allow access to health check page without authentication
+  if (pathname === '/health') {
+    return NextResponse.next();
+  }
+
   // Apply rate limiting based on path
   let maxRequests = API_PATHS_MAX_REQUESTS;
 

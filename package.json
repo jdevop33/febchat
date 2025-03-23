@@ -9,6 +9,7 @@
     "deploy": "vercel --prod",
     "deploy:fix": "node scripts/fix-deployment.js",
     "deploy:prepare": "node scripts/fix-deployment.js --build && pnpm run deploy",
+    "deploy:validate": "node scripts/verify-deployment-health.js",
     "lint": "next lint || true && biome lint --write --unsafe || true",
     "lint:fix": "next lint --fix && biome lint --write --unsafe",
     "format": "prettier --write .",

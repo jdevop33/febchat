@@ -12,7 +12,24 @@ pnpm run deploy:fix
 
 # Fix issues, test build locally, then deploy
 pnpm run deploy:prepare
+
+# Validate a deployed site
+pnpm run deploy:validate
 ```
+
+## Deployment Process
+
+1. **Fix Configuration**
+   - Run `pnpm run deploy:fix` to ensure all settings are correct
+   - This will update vercel.json, package.json, and .env files
+
+2. **Deploy to Vercel**
+   - Run `pnpm run deploy:prepare` to test locally and deploy
+   - OR push to your GitHub repo to trigger auto-deployment
+
+3. **Validate Deployment**
+   - Run `pnpm run deploy:validate` to check deployment health
+   - This tests critical endpoints and security settings
 
 ## Domain Configuration
 
@@ -58,6 +75,25 @@ Set these in the Vercel dashboard:
 | `PINECONE_INDEX` | Vector index name |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob Storage token |
 
+## Security Enhancements
+
+We've added several security features to the deployment:
+
+1. **Security Headers**
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: DENY
+   - X-XSS-Protection: 1; mode=block
+   - Referrer-Policy: strict-origin-when-cross-origin
+
+2. **Authentication Safeguards**
+   - Fixed callback URL handling to prevent open redirects
+   - Enforced use of the canonical domain
+   - Implemented domain validation in middleware
+
+3. **Rate Limiting**
+   - API requests are limited to prevent abuse
+   - Authentication endpoints have stricter limits
+
 ## Troubleshooting
 
 ### Login/Auth Issues
@@ -88,13 +124,27 @@ Solution:
 1. Run `pnpm run deploy:fix` to fix configuration
 2. If persisting, check Vercel build logs
 
-## Monitoring
+## Health Check Tool
+
+The `deploy:validate` script performs the following checks:
+
+- Verifies all critical endpoints are accessible
+- Checks that authentication is working correctly
+- Ensures security headers are properly set
+- Validates domain configuration and redirects
+- Tests that callback URL sanitization is working
+
+If any issues are found, it provides specific recommendations for fixing them.
+
+## Monitoring and Maintenance
 
 After deployment:
 
 1. Check Vercel Analytics for performance metrics
 2. Monitor logs for any auth or API errors
 3. Test all critical flows (login, chat, search)
+4. Update API keys before they expire
+5. Keep dependencies updated
 
 ## Reverting Deployments
 

@@ -30,5 +30,10 @@
       "config": "tailwind.config.ts"
     }
   },
-  "ignorePatterns": ["**/components/ui/**", "**/scripts/test-circular-deps.js"]
+  "ignorePatterns": [
+    "**/components/ui/**",
+    "**/scripts/test-circular-deps.js",
+    "**/scripts/fix-deployment.js",
+    "**/scripts/verify-deployment-health.js"
+  ]
 }
