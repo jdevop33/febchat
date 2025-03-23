@@ -61,6 +61,8 @@ export function BylawCitation({
   const [citationFormat, setCitationFormat] = useState<
     'standard' | 'legal' | 'apa'
   >('standard');
+  const [isVerifyingPdf, setIsVerifyingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const formattedTitle = title || `Bylaw No. ${bylawNumber}`;
   const formattedSection = formatSection(section, sectionTitle);
@@ -174,15 +176,59 @@ export function BylawCitation({
   }
 
   // Various action handlers
-  const handleViewPdf = () => {
-    validBylaw ? setIsPdfOpen(true) : handlePdfNotFound();
+  const handleViewPdf = async () => {
+    setIsVerifyingPdf(true);
+    setPdfError(null);
+    
+    try {
+      // Verify PDF exists by checking with the API
+      const response = await fetch(`/api/bylaws/find-pdf?bylawNumber=${bylawNumber}`);
+      const data = await response.json();
+      
+      if (data.found && data.url) {
+        // PDF found, open it
+        setIsPdfOpen(true);
+        setIsVerifyingPdf(false);
+      } else {
+        // PDF not found, show error and fallback
+        setPdfError(`PDF for Bylaw ${bylawNumber} not found`);
+        setIsVerifyingPdf(false);
+        toast.error('PDF not found', {
+          description: `Could not find PDF for Bylaw ${bylawNumber}. Directing to official website.`,
+        });
+        
+        // Automatically fall back to external site
+        setTimeout(() => {
+          handleViewExternalPdf();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Error verifying PDF:', error);
+      setPdfError(`Error checking PDF: ${error instanceof Error ? error.message : String(error)}`);
+      setIsVerifyingPdf(false);
+      
+      // Fall back to default behavior - try to open PDF anyway
+      setIsPdfOpen(true);
+    }
+  };
+
+  const handlePdfNotFound = () => {
+    toast.error('PDF not found', {
+      description: `Could not find PDF for Bylaw ${bylawNumber}. Directing to official website.`,
+    });
+    
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      }
+    }, 1500);
   };
 
   const handleViewExternalPdf = () => {
-    // Simplified for testing
-    console.log('PDF viewer temporarily disabled for testing');
+    // Log action
+    console.log(`Opening external PDF for Bylaw ${bylawNumber}`);
 
-    // Open generic URL in new tab
+    // Open in new tab
     if (typeof window !== 'undefined') {
       window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
     }
@@ -248,121 +294,91 @@ export function BylawCitation({
         <>
           <Card
             className={cn(
-              'my-3 cursor-pointer border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20',
-              'group relative transition-all duration-200 hover:border-blue-400 hover:shadow-md dark:hover:border-blue-700',
-              !validBylaw &&
-                'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20',
+              'mb-4 overflow-hidden border-amber-100 bg-amber-50/30 shadow-sm hover:border-amber-200 dark:border-amber-900/30 dark:bg-amber-900/10 dark:hover:border-amber-800/80',
+              expanded && 'bg-amber-50/50 dark:bg-amber-900/20',
               className,
             )}
-            onClick={handleViewBylaw}
-            data-testid={`bylaw-citation-${bylawNumber}-${section}`}
-            data-bylaw-number={bylawNumber}
-            data-section={section}
-            data-consolidated={isConsolidated}
           >
-            {/* PDF indicator icon & helper text */}
-            <div className="absolute right-3 top-3 flex items-center gap-2">
-              <span className="hidden rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 opacity-0 shadow-sm transition-opacity duration-200 group-hover:opacity-100 dark:bg-blue-900/60 dark:text-blue-200 md:inline-block">
-                Click to view PDF
-              </span>
-              <div className="rounded-full bg-blue-100 p-1 text-blue-700 shadow-sm dark:bg-blue-900/40 dark:text-blue-300">
-                <FileSearch size={16} />
-              </div>
-            </div>
+            {/* Citation header with expand/collapse */}
+            <CitationHeader
+              expanded={expanded}
+              setExpanded={setExpanded}
+              bylawNumber={bylawNumber}
+              formattedTitle={formattedTitle}
+              formattedSection={formattedSection}
+              validBylaw={validBylaw}
+              isVerified={isVerified}
+            />
 
-            <CardContent className="pt-4">
-              <div className="flex items-start justify-between">
-                {/* Title and verification status */}
-                <CitationHeader
-                  formattedTitle={formattedTitle}
-                  bylawNumber={bylawNumber}
-                  isVerified={isVerified}
-                  validBylaw={validBylaw}
-                  onViewPdf={handleViewPdf}
-                />
-
-                {/* Metadata display */}
+            {/* Expandable content */}
+            {expanded && (
+              <CardContent className="px-4 pb-3 pt-1">
+                {/* Metadata section */}
                 <CitationMetadata
-                  effectiveDate={effectiveDate}
                   isConsolidated={isConsolidated}
                   consolidatedDate={consolidatedDate}
-                  formattedSection={formattedSection}
+                  effectiveDate={effectiveDate}
+                  financialImpact={financialImpact}
+                  score={score}
                 />
-              </div>
 
-              {/* Excerpt and additional information */}
-              <CitationExcerpt
-                excerpt={excerpt}
-                expanded={expanded}
-                relevance={relevance}
-                financialImpact={financialImpact}
-              />
+                {/* Citation text/excerpt */}
+                <CitationExcerpt excerpt={excerpt} />
 
-              {/* Actions for expanding, viewing PDF, etc. */}
-              <CitationActions
-                expanded={expanded}
-                setExpanded={setExpanded}
-                onViewPdf={handleViewBylaw}
-                onViewExternalPdf={handleViewBylaw}
-                onViewOfficialSite={handleViewBylaw}
-                onExportReport={handleExportReport}
-                validBylaw={true} /* Always enable buttons */
-              />
+                {/* Citation formatter */}
+                <CitationFormatter
+                  citationFormat={citationFormat}
+                  setCitationFormat={setCitationFormat}
+                  bylawNumber={bylawNumber}
+                  formattedTitle={formattedTitle}
+                  section={section}
+                  sectionTitle={sectionTitle}
+                />
 
-              {/* Citation format selector and copy button */}
-              {expanded && (
-                <div className="mt-2 flex justify-end">
-                  <CitationFormatter
-                    bylawNumber={bylawNumber}
-                    title={formattedTitle}
-                    section={section}
-                    isConsolidated={isConsolidated}
-                    consolidatedDate={consolidatedDate}
-                    effectiveDate={effectiveDate}
-                    excerpt={excerpt}
-                    citationFormat={citationFormat}
-                    setCitationFormat={setCitationFormat}
-                  />
-                </div>
-              )}
-            </CardContent>
+                {/* Citation actions */}
+                <CitationActions
+                  onViewPdf={handleViewPdf}
+                  onViewExternalPdf={handleViewExternalPdf}
+                  onViewOfficialSite={handleViewOfficialSite}
+                  onExportReport={handleExportReport}
+                  validBylaw={validBylaw}
+                  isVerifyingPdf={isVerifyingPdf}
+                  pdfError={pdfError}
+                />
+
+                {/* Citation feedback */}
+                <CitationFeedback
+                  bylawNumber={bylawNumber}
+                  section={section}
+                  citationText={excerpt}
+                />
+              </CardContent>
+            )}
           </Card>
 
-          <CitationFeedback
-            bylawNumber={bylawNumber}
-            section={section}
-            citationText={excerpt}
-            className="mt-2"
-          />
-
-          {/* Use the PDF viewer only if in client context and modal is open */}
-          {typeof window !== 'undefined' && isPdfOpen && (
+          {/* PDF viewer modal */}
+          {isPdfOpen && (
             <PdfViewerModal
-              isOpen={isPdfOpen}
-              onClose={() => setIsPdfOpen(false)}
-              bylawNumber={bylawNumber}
-              title={formattedTitle}
-              pdfPath={getPdfPath()}
+              url={getPdfPath()}
+              title={`Bylaw ${bylawNumber} - ${title || 'View Document'}`}
               initialPage={1}
-              section={section}
-              isVerified={isVerified}
-              externalUrl={externalUrl}
+              onClose={() => setIsPdfOpen(false)}
+              onError={handlePdfNotFound}
             />
           )}
         </>
       );
     } catch (error) {
-      console.error('Error rendering BylawCitation:', error);
+      console.error('Error rendering bylaw citation:', error);
       return (
         <CitationFallback
           bylawNumber={bylawNumber}
           formattedTitle={formattedTitle}
-          error={error instanceof Error ? error : new Error('Unknown error')}
+          error={error instanceof Error ? error : new Error('Unknown rendering error')}
         />
       );
     }
   };
 
-  // Use the safe rendering function
   return safeRender();
 }

@@ -111,14 +111,45 @@ export async function searchBylaws(
       );
     }
 
-    // Fall back to keyword search if Pinecone fails or isn't configured
-    const keywordResults = await performKeywordSearch(query, filters, limit);
-    logger.info(`Keyword search completed in ${Date.now() - startTime}ms`);
-    return keywordResults;
+    // Fall back to keyword search
+    logger.info('Initiating fallback keyword search');
+    try {
+      // First try the enhanced fallback search
+      const fallbackResults = await performKeywordSearch(query, filters, limit);
+      
+      logger.info(`Fallback search completed in ${Date.now() - startTime}ms`);
+      
+      // Cache fallback results if caching is enabled
+      if (options?.useCache !== false) {
+        const cacheKey = generateCacheKey(query, options);
+        searchCache.set(cacheKey, {
+          results: fallbackResults,
+          timestamp: Date.now(),
+          isFallback: true
+        });
+      }
+      
+      return fallbackResults;
+    } catch (fallbackError) {
+      logger.error(
+        fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError)),
+        'Enhanced keyword search failed, using last resort search'
+      );
+      
+      // Last resort: use static data files
+      const staticResults = await performStaticFileSearch(query, limit);
+      
+      logger.info(`Last resort search completed in ${Date.now() - startTime}ms`);
+      return staticResults;
+    }
   } catch (error) {
-    const errorObj = error instanceof Error ? error : new Error(String(error));
-    logger.error(errorObj, 'Search failed');
-    return []; // Return empty results in case of errors
+    logger.error(
+      error instanceof Error ? error : new Error(String(error)),
+      'All search methods failed'
+    );
+    
+    // Absolute last resort: return empty results rather than failing
+    return [];
   }
 }
 
@@ -223,18 +254,51 @@ async function performKeywordSearch(
         title: formatBylawTitle(file),
       }));
 
+    // Apply filters if provided
+    let filteredFiles = [...pdfFiles];
+    
+    if (filters) {
+      if (filters.bylawNumber) {
+        filteredFiles = filteredFiles.filter(
+          (file: any) => file.bylawNumber === filters.bylawNumber
+        );
+      }
+      
+      // Add other filter types as needed
+    }
+
     // Filter by query
     const queryLower = query.toLowerCase();
-    const matchingFiles = pdfFiles
-      .filter(
-        (file: any) =>
-          file.filename.toLowerCase().includes(queryLower) ||
-          file.title?.toLowerCase().includes(queryLower),
-      )
-      .slice(0, limit);
+    const queryTerms = queryLower.split(/\s+/).filter(term => term.length > 2);
+
+    // Score files based on term matches (more complex matching)
+    const scoredFiles = filteredFiles.map((file: any) => {
+      let score = 0;
+      const filenameLower = file.filename.toLowerCase();
+      const titleLower = (file.title || '').toLowerCase();
+      
+      // Direct match in filename or title is high score
+      if (filenameLower.includes(queryLower) || titleLower.includes(queryLower)) {
+        score += 0.8;
+      }
+      
+      // Score individual term matches
+      for (const term of queryTerms) {
+        if (filenameLower.includes(term)) score += 0.3;
+        if (titleLower.includes(term)) score += 0.4;
+      }
+      
+      return {
+        ...file,
+        score: Math.min(score, 1.0) // Cap score at 1.0
+      };
+    })
+    .filter((file: any) => file.score > 0) // Only keep matches
+    .sort((a: any, b: any) => b.score - a.score) // Sort by score
+    .slice(0, limit);
 
     // Convert to search results
-    return matchingFiles.map((file: any, index: number) => ({
+    return scoredFiles.map((file: any) => ({
       text: `Bylaw ${file.bylawNumber || 'Unknown'}: ${file.title || file.filename}`,
       metadata: {
         bylawNumber: file.bylawNumber || 'Unknown',
@@ -242,29 +306,61 @@ async function performKeywordSearch(
         section: '',
         filename: file.filename,
         url: `/pdfs/${file.filename}`,
+        officialUrl: `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${file.bylawNumber || 'unknown'}`,
+        isConsolidated: file.filename.toLowerCase().includes('consolidat'),
       },
-      score: 0.8 - index * 0.1, // Simple relevance score
-      id: `file-${index}`,
+      score: file.score,
+      id: `file-${file.bylawNumber || file.filename}`,
     }));
   } catch (error) {
-    logger.error('Error in keyword search fallback:', error);
-    return [];
+    logger.error('Error in keyword search:', error);
+    throw error; // Re-throw to try the next fallback method
   }
+}
 
-  // Helper function to extract bylaw number from filename
-  function extractBylawNumber(filename: string): string | null {
-    const match = filename.match(/(\d{4})/);
-    return match ? match[1] : null;
-  }
+/**
+ * Last resort static file search when all else fails
+ */
+async function performStaticFileSearch(
+  query: string,
+  limit = 5,
+): Promise<BylawSearchResult[]> {
+  logger.warn('Using static file search - last resort!');
+  
+  // Return basic results from the mock data
+  return mockBylawData
+    .filter((item) => {
+      const queryLower = query.toLowerCase();
+      return item.text.toLowerCase().includes(queryLower) ||
+        (item.metadata.title && item.metadata.title.toLowerCase().includes(queryLower)) ||
+        (item.metadata.bylawNumber && item.metadata.bylawNumber.toLowerCase().includes(queryLower));
+    })
+    .slice(0, limit)
+    .map((chunk, index) => ({
+      text: chunk.text,
+      metadata: chunk.metadata,
+      score: 0.5, // Medium confidence for static data
+      id: `static-${index}`,
+    }));
+}
 
-  // Helper function to format bylaw title
-  function formatBylawTitle(filename: string): string {
-    return filename
-      .replace(/\.pdf$/i, '')
-      .replace(/-/g, ' ')
-      .replace(/\d{4}/, '')
-      .trim();
-  }
+/**
+ * Helper function to extract bylaw number from filename
+ */
+function extractBylawNumber(filename: string): string | null {
+  const match = filename.match(/(\d{4})/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Helper function to format bylaw title
+ */
+function formatBylawTitle(filename: string): string {
+  return filename
+    .replace(/\.pdf$/i, '')
+    .replace(/-/g, ' ')
+    .replace(/\d{4}/, '')
+    .trim();
 }
 
 /**
