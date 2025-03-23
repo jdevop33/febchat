@@ -195,7 +195,7 @@
 
   *[class^='text-'] {
     color: transparent;
-    @apply animate-pulse select-none rounded-md bg-foreground/20;
+    @apply motion-pulse select-none rounded-md bg-foreground/20;
   }
 
   .skeleton-bg {
@@ -203,7 +203,7 @@
   }
 
   .skeleton-div {
-    @apply animate-pulse bg-foreground/20;
+    @apply motion-pulse bg-foreground/20;
   }
 }
 

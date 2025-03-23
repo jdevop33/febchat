@@ -22,7 +22,7 @@ type LazyWrapperProps = {
 
 const defaultLoadingFallback = (
   <div className="flex h-full min-h-[100px] w-full items-center justify-center">
-    <div className="h-10 w-full max-w-md animate-pulse rounded-md bg-muted" />
+    <div className="h-10 w-full max-w-md motion-pulse rounded-md bg-muted" />
   </div>
 );
 
