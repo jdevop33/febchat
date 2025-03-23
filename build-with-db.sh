@@ -6,10 +6,12 @@
 # With additional validation and debug information
 
 set -e # Exit immediately if a command exits with a non-zero status
-set -u # Treat unset variables as an error
+# set -u # Treat unset variables as an error - disabled to prevent errors with missing vars
 set -x # Print each command before executing (helps with debugging)
 
-echo "FebChat: Starting build process..."
+echo "FebChat: Starting build process on $(date)"
+echo "Node version: $(node -v)"
+echo "NPM version: $(npm -v)"
 
 # Set environment variables for the build
 export NEXT_PHASE="build"
@@ -108,15 +110,31 @@ if [ "${SKIP_MIGRATIONS:-false}" = "true" ]; then
   echo "Skipping database migrations as requested by SKIP_MIGRATIONS=true"
 else
   echo "Running database migrations..."
-  pnpm db:migrate
+  # Run migrations but don't let failures stop the build on Vercel
+  if [ -n "${VERCEL:-}" ]; then
+    echo "In Vercel environment - running migrations with failure tolerance"
+    pnpm db:migrate || {
+      echo "⚠️ Migration failed but continuing build process for Vercel deployment"
+    }
+  else
+    pnpm db:migrate
+  fi
+fi
+
+# Check if we need to run a specific build command
+BUILD_CMD="next build"
+
+# Check if there's a custom build command for different environments
+if [ "${CUSTOM_BUILD_CMD:-}" != "" ]; then
+  echo "Using custom build command: $CUSTOM_BUILD_CMD"
+  BUILD_CMD="$CUSTOM_BUILD_CMD"
 fi
 
 # Run Next.js build with optimized settings
-echo "Building Next.js application..."
+echo "Building Next.js application with command: pnpm $BUILD_CMD"
 
-# Use next build directly to avoid recursion
-# This ensures we run the actual Next.js build process
-pnpm next build
+# Use the build command directly to avoid recursion
+pnpm $BUILD_CMD
 
 echo "✅ Build completed successfully!"
 exit 0

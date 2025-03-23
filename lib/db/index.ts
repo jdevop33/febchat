@@ -4,7 +4,17 @@
  * This file provides a unified way to access the database from anywhere in the application.
  * It handles different environments and database providers.
  */
-import 'server-only';
+// Only import server-only when not in a script context
+// This allows for testing and migration scripts to work
+const isScriptContext = process.env.NODE_ENV === 'test' || 
+                        process.argv[1]?.includes('tsx') ||
+                        process.argv[1]?.includes('test') ||
+                        process.argv[1]?.includes('scripts/');
+
+if (!isScriptContext) {
+  require('server-only');
+}
+
 import { env } from 'node:process';
 import * as schema from './schema';
 

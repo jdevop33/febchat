@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
+  "buildCommand": "chmod +x ./build-with-db.sh && pnpm build:vercel",
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "env": {
@@ -34,4 +34,4 @@
       ]
     }
   ]
-} 
+}

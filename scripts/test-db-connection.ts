@@ -7,11 +7,14 @@
 
 import { sql } from 'drizzle-orm';
 import { config } from 'dotenv';
-import { createDatabaseClient } from '../lib/db';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '../lib/db/schema';
 
 // Load environment variables
 config({ path: '.env.local' });
 
+// Skip the 'server-only' import by creating a direct connection
 async function testDatabaseConnection() {
   console.log('Testing database connection...');
   console.log(`Node Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -31,9 +34,15 @@ async function testDatabaseConnection() {
   console.log('Connection string found. Testing connection...');
 
   try {
-    // Create database client using our unified approach
-    console.log('Initializing database client...');
-    const db = createDatabaseClient();
+    // Create a direct database connection for testing purposes
+    console.log('Initializing test database client...');
+    
+    // Initialize the database client directly
+    const connection = postgres(connectionString, { 
+      max: 1,
+      ssl: process.env.DB_USE_SSL !== 'false',
+    });
+    const db = drizzle(connection, { schema });
 
     try {
       // Test query using our database client
@@ -57,6 +66,9 @@ async function testDatabaseConnection() {
       }
       
       console.log('\n✅ Database connection tests completed successfully!');
+      
+      // Close the connection
+      await connection.end();
     } catch (queryError) {
       console.error('❌ Database query failed:', queryError);
       process.exit(1);
