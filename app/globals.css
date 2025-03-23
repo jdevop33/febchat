@@ -225,22 +225,27 @@
 
 .cm-editor,
 .cm-gutters {
-  @apply bg-[hsl(var(--background))] outline-none !selection:bg-zinc-900 dark:!bg-zinc-800;
+  @apply bg-[hsl(var(--background))] outline-none dark:bg-zinc-800;
+}
+
+/* Handle selection styling with regular CSS */
+.cm-editor::selection {
+  background-color: rgb(24 24 27); /* zinc-900 */
 }
 
 .ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
-  @apply !bg-zinc-200 dark:!bg-zinc-900;
+  @apply bg-zinc-200 dark:bg-zinc-900;
 }
 
 .cm-activeLine,
 .cm-activeLineGutter {
-  @apply !bg-transparent;
+  @apply bg-transparent;
 }
 
 .cm-activeLine {
-  @apply !rounded-r-sm;
+  @apply rounded-r-sm;
 }
 
 .cm-lineNumbers {
@@ -252,7 +257,7 @@
 }
 
 .cm-lineNumbers .cm-activeLineGutter {
-  @apply !rounded-l-sm;
+  @apply rounded-l-sm;
 }
 
 .suggestion-highlight {
