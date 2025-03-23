@@ -7,6 +7,7 @@ const config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  prefix: '',
   theme: {
     fontFamily: {
       sans: ['geist', 'sans-serif'],
@@ -137,11 +138,9 @@ const config = {
       },
     },
   },
+  // TailwindCSS v4 options
   future: {
-    // Enable v4 features
     hoverOnlyWhenSupported: true,
-    respectDefaultRingColorOpacity: true,
-    disableColorOpacityUtilitiesByDefault: true,
   },
   plugins: [
     require('tailwindcss-animate'),
