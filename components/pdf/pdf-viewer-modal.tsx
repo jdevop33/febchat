@@ -76,7 +76,7 @@ export function PdfViewerModal({
     // Try to get total pages from the iframe
     try {
       const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-      if (iframe && iframe.contentWindow) {
+      if (iframe?.contentWindow) {
         // Listen for messages from the PDF viewer
         window.addEventListener('message', (event) => {
           if (event.data && event.data.type === 'pdf-total-pages') {
@@ -118,12 +118,12 @@ export function PdfViewerModal({
       // Use provided external URL or default to bylaws page
       const urlToOpen =
         externalUrl ||
-        `https://www.oakbay.ca/municipal-services/bylaws`;
+        'https://www.oakbay.ca/municipal-services/bylaws';
 
       window.open(urlToOpen, '_blank', 'noopener,noreferrer');
 
       toast.info('Opening external bylaw site', {
-        description: `Opening external site for bylaw information`,
+        description: 'Opening external site for bylaw information',
       });
     }
   };
@@ -133,7 +133,7 @@ export function PdfViewerModal({
     if (url) {
       const link = document.createElement('a');
       link.href = url;
-      link.download = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+      link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -160,7 +160,7 @@ export function PdfViewerModal({
 
         {isPdfLoading && !pdfError ? (
           <div className="flex h-[70vh] flex-col items-center justify-center space-y-4">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-blue-600 border-t-transparent"></div>
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-solid border-blue-600 border-t-transparent" />
             <p className="text-sm text-muted-foreground">Loading PDF document...</p>
             <p className="text-xs text-muted-foreground">This may take a moment for large documents</p>
           </div>

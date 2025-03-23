@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
   // Declare IP variable at the top level of the function
   let ip = '';
-  let startTime = Date.now();
+  const startTime = Date.now();
 
   try {
     // Get client IP for rate limiting
@@ -365,7 +365,7 @@ export async function POST(request: Request) {
                             
                             // Send the text chunk to the client
                             const json = JSON.stringify({ text });
-                            controller.enqueue(encoder.encode(json + '\n'));
+                            controller.enqueue(encoder.encode(`${json}\n`));
                           }
                         } catch (parseError) {
                           console.error('Error parsing SSE data:', parseError);
@@ -406,7 +406,7 @@ export async function POST(request: Request) {
                       error: 'Stream error',
                       message: streamError instanceof Error ? streamError.message : String(streamError),
                     });
-                    controller.enqueue(encoder.encode(errorJson + '\n'));
+                    controller.enqueue(encoder.encode(`${errorJson}\n`));
                   } catch (e) {
                     // Ignore errors when sending the error
                   }

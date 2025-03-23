@@ -74,7 +74,7 @@ export function getPineconeIndex() {
             const index = getPineconeClient().index(process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2');
             resolve(index);
           } catch (retryError) {
-            console.error(`Retry failed:`, retryError);
+            console.error('Retry failed:', retryError);
             throw new Error(`Failed to connect to Pinecone index after retry: ${retryError instanceof Error ? retryError.message : String(retryError)}`);
           }
         }, delay);

@@ -98,7 +98,7 @@ export const {
       // Force redirects to stay on our domain
       if (url.startsWith('/')) {
         return `${SITE_URL}${url}`;
-      } else if (new URL(url).origin === baseUrl) {
+      }if (new URL(url).origin === baseUrl) {
         return url;
       }
       return SITE_URL;

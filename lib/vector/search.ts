@@ -386,8 +386,8 @@ async function performStaticFileSearch(
     .filter((item: BylawChunk) => {
       const queryLower = query.toLowerCase();
       return item.text.toLowerCase().includes(queryLower) ||
-        (item.metadata.title && item.metadata.title.toLowerCase().includes(queryLower)) ||
-        (item.metadata.bylawNumber && item.metadata.bylawNumber.toLowerCase().includes(queryLower));
+        (item.metadata.title?.toLowerCase().includes(queryLower)) ||
+        (item.metadata.bylawNumber?.toLowerCase().includes(queryLower));
     })
     .slice(0, limit)
     .map((chunk: BylawChunk, index: number) => ({

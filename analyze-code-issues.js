@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 // Files to analyze
 const files = [
@@ -18,7 +18,7 @@ const issues = {
   componentErrors: { regex: /(No overload matches this call|has no properties in common with type)/, description: 'Component usage errors' }
 };
 
-let foundProblems = [];
+const foundProblems = [];
 
 files.forEach(filePath => {
   const fullPath = path.resolve(filePath);
@@ -90,7 +90,7 @@ files.forEach(filePath => {
           const equalityFn = equalityFnMatch[1];
           
           // If the component accepts 'disabled' but it's not in the equality check
-          if (content.includes(`disabled?:`) && !equalityFn.includes('disabled')) {
+          if (content.includes('disabled?:') && !equalityFn.includes('disabled')) {
             foundProblems.push({
               file: filePath, 
               lineNumber: content.split('\n').findIndex(line => line.includes(`memo(${componentName}`)) + 1,
@@ -274,7 +274,7 @@ function findBlockContent(lines, startLineIndex) {
     }
     
     if (started) {
-      blockContent += line + '\n';
+      blockContent += `${line}\n`;
       
       // Count braces to find the end of the block
       const openBraces = (line.match(/{/g) || []).length;

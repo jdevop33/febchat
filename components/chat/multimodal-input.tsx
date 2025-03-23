@@ -367,7 +367,7 @@ function PureStopButton({
             // Mark the message as user-stopped
             newMessages[actualIndex] = {
               ...newMessages[actualIndex],
-              content: newMessages[actualIndex].content + ' [Stopped by user]',
+              content: `${newMessages[actualIndex].content} [Stopped by user]`,
             };
             
             return newMessages;

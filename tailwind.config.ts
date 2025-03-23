@@ -146,7 +146,10 @@ const config = {
       },
     },
   },
-  // Remove Tailwind v4 option
+  // TailwindCSS options
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   plugins: [
     require('tailwindcss-animate'),
     require('@tailwindcss/typography'),

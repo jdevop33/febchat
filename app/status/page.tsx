@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Check, X, AlertTriangle, Wifi, Database, Search, FileText } from 'lucide-react';
@@ -34,7 +34,7 @@ export default function StatusPage() {
     { name: 'PDF Services', status: 'unknown', message: 'Checking...', icon: FileText },
   ]);
 
-  const checkStatus = async () => {
+  const checkStatus = useCallback(async () => {
     setIsLoading(true);
     
     try {
@@ -218,11 +218,11 @@ export default function StatusPage() {
       setIsLoading(false);
       setLastUpdated(new Date());
     }
-  };
+  }, [setIsLoading, setServiceStatuses, setSystemStatus, setLastUpdated]);
 
   useEffect(() => {
     checkStatus();
-  }, []);
+  }, [checkStatus]);
 
   // Helper function to get status color
   const getStatusColor = (status: string): string => {
