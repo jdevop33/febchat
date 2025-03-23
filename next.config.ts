@@ -2,11 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   experimental: {
-    // Partial Prerendering (PPR) is stable in Next.js 15+
-    ppr: true,
-    // Modern features for Next.js 15
-    typedRoutes: true,
-    // Enable optimized React 19 features
+    // Only enable features compatible with the version of Next.js being used
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
     serverActions: {
       allowedOrigins: ['app.fitforgov.com', 'localhost:3000'],
