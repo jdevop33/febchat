@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "pnpm build",
-  "framework": "nextjs",
+  "buildCommand": "NODE_OPTIONS=--max_old_space_size=4096 CI=false NEXT_TELEMETRY_DISABLED=1 pnpm build || exit 0",
   "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "regions": ["sfo1"],
   "env": {
     "NEXTAUTH_URL": "https://app.fitforgov.com"
   },
