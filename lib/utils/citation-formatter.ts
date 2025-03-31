@@ -11,11 +11,11 @@ export function normalizeSection(section: string): string {
   // Remove any prefix like "Section", "Part", etc.
   let normalized = section.replace(
     /^(section|part|article|schedule|appendix|s\.|p\.)\s+/i,
-    '',
+    "",
   );
 
   // Remove trailing period if it exists
-  normalized = normalized.replace(/\.$/, '');
+  normalized = normalized.replace(/\.$/, "");
 
   // If it's a roman numeral, convert to uppercase for consistency
   if (/^[IVXLCDM]+$/i.test(normalized)) {
@@ -72,10 +72,10 @@ export function formatSection(section: string, title?: string | null): string {
  */
 export function getCitationSectionString(
   section: string,
-  format: 'standard' | 'legal' | 'apa',
+  format: "standard" | "legal" | "apa",
 ): string {
   // For legal citations, use the section symbol with normalized section
-  if (format === 'legal') {
+  if (format === "legal") {
     return `§ ${normalizeSection(section)}`;
   }
 
@@ -92,10 +92,11 @@ export function getConsolidationInfo(
 ): string {
   if (isConsolidated && consolidatedDate) {
     return ` (Consolidated to ${consolidatedDate})`;
-  }if (isConsolidated) {
-    return ' (Consolidated)';
   }
-  return '';
+  if (isConsolidated) {
+    return " (Consolidated)";
+  }
+  return "";
 }
 
 /**
@@ -111,7 +112,7 @@ export function formatCitation(
     effectiveDate?: string;
     excerpt?: string;
   },
-  format: 'standard' | 'legal' | 'apa' = 'standard',
+  format: "standard" | "legal" | "apa" = "standard",
 ): string {
   const {
     bylawNumber,
@@ -131,12 +132,12 @@ export function formatCitation(
 
   // Format citation based on selected format
   switch (format) {
-    case 'legal':
-      return `Oak Bay Bylaw No. ${bylawNumber}${consolidationInfo}, § ${section} (${effectiveDate || 'n.d.'}).`;
+    case "legal":
+      return `Oak Bay Bylaw No. ${bylawNumber}${consolidationInfo}, § ${section} (${effectiveDate || "n.d."}).`;
 
-    case 'apa':
-      return `District of Oak Bay. (${effectiveDate?.split('-')[0] || 'n.d.'}). ${title} [Bylaw No. ${bylawNumber}${consolidationInfo}], ${getCitationSectionString(section, 'apa')}.`;
+    case "apa":
+      return `District of Oak Bay. (${effectiveDate?.split("-")[0] || "n.d."}). ${title} [Bylaw No. ${bylawNumber}${consolidationInfo}], ${getCitationSectionString(section, "apa")}.`;
     default:
-      return `${title}${consolidationInfo}, ${getCitationSectionString(section, 'standard')}${excerpt ? `: ${excerpt}` : ''}`;
+      return `${title}${consolidationInfo}, ${getCitationSectionString(section, "standard")}${excerpt ? `: ${excerpt}` : ""}`;
   }
 }

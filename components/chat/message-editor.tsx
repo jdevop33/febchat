@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import type { ChatRequestOptions, Message } from 'ai';
-import { Button } from '@/components/ui/button';
+import { deleteTrailingMessages } from "@/app/(chat)/actions";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import type { ChatRequestOptions, Message } from "ai";
 import {
   type Dispatch,
   type SetStateAction,
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { Textarea } from '@/components/ui/textarea';
-import { deleteTrailingMessages } from '@/app/(chat)/actions';
+} from "react";
 
 export type MessageEditorProps = {
   message: Message;
-  setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
+  setMode: Dispatch<SetStateAction<"view" | "edit">>;
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;
@@ -42,7 +42,7 @@ export function MessageEditor({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   };
@@ -66,7 +66,7 @@ export function MessageEditor({
           variant="outline"
           className="h-fit px-3 py-2"
           onClick={() => {
-            setMode('view');
+            setMode("view");
           }}
         >
           Cancel
@@ -97,11 +97,11 @@ export function MessageEditor({
               return messages;
             });
 
-            setMode('view');
+            setMode("view");
             reload();
           }}
         >
-          {isSubmitting ? 'Sending...' : 'Send'}
+          {isSubmitting ? "Sending..." : "Send"}
         </Button>
       </div>
     </div>

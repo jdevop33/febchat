@@ -8,19 +8,19 @@
  * pnpm tsx scripts/upload-pdfs-to-pinecone.ts
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { Pinecone } from '@pinecone-database/pinecone';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import dotenv from 'dotenv';
+import fs from "node:fs";
+import path from "node:path";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // PDF directory
-const PDF_DIRECTORY = path.resolve(process.cwd(), 'public', 'pdfs');
+const PDF_DIRECTORY = path.resolve(process.cwd(), "public", "pdfs");
 
 // Chunk configuration
 const CHUNK_SIZE = 1000;
@@ -34,7 +34,7 @@ function extractBylawInfo(filename: string): {
   const result: { number?: string; title?: string } = {};
 
   // Remove file extension
-  const basename = path.basename(filename, '.pdf');
+  const basename = path.basename(filename, ".pdf");
 
   // Pattern 1: "bylaw-XXXX-title.pdf" format (our organized format)
   const organizedPattern = /^bylaw-(\d+)(?:-(.+))?$/i;
@@ -42,7 +42,7 @@ function extractBylawInfo(filename: string): {
 
   if (organizedMatch) {
     result.number = organizedMatch[1];
-    result.title = organizedMatch[2]?.replace(/-/g, ' ');
+    result.title = organizedMatch[2]?.replace(/-/g, " ");
     return result;
   }
 
@@ -96,7 +96,7 @@ async function processPDF(filePath: string): Promise<{
   const docs = await loader.load();
 
   // Get text content
-  const pdfText = docs.map((doc) => doc.pageContent).join('\n');
+  const pdfText = docs.map((doc) => doc.pageContent).join("\n");
 
   // Split into chunks
   const textSplitter = new RecursiveCharacterTextSplitter({
@@ -110,11 +110,11 @@ async function processPDF(filePath: string): Promise<{
   const stats = fs.statSync(filePath);
   const metadata = {
     bylawNumber: fileInfo.number,
-    title: fileInfo.title || path.basename(filePath, '.pdf'),
+    title: fileInfo.title || path.basename(filePath, ".pdf"),
     filename: path.basename(filePath),
     fileSize: stats.size,
     lastModified: stats.mtime.toISOString(),
-    source: 'oak-bay-bylaws',
+    source: "oak-bay-bylaws",
   };
 
   return {
@@ -136,7 +136,7 @@ async function generateEmbeddings(
 > {
   // Initialize OpenAI embeddings
   const embeddings = new OpenAIEmbeddings({
-    modelName: 'text-embedding-3-small',
+    modelName: "text-embedding-3-small",
     openAIApiKey: process.env.OPENAI_API_KEY,
   });
 
@@ -157,7 +157,7 @@ async function generateEmbeddings(
     };
 
     return {
-      id: `bylaw-${metadata.bylawNumber || 'unknown'}-${i}`,
+      id: `bylaw-${metadata.bylawNumber || "unknown"}-${i}`,
       values: embeddingsResult[i],
       metadata: chunkMetadata,
     };
@@ -174,10 +174,10 @@ async function upsertToPinecone(
 ): Promise<void> {
   // Initialize Pinecone client
   const pinecone = new Pinecone({
-    apiKey: process.env.PINECONE_API_KEY || '',
+    apiKey: process.env.PINECONE_API_KEY || "",
   });
 
-  const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+  const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
   const index = pinecone.index(indexName);
 
   console.log(
@@ -200,17 +200,17 @@ async function main() {
   try {
     // Check for required environment variables
     if (!process.env.PINECONE_API_KEY) {
-      throw new Error('PINECONE_API_KEY environment variable is required');
+      throw new Error("PINECONE_API_KEY environment variable is required");
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required');
+      throw new Error("OPENAI_API_KEY environment variable is required");
     }
 
     // Get list of PDF files
     const files = fs
       .readdirSync(PDF_DIRECTORY)
-      .filter((file) => file.toLowerCase().endsWith('.pdf'))
+      .filter((file) => file.toLowerCase().endsWith(".pdf"))
       .map((file) => path.join(PDF_DIRECTORY, file));
 
     console.log(`Found ${files.length} PDF files in ${PDF_DIRECTORY}`);
@@ -233,9 +233,9 @@ async function main() {
       }
     }
 
-    console.log('✅ All PDFs have been processed and uploaded to Pinecone');
+    console.log("✅ All PDFs have been processed and uploaded to Pinecone");
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
     process.exit(1);
   }
 }

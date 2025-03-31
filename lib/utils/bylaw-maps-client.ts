@@ -10,22 +10,22 @@
 // Define a fallback list of validated bylaws to avoid undefined errors
 // This ensures the component will never fail even if imports fail
 const FALLBACK_VALIDATED_BYLAWS = [
-  '3210',
-  '3531',
-  '4100',
-  '4247',
-  '4742',
-  '4849',
-  '4861',
-  '4891',
-  '4892',
-  '3578',
-  '4672',
-  '3545',
-  '4371',
-  '4183',
-  '3946',
-  '4013',
+  "3210",
+  "3531",
+  "4100",
+  "4247",
+  "4742",
+  "4849",
+  "4861",
+  "4891",
+  "4892",
+  "3578",
+  "4672",
+  "3545",
+  "4371",
+  "4183",
+  "3946",
+  "4013",
 ];
 
 // Define the interface for bylaw-shared module
@@ -45,9 +45,9 @@ interface BylawShared {
 // Try to import from the shared module, but provide fallbacks if it fails
 let bylaw_shared: BylawShared;
 try {
-  bylaw_shared = require('../utils/bylaw-shared');
+  bylaw_shared = require("../utils/bylaw-shared");
 } catch (error) {
-  console.error('Error importing bylaw-shared:', error);
+  console.error("Error importing bylaw-shared:", error);
   // Define fallback implementations
   bylaw_shared = {
     getExternalPdfUrl: (bylawNumber: string) =>
@@ -79,7 +79,7 @@ export const SECTION_PAGE_MAPPINGS = bylaw_shared.sectionPageMapping || {};
 export const BYLAW_PAGE_COUNTS = bylaw_shared.bylawPageCounts || {};
 
 // Re-export known URLs and titles for direct access
-import { knownBylawUrls, bylawTitleMap } from './bylaw-maps';
+import { bylawTitleMap, knownBylawUrls } from "./bylaw-maps";
 export const HARDCODED_PDF_URLS = knownBylawUrls;
 export const BYLAW_TITLE_MAP = bylawTitleMap;
 
@@ -97,14 +97,14 @@ export function analyzeUrlStructure(): {
   // Analyze all URLs
   Object.entries(HARDCODED_PDF_URLS).forEach(([number, url]) => {
     // Extract pattern type
-    let pattern = 'unknown';
+    let pattern = "unknown";
 
-    if (url.includes('/wp-content/uploads/')) {
-      pattern = 'wp-content';
-    } else if (url.includes('/sites/default/files/')) {
-      pattern = 'sites-default';
-    } else if (url.includes('/bylaws/')) {
-      pattern = 'direct-bylaws';
+    if (url.includes("/wp-content/uploads/")) {
+      pattern = "wp-content";
+    } else if (url.includes("/sites/default/files/")) {
+      pattern = "sites-default";
+    } else if (url.includes("/bylaws/")) {
+      pattern = "direct-bylaws";
     }
 
     // Count patterns
@@ -120,10 +120,10 @@ export function analyzeUrlStructure(): {
   });
 
   // Add additional pattern types for diagnostic purposes
-  patterns['total-hardcoded'] = Object.keys(HARDCODED_PDF_URLS).length;
+  patterns["total-hardcoded"] = Object.keys(HARDCODED_PDF_URLS).length;
 
   // Use the already imported VALIDATED_BYLAWS to avoid require()
-  patterns['total-validated'] = VALIDATED_BYLAWS.length;
+  patterns["total-validated"] = VALIDATED_BYLAWS.length;
 
   return { patterns, examples };
 }

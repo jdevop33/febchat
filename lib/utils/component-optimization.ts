@@ -2,10 +2,10 @@
  * Component optimization utilities
  */
 
-import * as React from 'react';
-import { memo, useMemo, useCallback } from 'react';
-import { cn } from '@/lib/utils';
-import { useDebounce } from '@/lib/utils/debounce';
+import { cn } from "@/lib/utils";
+import { useDebounce } from "@/lib/utils/debounce";
+import * as React from "react";
+import { memo, useCallback, useMemo } from "react";
 
 /**
  * Enhanced memo HOC with deep equality check for props
@@ -14,7 +14,7 @@ export function memoWithDeepEqual<T extends object>(
   component: React.ComponentType<T>,
   areEqual?: (prevProps: Readonly<T>, nextProps: Readonly<T>) => boolean,
 ) {
-  const displayName = component.displayName || component.name || 'Component';
+  const displayName = component.displayName || component.name || "Component";
   const MemoizedComponent = memo(component, areEqual);
   MemoizedComponent.displayName = `MemoDeep(${displayName})`;
   return MemoizedComponent;
@@ -78,8 +78,8 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
       {
         fallback:
           fallback ||
-          React.createElement('div', {
-            className: 'h-10 w-full animate-pulse bg-muted rounded-md',
+          React.createElement("div", {
+            className: "h-10 w-full animate-pulse bg-muted rounded-md",
           }),
       },
       React.createElement(LazyComponent, props),

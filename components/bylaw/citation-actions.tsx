@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import React from 'react';
-import {
-  ExternalLink,
-  FileSearch,
-  FileDown,
-  ChevronUp,
-  ChevronDown,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import {
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  FileDown,
+  FileSearch,
+} from "lucide-react";
+import React from "react";
 
 interface CitationActionsProps {
   expanded: boolean;
@@ -44,12 +44,12 @@ export function CitationActions({
     >
       <div className="flex gap-2">
         <Button
-          variant={expanded ? 'ghost' : 'outline'}
+          variant={expanded ? "ghost" : "outline"}
           size="sm"
           className={cn(
-            'h-8 px-2 text-xs',
+            "h-8 px-2 text-xs",
             !expanded &&
-              'border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+              "border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
           )}
           onClick={(e) => {
             e.stopPropagation();
@@ -103,7 +103,7 @@ export function CitationActions({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {validBylaw ? 'Open the bylaw PDF' : 'PDF may not be available'}
+              {validBylaw ? "Open the bylaw PDF" : "PDF may not be available"}
             </TooltipContent>
           </Tooltip>
 
@@ -113,9 +113,9 @@ export function CitationActions({
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  'h-8 px-2 text-xs',
+                  "h-8 px-2 text-xs",
                   !validBylaw &&
-                    'border-amber-200 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300',
+                    "border-amber-200 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300",
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -135,9 +135,9 @@ export function CitationActions({
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  'h-8 px-2 text-xs',
+                  "h-8 px-2 text-xs",
                   !validBylaw &&
-                    'border-amber-200 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300',
+                    "border-amber-200 text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300",
                 )}
                 onClick={(e) => {
                   e.stopPropagation();

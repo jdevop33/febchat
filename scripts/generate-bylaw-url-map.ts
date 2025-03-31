@@ -1,5 +1,5 @@
-const fs = require('node:fs');
-const path = require('node:path');
+const fs = require("node:fs");
+const path = require("node:path");
 
 // Bylaw URL data from the table
 interface BylawData {
@@ -11,50 +11,50 @@ interface BylawData {
 // This is the data extracted from the Oak Bay website
 const bylawData: BylawData[] = [
   {
-    number: '4892',
-    title: 'Amenity Cost Charge Bylaw',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf',
+    number: "4892",
+    title: "Amenity Cost Charge Bylaw",
+    url: "https://www.oakbay.ca/wp-content/uploads/2025/02/4892-Amenity-Cost-Charge-Bylaw.pdf",
   },
   {
-    number: '4891',
-    title: 'Development Cost Charge Bylaw',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf',
+    number: "4891",
+    title: "Development Cost Charge Bylaw",
+    url: "https://www.oakbay.ca/wp-content/uploads/2025/02/4891-Development-Cost-Charge-Bylaw-2024.pdf",
   },
   {
-    number: '4861',
-    title: 'Tax Rates Bylaw, 2024',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf',
+    number: "4861",
+    title: "Tax Rates Bylaw, 2024",
+    url: "https://www.oakbay.ca/wp-content/uploads/2025/02/4861-Tax-Rates-Bylaw.pdf",
   },
   {
-    number: '4849',
-    title: 'Property Tax Exemption Bylaw, 2023',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf',
+    number: "4849",
+    title: "Property Tax Exemption Bylaw, 2023",
+    url: "https://www.oakbay.ca/wp-content/uploads/2025/02/4849-Property-Tax-Exemption-2023.pdf",
   },
   // Add more bylaws here
   {
-    number: '4247',
-    title: 'Building and Plumbing Bylaw',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf',
+    number: "4247",
+    title: "Building and Plumbing Bylaw",
+    url: "https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf",
   },
   {
-    number: '4742',
-    title: 'Tree Protection Bylaw',
-    url: 'https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
+    number: "4742",
+    title: "Tree Protection Bylaw",
+    url: "https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf",
   },
   {
-    number: '3210',
-    title: 'Anti-Noise Bylaw',
-    url: 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf',
+    number: "3210",
+    title: "Anti-Noise Bylaw",
+    url: "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3210%20-Anti-Noise%20Bylaw%20-%20Consolidated%20to%204594.pdf",
   },
   {
-    number: '4100',
-    title: 'Streets and Traffic Bylaw',
-    url: 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf',
+    number: "4100",
+    title: "Streets and Traffic Bylaw",
+    url: "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/4100-Streets-Traffic-Bylaw-2000.pdf",
   },
   {
-    number: '3531',
-    title: 'Zoning Bylaw',
-    url: 'https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf',
+    number: "3531",
+    title: "Zoning Bylaw",
+    url: "https://www.oakbay.ca/sites/default/files/municipal-services/bylaws/3531_ZoningBylawConsolidation_Aug302024.pdf",
   },
 ];
 
@@ -98,7 +98,7 @@ export const VALIDATED_BYLAWS: string[] = ${JSON.stringify(Object.keys(knownByla
 `;
 
   // Write to lib/utils/bylaw-maps.ts
-  const outputPath = path.resolve(__dirname, '../lib/utils/bylaw-maps.ts');
+  const outputPath = path.resolve(__dirname, "../lib/utils/bylaw-maps.ts");
   fs.writeFileSync(outputPath, fileContent);
 
   console.log(`Bylaw maps written to ${outputPath}`);

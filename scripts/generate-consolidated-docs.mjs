@@ -1,28 +1,28 @@
 #!/usr/bin/env node
 
 // This script consolidates all markdown files into a single document
-import fs from 'node:fs';
-import path from 'node:path';
-import { glob } from 'glob';
-import chalk from 'chalk';
-import { OpenAI } from 'openai';
-import dotenv from 'dotenv';
-import minimist from 'minimist';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import dotenv from "dotenv";
+import { glob } from "glob";
+import minimist from "minimist";
+import { OpenAI } from "openai";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
-  string: ['output'],
-  boolean: ['verbose', 'help'],
+  string: ["output"],
+  boolean: ["verbose", "help"],
   alias: {
-    o: 'output',
-    v: 'verbose',
-    h: 'help',
+    o: "output",
+    v: "verbose",
+    h: "help",
   },
   default: {
-    output: 'DOCUMENTATION.md',
+    output: "DOCUMENTATION.md",
     verbose: false,
     help: false,
   },
@@ -31,19 +31,19 @@ const argv = minimist(process.argv.slice(2), {
 // Show help message
 if (argv.help) {
   console.log(`
-${chalk.bold('Generate Consolidated Documentation')}
+${chalk.bold("Generate Consolidated Documentation")}
 
 This tool consolidates all markdown files in the project into a single, organized document.
 
-${chalk.bold('Usage:')}
+${chalk.bold("Usage:")}
   npx tsx scripts/generate-consolidated-docs.mjs [options]
 
-${chalk.bold('Options:')}
+${chalk.bold("Options:")}
   -o, --output <file>  Output file for consolidated documentation (default: DOCUMENTATION.md)
   -v, --verbose        Show detailed logs during generation
   -h, --help           Show this help message
 
-${chalk.bold('Examples:')}
+${chalk.bold("Examples:")}
   npx tsx scripts/generate-consolidated-docs.mjs
   npx tsx scripts/generate-consolidated-docs.mjs --output docs/consolidated.md
   `);
@@ -61,11 +61,11 @@ if (process.env.OPENAI_API_KEY) {
 // Main function
 async function consolidateDocs() {
   try {
-    console.log(chalk.blue('🔍 Finding markdown files...'));
+    console.log(chalk.blue("🔍 Finding markdown files..."));
 
     // Find all markdown files
-    const markdownFiles = await glob('**/*.md', {
-      ignore: ['node_modules/**', '.next/**', 'coverage/**'],
+    const markdownFiles = await glob("**/*.md", {
+      ignore: ["node_modules/**", ".next/**", "coverage/**"],
       nodir: true,
     });
 
@@ -80,13 +80,13 @@ async function consolidateDocs() {
     if (openai) {
       // Use AI to create a better consolidated document
       console.log(
-        chalk.blue('Using AI to generate organized documentation...'),
+        chalk.blue("Using AI to generate organized documentation..."),
       );
       consolidatedContent = await generateAIConsolidatedDocs(categorizedDocs);
     } else {
       // Simple concatenation
       console.log(
-        chalk.yellow('OpenAI API key not found. Using simple concatenation.'),
+        chalk.yellow("OpenAI API key not found. Using simple concatenation."),
       );
       consolidatedContent = generateSimpleConsolidatedDocs(categorizedDocs);
     }
@@ -98,7 +98,7 @@ async function consolidateDocs() {
       chalk.green(`✅ Consolidated documentation saved to ${argv.output}`),
     );
   } catch (error) {
-    console.error(chalk.red('Error consolidating documentation:'), error);
+    console.error(chalk.red("Error consolidating documentation:"), error);
     process.exit(1);
   }
 }
@@ -116,7 +116,7 @@ function categorizeDocs(filePaths) {
 
   for (const filePath of filePaths) {
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
+      const content = fs.readFileSync(filePath, "utf-8");
       const fileName = path.basename(filePath);
       const fileDir = path.dirname(filePath);
 
@@ -125,7 +125,7 @@ function categorizeDocs(filePaths) {
         name: fileName,
         dir: fileDir,
         content,
-        title: extractTitle(content) || fileName.replace('.md', ''),
+        title: extractTitle(content) || fileName.replace(".md", ""),
       };
 
       // Categorize based on path or content
@@ -172,75 +172,75 @@ function generateSimpleConsolidatedDocs(categorizedDocs) {
   const sections = [];
 
   // Add project overview
-  sections.push('# Project Documentation\n');
+  sections.push("# Project Documentation\n");
 
   if (categorizedDocs.projectOverview.length > 0) {
-    sections.push('## Project Overview\n');
+    sections.push("## Project Overview\n");
     categorizedDocs.projectOverview.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
       // Strip original title to avoid duplication
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
   // Add architecture docs
   if (categorizedDocs.architecture.length > 0) {
-    sections.push('## Architecture\n');
+    sections.push("## Architecture\n");
     categorizedDocs.architecture.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
   // Add guides
   if (categorizedDocs.guides.length > 0) {
-    sections.push('## Guides\n');
+    sections.push("## Guides\n");
     categorizedDocs.guides.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
   // Add API docs
   if (categorizedDocs.api.length > 0) {
-    sections.push('## API\n');
+    sections.push("## API\n");
     categorizedDocs.api.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
   // Add component docs
   if (categorizedDocs.components.length > 0) {
-    sections.push('## Components\n');
+    sections.push("## Components\n");
     categorizedDocs.components.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
   // Add other docs
   if (categorizedDocs.other.length > 0) {
-    sections.push('## Other Documentation\n');
+    sections.push("## Other Documentation\n");
     categorizedDocs.other.forEach((doc) => {
       sections.push(`### ${doc.title}\n`);
       sections.push(`*Source: ${doc.path}*\n`);
-      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, '');
+      const contentWithoutTitle = doc.content.replace(/^#\s+.+$/m, "");
       sections.push(`${contentWithoutTitle.trim()}\n\n`);
     });
   }
 
-  return sections.join('\n');
+  return sections.join("\n");
 }
 
 // Generate AI-consolidated documentation
@@ -252,7 +252,7 @@ async function generateAIConsolidatedDocs(categorizedDocs) {
     categorizedDocs[category].forEach((doc) => {
       // Create a short summary of each doc (first ~300 chars)
       const summary =
-        doc.content.substring(0, 300) + (doc.content.length > 300 ? '...' : '');
+        doc.content.substring(0, 300) + (doc.content.length > 300 ? "..." : "");
 
       docSummaries.push({
         title: doc.title,
@@ -285,8 +285,8 @@ For each section, include a reference to the original file path.
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo',
-      messages: [{ role: 'user', content: prompt }],
+      model: "gpt-4-turbo",
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 4000,
     });
 
@@ -295,9 +295,9 @@ For each section, include a reference to the original file path.
     // Return the AI-generated content
     return aiContent;
   } catch (error) {
-    console.error(chalk.red('Error generating AI content:'), error);
+    console.error(chalk.red("Error generating AI content:"), error);
     // Fall back to simple concatenation
-    console.log(chalk.yellow('Falling back to simple concatenation...'));
+    console.log(chalk.yellow("Falling back to simple concatenation..."));
     return generateSimpleConsolidatedDocs(categorizedDocs);
   }
 }

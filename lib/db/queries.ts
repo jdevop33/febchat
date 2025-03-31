@@ -1,25 +1,25 @@
 // @ts-nocheck
-/* 
+/*
  * This file has TypeScript errors that need to be fixed:
  * * - Property 'cause' does not exist on type
  * TODO: Fix these TypeScript errors and remove this directive
  */
 
-import 'server-only';
+import "server-only";
 
-import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte, inArray } from 'drizzle-orm';
-import { env } from 'node:process';
+import { env } from "node:process";
+import { genSaltSync, hashSync } from "bcrypt-ts";
+import { and, asc, desc, eq, gt, gte, inArray } from "drizzle-orm";
 
 // Import the centralized database client
-import db from './index';
-import * as schema from './schema';
+import db from "./index";
+import * as schema from "./schema";
 
 // Extract schema objects for more readable queries
 const { user, chat, message, vote, document, suggestion } = schema;
 
 // Export types for use in other files
-export type { User, Chat, Message, Document, Suggestion } from './schema';
+export type { User, Chat, Message, Document, Suggestion } from "./schema";
 
 /**
  * Database operation error with contextual information
@@ -28,7 +28,7 @@ class DbOperationError extends Error {
   constructor(operation: string, originalError: unknown) {
     const message = `Database operation '${operation}' failed: ${originalError instanceof Error ? originalError.message : String(originalError)}`;
     super(message);
-    this.name = 'DbOperationError';
+    this.name = "DbOperationError";
     this.cause = originalError;
   }
 }
@@ -41,7 +41,7 @@ export async function getUser(email: string): Promise<Array<schema.User>> {
     return await db.select().from(user).where(eq(user.email, email));
   } catch (error) {
     console.error(`Failed to get user '${email}' from database:`, error);
-    throw new DbOperationError('getUser', error);
+    throw new DbOperationError("getUser", error);
   }
 }
 
@@ -50,7 +50,7 @@ export async function getUser(email: string): Promise<Array<schema.User>> {
  */
 export async function createUser(email: string, password: string) {
   // Get salt rounds from environment or use secure default
-  const saltRounds = Number.parseInt(env.PASSWORD_SALT_ROUNDS || '12', 10);
+  const saltRounds = Number.parseInt(env.PASSWORD_SALT_ROUNDS || "12", 10);
   const salt = genSaltSync(saltRounds);
   const hash = hashSync(password, salt);
 
@@ -58,7 +58,7 @@ export async function createUser(email: string, password: string) {
     return await db.insert(user).values({ email, password: hash });
   } catch (error) {
     console.error(`Failed to create user '${email}' in database:`, error);
-    throw new DbOperationError('createUser', error);
+    throw new DbOperationError("createUser", error);
   }
 }
 
@@ -69,25 +69,25 @@ export async function saveChat({
   id,
   userId,
   title,
-  visibility = 'private',
+  visibility = "private",
 }: {
   id: string;
   userId: string;
   title: string;
-  visibility?: 'public' | 'private';
+  visibility?: "public" | "private";
 }) {
   // Validate inputs
-  if (!id || typeof id !== 'string' || id.length > 100) {
-    throw new DbOperationError('saveChat', new Error('Invalid chat ID'));
+  if (!id || typeof id !== "string" || id.length > 100) {
+    throw new DbOperationError("saveChat", new Error("Invalid chat ID"));
   }
 
-  if (!userId || typeof userId !== 'string' || userId.length > 100) {
-    throw new DbOperationError('saveChat', new Error('Invalid user ID'));
+  if (!userId || typeof userId !== "string" || userId.length > 100) {
+    throw new DbOperationError("saveChat", new Error("Invalid user ID"));
   }
 
-  if (!title || typeof title !== 'string') {
+  if (!title || typeof title !== "string") {
     // Ensure title is valid, but not empty
-    title = 'New Chat';
+    title = "New Chat";
   }
 
   // Truncate very long titles
@@ -96,8 +96,8 @@ export async function saveChat({
   }
 
   // Ensure visibility is valid
-  if (visibility !== 'public' && visibility !== 'private') {
-    visibility = 'private';
+  if (visibility !== "public" && visibility !== "private") {
+    visibility = "private";
   }
 
   try {
@@ -110,7 +110,7 @@ export async function saveChat({
     });
   } catch (error) {
     console.error(`Failed to save chat ID '${id}' to database:`, error);
-    throw new DbOperationError('saveChat', error);
+    throw new DbOperationError("saveChat", error);
   }
 }
 
@@ -122,7 +122,7 @@ export async function deleteChatById({ id }: { id: string }) {
     return await db.delete(chat).where(eq(chat.id, id));
   } catch (error) {
     console.error(`Failed to delete chat ID '${id}' from database:`, error);
-    throw new DbOperationError('deleteChatById', error);
+    throw new DbOperationError("deleteChatById", error);
   }
 }
 
@@ -138,7 +138,7 @@ export async function getChatsByUserId({ id }: { id: string }) {
       `Failed to get chats for user ID '${id}' from database:`,
       error,
     );
-    throw new DbOperationError('getChatsByUserId', error);
+    throw new DbOperationError("getChatsByUserId", error);
   }
 }
 
@@ -148,7 +148,7 @@ export async function getChatById({ id }: { id: string }) {
     return selectedChat;
   } catch (error) {
     console.error(`Failed to get chat ID '${id}' from database:`, error);
-    throw new DbOperationError('getChatById', error);
+    throw new DbOperationError("getChatById", error);
   }
 }
 
@@ -171,7 +171,7 @@ export async function saveMessages({
       `Failed to save ${messages.length} messages to database:`,
       error,
     );
-    throw new DbOperationError('saveMessages', error);
+    throw new DbOperationError("saveMessages", error);
   }
 }
 
@@ -187,7 +187,7 @@ export async function getMessagesByChatId({ id }: { id: string }) {
       `Failed to get messages for chat ID '${id}' from database:`,
       error,
     );
-    throw new DbOperationError('getMessagesByChatId', error);
+    throw new DbOperationError("getMessagesByChatId", error);
   }
 }
 
@@ -198,7 +198,7 @@ export async function voteMessage({
 }: {
   chatId: string;
   messageId: string;
-  type: 'up' | 'down';
+  type: "up" | "down";
 }) {
   try {
     // Verify chat exists first
@@ -211,7 +211,7 @@ export async function voteMessage({
     } catch (chatError) {
       console.error(`Error verifying chat ${chatId}:`, chatError);
       throw new Error(
-        `Failed to verify chat: ${chatError instanceof Error ? chatError.message : 'Unknown error'}`,
+        `Failed to verify chat: ${chatError instanceof Error ? chatError.message : "Unknown error"}`,
       );
     }
 
@@ -229,7 +229,7 @@ export async function voteMessage({
     } catch (messageError) {
       console.error(`Error verifying message ${messageId}:`, messageError);
       throw new Error(
-        `Failed to verify message: ${messageError instanceof Error ? messageError.message : 'Unknown error'}`,
+        `Failed to verify message: ${messageError instanceof Error ? messageError.message : "Unknown error"}`,
       );
     }
 
@@ -246,7 +246,7 @@ export async function voteMessage({
         );
         return await db
           .update(vote)
-          .set({ isUpvoted: type === 'up' })
+          .set({ isUpvoted: type === "up" })
           .where(and(eq(vote.messageId, messageId), eq(vote.chatId, chatId)));
       }
 
@@ -256,7 +256,7 @@ export async function voteMessage({
       return await db.insert(vote).values({
         chatId,
         messageId,
-        isUpvoted: type === 'up',
+        isUpvoted: type === "up",
       });
     } catch (dbError) {
       console.error(
@@ -267,16 +267,16 @@ export async function voteMessage({
       // Better error message for constraint violations
       if (
         dbError instanceof Error &&
-        (dbError.message.includes('constraint') ||
-          dbError.message.includes('foreign key'))
+        (dbError.message.includes("constraint") ||
+          dbError.message.includes("foreign key"))
       ) {
         throw new Error(
-          'Database constraint violation: The message or chat referenced may have been deleted.',
+          "Database constraint violation: The message or chat referenced may have been deleted.",
         );
       }
 
       throw new Error(
-        `Database error: ${dbError instanceof Error ? dbError.message : 'Unknown error'}`,
+        `Database error: ${dbError instanceof Error ? dbError.message : "Unknown error"}`,
       );
     }
   } catch (error) {
@@ -284,7 +284,7 @@ export async function voteMessage({
       `Failed to ${type}vote message ${messageId} in chat ${chatId}:`,
       error,
     );
-    throw new DbOperationError('voteMessage', error);
+    throw new DbOperationError("voteMessage", error);
   }
 }
 
@@ -318,7 +318,7 @@ export async function saveDocument({
 }: {
   id: string;
   title: string;
-  kind: 'text' | 'code' | 'image' | 'sheet';
+  kind: "text" | "code" | "image" | "sheet";
   content: string;
   userId: string;
 }) {
@@ -333,7 +333,7 @@ export async function saveDocument({
     });
   } catch (error) {
     console.error(`Failed to save document '${id}' in database:`, error);
-    throw new DbOperationError('saveDocument', error);
+    throw new DbOperationError("saveDocument", error);
   }
 }
 
@@ -347,7 +347,7 @@ export async function getDocumentsById({ id }: { id: string }) {
 
     return documents;
   } catch (error) {
-    console.error('Failed to get document by id from database');
+    console.error("Failed to get document by id from database");
     throw error;
   }
 }
@@ -362,7 +362,7 @@ export async function getDocumentById({ id }: { id: string }) {
 
     return selectedDocument;
   } catch (error) {
-    console.error('Failed to get document by id from database');
+    console.error("Failed to get document by id from database");
     throw error;
   }
 }
@@ -389,7 +389,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
       .where(and(eq(document.id, id), gt(document.createdAt, timestamp)));
   } catch (error) {
     console.error(
-      'Failed to delete documents by id after timestamp from database',
+      "Failed to delete documents by id after timestamp from database",
     );
     throw error;
   }
@@ -403,7 +403,7 @@ export async function saveSuggestions({
   try {
     return await db.insert(suggestion).values(suggestions);
   } catch (error) {
-    console.error('Failed to save suggestions in database');
+    console.error("Failed to save suggestions in database");
     throw error;
   }
 }
@@ -420,7 +420,7 @@ export async function getSuggestionsByDocumentId({
       .where(and(eq(suggestion.documentId, documentId)));
   } catch (error) {
     console.error(
-      'Failed to get suggestions by document version from database',
+      "Failed to get suggestions by document version from database",
     );
     throw error;
   }
@@ -430,7 +430,7 @@ export async function getMessageById({ id }: { id: string }) {
   try {
     return await db.select().from(message).where(eq(message.id, id));
   } catch (error) {
-    console.error('Failed to get message by id from database');
+    console.error("Failed to get message by id from database");
     throw error;
   }
 }
@@ -469,7 +469,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
     }
   } catch (error) {
     console.error(
-      'Failed to delete messages by id after timestamp from database',
+      "Failed to delete messages by id after timestamp from database",
     );
     throw error;
   }
@@ -480,12 +480,12 @@ export async function updateChatVisibilityById({
   visibility,
 }: {
   chatId: string;
-  visibility: 'private' | 'public';
+  visibility: "private" | "public";
 }) {
   try {
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
-    console.error('Failed to update chat visibility in database');
+    console.error("Failed to update chat visibility in database");
     throw error;
   }
 }
@@ -496,8 +496,8 @@ export const updateChatVisiblityById = (
   ...args: Parameters<typeof updateChatVisibilityById>
 ) => {
   console.warn(
-    'DEPRECATED: updateChatVisiblityById is deprecated due to a typo. ' +
-      'Please use updateChatVisibilityById instead.',
+    "DEPRECATED: updateChatVisiblityById is deprecated due to a typo. " +
+      "Please use updateChatVisibilityById instead.",
   );
   return updateChatVisibilityById(...args);
 };

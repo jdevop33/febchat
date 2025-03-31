@@ -7,10 +7,10 @@
 
 // Import the centralized bylaw data
 import {
-  bylawTitleMap,
   VALIDATED_BYLAWS,
   knownBylawUrls as _knownBylawUrls,
-} from './bylaw-maps';
+  bylawTitleMap,
+} from "./bylaw-maps";
 
 /**
  * Get external PDF URL for a bylaw
@@ -27,7 +27,7 @@ export function getExternalPdfUrl(bylawNumber: string, title?: string): string {
     // Otherwise, use the standard pattern
     return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
   } catch (error) {
-    console.error('Error getting external PDF URL:', error);
+    console.error("Error getting external PDF URL:", error);
     // Fallback to a predictable URL format
     return `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
   }
@@ -73,52 +73,52 @@ export function getBylawTitle(bylawNumber: string): string {
  */
 export const sectionPageMapping: Record<string, Record<string, number>> = {
   // Anti-Noise Bylaw mappings
-  '3210': {
-    '3': 2, // Section 3 is on page 2
-    '4': 3, // Section 4 is on page 3
-    '5': 4,
-    '5(7)(a)': 5,
-    '5(7)(b)': 5,
-    '4(5)(a)': 3,
-    '4(5)(b)': 3,
-    '7': 6,
+  "3210": {
+    "3": 2, // Section 3 is on page 2
+    "4": 3, // Section 4 is on page 3
+    "5": 4,
+    "5(7)(a)": 5,
+    "5(7)(b)": 5,
+    "4(5)(a)": 3,
+    "4(5)(b)": 3,
+    "7": 6,
   },
   // Zoning Bylaw mappings
-  '3531': {
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4.1': 5,
-    '4.2': 6,
-    '5.1': 10,
-    '6.1': 15,
+  "3531": {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4.1": 5,
+    "4.2": 6,
+    "5.1": 10,
+    "6.1": 15,
   },
   // Tree Protection Bylaw mappings
-  '4742': {
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
+  "4742": {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
   },
   // Streets & Traffic Bylaw mappings
-  '4100': {
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
+  "4100": {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
   },
   // Building and Plumbing Bylaw mappings
-  '4247': {
-    '1': 1,
-    '2': 2,
-    '3': 3,
-    '4': 4,
-    '5': 5,
-    '6': 6,
-    '7': 7,
-    '8': 8,
+  "4247": {
+    "1": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
   },
 };
 
@@ -127,7 +127,7 @@ export const sectionPageMapping: Record<string, Record<string, number>> = {
  */
 export function findSectionPage(bylawNumber: string, section: string): number {
   // Normalize section format for lookup
-  const normalizedSection = section.replace(/^(section|part|schedule)\s+/i, '');
+  const normalizedSection = section.replace(/^(section|part|schedule)\s+/i, "");
 
   // Check our hardcoded mappings
   if (sectionPageMapping[bylawNumber]?.[normalizedSection]) {
@@ -142,14 +142,14 @@ export function findSectionPage(bylawNumber: string, section: string): number {
  * Map of estimated page counts for bylaws
  */
 export const bylawPageCounts: Record<string, number> = {
-  '3210': 12, // Anti-Noise Bylaw
-  '3531': 150, // Zoning Bylaw (typically very long)
-  '4742': 45, // Tree Protection Bylaw
-  '4100': 30, // Streets & Traffic Bylaw
-  '4620': 80, // Official Community Plan
-  '4719': 25, // Fire Prevention Bylaw
-  '4747': 15, // Reserve Funds Bylaw
-  '4247': 40, // Building and Plumbing Bylaw
+  "3210": 12, // Anti-Noise Bylaw
+  "3531": 150, // Zoning Bylaw (typically very long)
+  "4742": 45, // Tree Protection Bylaw
+  "4100": 30, // Streets & Traffic Bylaw
+  "4620": 80, // Official Community Plan
+  "4719": 25, // Fire Prevention Bylaw
+  "4747": 15, // Reserve Funds Bylaw
+  "4247": 40, // Building and Plumbing Bylaw
 };
 
 /**

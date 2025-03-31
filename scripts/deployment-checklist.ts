@@ -7,27 +7,27 @@
  * pnpm tsx scripts/deployment-checklist.ts
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import dotenv from 'dotenv';
-import { Pinecone } from '@pinecone-database/pinecone';
-import db from '@/lib/db';
-import { bylaw, bylawSection } from '@/lib/db/schema';
-import { count, sql } from 'drizzle-orm';
-import { eq } from 'drizzle-orm';
+import fs from "node:fs";
+import path from "node:path";
+import db from "@/lib/db";
+import { bylaw, bylawSection } from "@/lib/db/schema";
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import { count, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Checklist items
 interface CheckResult {
   name: string;
-  status: 'pass' | 'fail' | 'warning';
+  status: "pass" | "fail" | "warning";
   message: string;
 }
 
 async function runChecklist() {
-  console.log('Running deployment checklist...');
+  console.log("Running deployment checklist...");
   const results: CheckResult[] = [];
 
   // Check 1: Verify environment variables
@@ -49,8 +49,8 @@ async function runChecklist() {
   results.push(await checkVectorDatabase());
 
   // Display results
-  console.log('\nDeployment Checklist Results:');
-  console.log('=============================');
+  console.log("\nDeployment Checklist Results:");
+  console.log("=============================");
 
   let passCount = 0;
   let warningCount = 0;
@@ -58,62 +58,62 @@ async function runChecklist() {
 
   results.forEach((result, index) => {
     const icon =
-      result.status === 'pass'
-        ? '✅'
-        : result.status === 'warning'
-          ? '⚠️'
-          : '❌';
+      result.status === "pass"
+        ? "✅"
+        : result.status === "warning"
+          ? "⚠️"
+          : "❌";
 
     console.log(`${index + 1}. ${icon} ${result.name}: ${result.message}`);
 
-    if (result.status === 'pass') passCount++;
-    else if (result.status === 'warning') warningCount++;
+    if (result.status === "pass") passCount++;
+    else if (result.status === "warning") warningCount++;
     else failCount++;
   });
 
-  console.log('\nSummary:');
+  console.log("\nSummary:");
   console.log(`- ${passCount} checks passed`);
   console.log(`- ${warningCount} warnings`);
   console.log(`- ${failCount} failures`);
 
   if (failCount > 0) {
     console.log(
-      '\n❌ Deployment not ready. Please fix the issues above before deploying.',
+      "\n❌ Deployment not ready. Please fix the issues above before deploying.",
     );
     process.exit(1);
   } else if (warningCount > 0) {
     console.log(
-      '\n⚠️ Deployment ready with warnings. Consider addressing the warnings before deploying.',
+      "\n⚠️ Deployment ready with warnings. Consider addressing the warnings before deploying.",
     );
   } else {
-    console.log('\n✅ Deployment ready! All checks passed.');
+    console.log("\n✅ Deployment ready! All checks passed.");
   }
 }
 
 // Check 1: Verify environment variables
 async function checkEnvironmentVariables(): Promise<CheckResult> {
   const requiredVars = [
-    'PINECONE_API_KEY',
-    'PINECONE_INDEX',
-    'OPENAI_API_KEY',
-    'DATABASE_URL',
-    'AUTH_SECRET',
+    "PINECONE_API_KEY",
+    "PINECONE_INDEX",
+    "OPENAI_API_KEY",
+    "DATABASE_URL",
+    "AUTH_SECRET",
   ];
 
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missingVars.length > 0) {
     return {
-      name: 'Environment Variables',
-      status: 'fail',
-      message: `Missing required variables: ${missingVars.join(', ')}`,
+      name: "Environment Variables",
+      status: "fail",
+      message: `Missing required variables: ${missingVars.join(", ")}`,
     };
   }
 
   return {
-    name: 'Environment Variables',
-    status: 'pass',
-    message: 'All required environment variables are present',
+    name: "Environment Variables",
+    status: "pass",
+    message: "All required environment variables are present",
   };
 }
 
@@ -121,13 +121,13 @@ async function checkEnvironmentVariables(): Promise<CheckResult> {
 async function checkPineconeConnection(): Promise<CheckResult> {
   try {
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
       return {
-        name: 'Pinecone Connection',
-        status: 'fail',
-        message: 'PINECONE_API_KEY is not set',
+        name: "Pinecone Connection",
+        status: "fail",
+        message: "PINECONE_API_KEY is not set",
       };
     }
 
@@ -139,21 +139,21 @@ async function checkPineconeConnection(): Promise<CheckResult> {
 
     if (stats.totalRecordCount === 0) {
       return {
-        name: 'Pinecone Connection',
-        status: 'warning',
+        name: "Pinecone Connection",
+        status: "warning",
         message: `Connected to index ${indexName} but it has 0 vectors`,
       };
     }
 
     return {
-      name: 'Pinecone Connection',
-      status: 'pass',
+      name: "Pinecone Connection",
+      status: "pass",
       message: `Connected to index ${indexName} with ${stats.totalRecordCount} vectors`,
     };
   } catch (error) {
     return {
-      name: 'Pinecone Connection',
-      status: 'fail',
+      name: "Pinecone Connection",
+      status: "fail",
       message: `Failed to connect to Pinecone: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -166,14 +166,14 @@ async function checkDatabaseConnection(): Promise<CheckResult> {
     await db.execute(sql`SELECT 1`);
 
     return {
-      name: 'Database Connection',
-      status: 'pass',
-      message: 'Connected to database successfully',
+      name: "Database Connection",
+      status: "pass",
+      message: "Connected to database successfully",
     };
   } catch (error) {
     return {
-      name: 'Database Connection',
-      status: 'fail',
+      name: "Database Connection",
+      status: "fail",
       message: `Failed to connect to database: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -182,49 +182,49 @@ async function checkDatabaseConnection(): Promise<CheckResult> {
 // Check 4: Verify PDF files
 async function checkPdfFiles(): Promise<CheckResult> {
   try {
-    const pdfDir = path.join(process.cwd(), 'public', 'pdfs');
+    const pdfDir = path.join(process.cwd(), "public", "pdfs");
 
     if (!fs.existsSync(pdfDir)) {
       return {
-        name: 'PDF Files',
-        status: 'fail',
-        message: 'PDF directory does not exist',
+        name: "PDF Files",
+        status: "fail",
+        message: "PDF directory does not exist",
       };
     }
 
     const files = fs.readdirSync(pdfDir);
     const pdfFiles = files.filter((file) =>
-      file.toLowerCase().endsWith('.pdf'),
+      file.toLowerCase().endsWith(".pdf"),
     );
 
     if (pdfFiles.length === 0) {
       return {
-        name: 'PDF Files',
-        status: 'fail',
-        message: 'No PDF files found in the PDF directory',
+        name: "PDF Files",
+        status: "fail",
+        message: "No PDF files found in the PDF directory",
       };
     }
 
     // Check for key bylaws (Anti-Noise Bylaw)
-    const antiNoiseBylaw = pdfFiles.find((file) => file.includes('3210'));
+    const antiNoiseBylaw = pdfFiles.find((file) => file.includes("3210"));
 
     if (!antiNoiseBylaw) {
       return {
-        name: 'PDF Files',
-        status: 'warning',
+        name: "PDF Files",
+        status: "warning",
         message: `Found ${pdfFiles.length} PDF files, but missing key bylaws (e.g., Anti-Noise Bylaw 3210)`,
       };
     }
 
     return {
-      name: 'PDF Files',
-      status: 'pass',
+      name: "PDF Files",
+      status: "pass",
       message: `Found ${pdfFiles.length} PDF files, including key bylaws`,
     };
   } catch (error) {
     return {
-      name: 'PDF Files',
-      status: 'fail',
+      name: "PDF Files",
+      status: "fail",
       message: `Failed to check PDF files: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -239,9 +239,9 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
 
     if (bylawCount === 0) {
       return {
-        name: 'Verification Database',
-        status: 'warning',
-        message: 'Verification database is empty, run initialization script',
+        name: "Verification Database",
+        status: "warning",
+        message: "Verification database is empty, run initialization script",
       };
     }
 
@@ -249,12 +249,12 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
     const [antiNoiseBylaw] = await db
       .select()
       .from(bylaw)
-      .where(eq(bylaw.bylawNumber, '3210'));
+      .where(eq(bylaw.bylawNumber, "3210"));
 
     if (!antiNoiseBylaw) {
       return {
-        name: 'Verification Database',
-        status: 'warning',
+        name: "Verification Database",
+        status: "warning",
         message: `Found ${bylawCount} bylaws in verification database, but missing key bylaws (e.g., Anti-Noise Bylaw 3210)`,
       };
     }
@@ -263,25 +263,25 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
     const sections = await db
       .select()
       .from(bylawSection)
-      .where(eq(bylawSection.bylawNumber, '3210'));
+      .where(eq(bylawSection.bylawNumber, "3210"));
 
     if (sections.length === 0) {
       return {
-        name: 'Verification Database',
-        status: 'warning',
-        message: 'Anti-Noise Bylaw found, but has no sections',
+        name: "Verification Database",
+        status: "warning",
+        message: "Anti-Noise Bylaw found, but has no sections",
       };
     }
 
     return {
-      name: 'Verification Database',
-      status: 'pass',
+      name: "Verification Database",
+      status: "pass",
       message: `Found ${bylawCount} bylaws in verification database, including key bylaws with sections`,
     };
   } catch (error) {
     return {
-      name: 'Verification Database',
-      status: 'fail',
+      name: "Verification Database",
+      status: "fail",
       message: `Failed to check verification database: ${error instanceof Error ? error.message : String(error)}`,
     };
   }
@@ -291,13 +291,13 @@ async function checkVerificationDatabase(): Promise<CheckResult> {
 async function checkVectorDatabase(): Promise<CheckResult> {
   try {
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
       return {
-        name: 'Vector Database',
-        status: 'fail',
-        message: 'PINECONE_API_KEY is not set',
+        name: "Vector Database",
+        status: "fail",
+        message: "PINECONE_API_KEY is not set",
       };
     }
 
@@ -306,7 +306,7 @@ async function checkVectorDatabase(): Promise<CheckResult> {
 
     // Check if there are vectors for the Anti-Noise Bylaw
     const query = await index.query({
-      filter: { bylawNumber: { $eq: '3210' } },
+      filter: { bylawNumber: { $eq: "3210" } },
       topK: 1,
       includeMetadata: true,
       vector: new Array(1536).fill(0), // Dummy vector for Pinecone v5+ compatibility
@@ -314,22 +314,22 @@ async function checkVectorDatabase(): Promise<CheckResult> {
 
     if (!query.matches || query.matches.length === 0) {
       return {
-        name: 'Vector Database',
-        status: 'warning',
+        name: "Vector Database",
+        status: "warning",
         message:
-          'No vectors found for key bylaws (e.g., Anti-Noise Bylaw 3210)',
+          "No vectors found for key bylaws (e.g., Anti-Noise Bylaw 3210)",
       };
     }
 
     return {
-      name: 'Vector Database',
-      status: 'pass',
-      message: 'Vector database contains data for key bylaws',
+      name: "Vector Database",
+      status: "pass",
+      message: "Vector database contains data for key bylaws",
     };
   } catch (error) {
     return {
-      name: 'Vector Database',
-      status: 'fail',
+      name: "Vector Database",
+      status: "fail",
       message: `Failed to check vector database: ${error instanceof Error ? error.message : String(error)}`,
     };
   }

@@ -5,27 +5,27 @@
  */
 
 // Core artifact components
-export { Artifact } from './create-artifact';
+export { Artifact } from "./create-artifact";
 // Temporarily commented out to fix circular imports
 // export { ArtifactMessages } from './artifact-messages';
-export { ArtifactActions } from './artifact-actions';
-export { ArtifactCloseButton } from './artifact-close-button';
+export { ArtifactActions } from "./artifact-actions";
+export { ArtifactCloseButton } from "./artifact-close-button";
 
+import { codeArtifact } from "@/artifacts/code/client";
+import { imageArtifact } from "@/artifacts/image/client";
+import { sheetArtifact } from "@/artifacts/sheet/client";
 // Artifact definitions
-import { textArtifact } from '@/artifacts/text/client';
-import { codeArtifact } from '@/artifacts/code/client';
-import { imageArtifact } from '@/artifacts/image/client';
-import { sheetArtifact } from '@/artifacts/sheet/client';
+import { textArtifact } from "@/artifacts/text/client";
 
 export const artifactDefinitions = [
   textArtifact,
   codeArtifact,
   imageArtifact,
-  sheetArtifact
+  sheetArtifact,
 ];
 
 // Types
 export type {
   ArtifactKind,
   UIArtifact,
-} from '@/types/artifacts/artifact-types';
+} from "@/types/artifacts/artifact-types";

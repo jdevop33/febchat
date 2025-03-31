@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* 
+/*
  * This file has TypeScript errors that need to be fixed:
  * * - Property 'query' does not exist on type
  * TODO: Fix these TypeScript errors and remove this directive
@@ -10,11 +10,11 @@
  * This module provides a simple text-based search using the PDF files directly
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import type { BylawSearchOptions, BylawSearchResult } from './types';
-import { getPineconeIndex } from './pinecone-client';
-import { extractFromPDF } from '../bylaw/processing/pdf-extractor';
+import fs from "node:fs";
+import path from "node:path";
+import { extractFromPDF } from "../bylaw/processing/pdf-extractor";
+import { getPineconeIndex } from "./pinecone-client";
+import type { BylawSearchOptions, BylawSearchResult } from "./types";
 
 // Cache for extracted PDF content
 const pdfContentCache = new Map<string, string>();
@@ -26,7 +26,7 @@ export async function fallbackSearch(
   query: string,
   options: BylawSearchOptions = {},
 ): Promise<BylawSearchResult[]> {
-  console.log('Using fallback search mechanism');
+  console.log("Using fallback search mechanism");
 
   try {
     // First try to use Pinecone metadata filtering as a fallback mechanism
@@ -51,7 +51,7 @@ export async function fallbackSearch(
         const results = await enhanceResultsWithKeywordScoring(
           searchResults.matches.map((match) => ({
             id: match.id,
-            text: (match.metadata?.text as string) || '',
+            text: (match.metadata?.text as string) || "",
             metadata: match.metadata as any,
             score: 0, // Will be calculated below
           })),
@@ -62,7 +62,7 @@ export async function fallbackSearch(
       }
     } catch (error) {
       console.error(
-        'Metadata search failed, falling back to direct PDF search:',
+        "Metadata search failed, falling back to direct PDF search:",
         error,
       );
     }
@@ -70,7 +70,7 @@ export async function fallbackSearch(
     // If Pinecone failed completely, try direct PDF search
     return directPDFSearch(query, options);
   } catch (error) {
-    console.error('Error in fallback search:', error);
+    console.error("Error in fallback search:", error);
 
     // Return empty results rather than throwing
     return [];
@@ -87,7 +87,7 @@ async function enhanceResultsWithKeywordScoring(
   // Extract keywords from query (simple implementation)
   const keywords = query
     .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
+    .replace(/[^\w\s]/g, " ")
     .split(/\s+/)
     .filter((word) => word.length > 2);
 
@@ -132,14 +132,14 @@ async function directPDFSearch(
   query: string,
   options: BylawSearchOptions = {},
 ): Promise<BylawSearchResult[]> {
-  console.log('Using direct PDF search as last resort');
+  console.log("Using direct PDF search as last resort");
 
   try {
     // Get list of PDF files
-    const pdfDir = path.join(process.cwd(), 'public', 'pdfs');
+    const pdfDir = path.join(process.cwd(), "public", "pdfs");
     const pdfFiles = fs
       .readdirSync(pdfDir)
-      .filter((file) => file.toLowerCase().endsWith('.pdf'))
+      .filter((file) => file.toLowerCase().endsWith(".pdf"))
       .map((file) => path.join(pdfDir, file));
 
     console.log(`Found ${pdfFiles.length} PDF files to search`);
@@ -179,7 +179,7 @@ async function directPDFSearch(
           const score = matches / keywords.length;
 
           // Extract bylaw number from filename
-          const filename = path.basename(file, '.pdf');
+          const filename = path.basename(file, ".pdf");
           const bylawMatch = filename.match(/^(?:bylaw-)?(\d+)(?:[-,\s]|$)/i);
           const bylawNumber = bylawMatch ? bylawMatch[1] : undefined;
 
@@ -195,15 +195,15 @@ async function directPDFSearch(
             id: `fallback-${path.basename(file)}-${results.length}`,
             text: chunk,
             metadata: {
-              bylawNumber: bylawNumber || '',
+              bylawNumber: bylawNumber || "",
               title: filename,
-              section: 'unknown',
-              dateEnacted: 'unknown',
+              section: "unknown",
+              dateEnacted: "unknown",
               lastUpdated: new Date().toISOString(),
               text: chunk, // ensure metadata has text field
               // Add any other required properties
               originalFilename: path.basename(file),
-              category: '',
+              category: "",
               verified: false, // Using verified instead of isVerified to match the proper type
               url: `file://${file}`, // Use url instead of pdfPath
               // Remove officialUrl as it's not in the metadata type
@@ -222,7 +222,7 @@ async function directPDFSearch(
       .sort((a, b) => b.score - a.score)
       .slice(0, options.limit || 5);
   } catch (error) {
-    console.error('Error in direct PDF search:', error);
+    console.error("Error in direct PDF search:", error);
     return [];
   }
 }

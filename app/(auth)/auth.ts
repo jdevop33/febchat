@@ -1,14 +1,14 @@
-import { compare } from 'bcrypt-ts';
-import NextAuth, { type User, type Session } from 'next-auth';
-import Credentials from 'next-auth/providers/credentials';
+import { compare } from "bcrypt-ts";
+import NextAuth, { type User, type Session } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
-import { getUser } from '@/lib/db/queries';
+import { getUser } from "@/lib/db/queries";
 
-import { authConfig } from './auth.config';
+import { authConfig } from "./auth.config";
 
 // Log initialization only in development
-if (process.env.NODE_ENV === 'development') {
-  console.log('Auth config loaded, initializing NextAuth...');
+if (process.env.NODE_ENV === "development") {
+  console.log("Auth config loaded, initializing NextAuth...");
 }
 
 interface ExtendedSession extends Session {
@@ -16,7 +16,7 @@ interface ExtendedSession extends Session {
 }
 
 // Ensure we have the correct URL
-const SITE_URL = process.env.NEXTAUTH_URL || 'https://app.fitforgov.com';
+const SITE_URL = process.env.NEXTAUTH_URL || "https://app.fitforgov.com";
 
 export const {
   handlers: { GET, POST },
@@ -26,19 +26,19 @@ export const {
 } = NextAuth({
   ...authConfig,
   // Force the base URL to be the production URL
-  basePath: '/api/auth',
+  basePath: "/api/auth",
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   // Enable CSRF protection
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NODE_ENV === "development",
   providers: [
     Credentials({
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
         // Ensure credentials exist
@@ -64,10 +64,10 @@ export const {
             id: users[0].id,
             email: users[0].email,
             // Create a name field if needed by your app
-            name: email.split('@')[0], // Simple fallback using part of email
+            name: email.split("@")[0], // Simple fallback using part of email
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error("Auth error:", error);
           return null;
         }
       },
@@ -96,9 +96,10 @@ export const {
     },
     async redirect({ url, baseUrl }) {
       // Force redirects to stay on our domain
-      if (url.startsWith('/')) {
+      if (url.startsWith("/")) {
         return `${SITE_URL}${url}`;
-      }if (new URL(url).origin === baseUrl) {
+      }
+      if (new URL(url).origin === baseUrl) {
         return url;
       }
       return SITE_URL;

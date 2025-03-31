@@ -8,18 +8,18 @@
  * pnpm tsx scripts/verify-bylaw-upsert.ts <bylaw-number>
  */
 
-import { Pinecone } from '@pinecone-database/pinecone';
-import dotenv from 'dotenv';
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
 import {
-  getEmbeddingsModel,
   EmbeddingProvider,
-} from '../lib/vector-search/embedding-models';
+  getEmbeddingsModel,
+} from "../lib/vector-search/embedding-models";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Get bylaw number from command line
-const bylawNumber = process.argv[2] || '3210';
+const bylawNumber = process.argv[2] || "3210";
 
 async function verifyUpsert() {
   try {
@@ -27,10 +27,10 @@ async function verifyUpsert() {
 
     // Initialize Pinecone client
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     console.log(`Connecting to Pinecone index: ${indexName}`);
@@ -39,18 +39,18 @@ async function verifyUpsert() {
 
     // Get embeddings model
     const embeddings = getEmbeddingsModel(
-      process.env.EMBEDDING_PROVIDER === 'openai'
+      process.env.EMBEDDING_PROVIDER === "openai"
         ? EmbeddingProvider.OPENAI
         : EmbeddingProvider.LLAMAINDEX,
     );
 
     // Generate test query embedding
-    const queryText = 'noise regulations';
+    const queryText = "noise regulations";
     console.log(`Generating embedding for query: "${queryText}"`);
     const queryEmbedding = await embeddings.embedQuery(queryText);
 
     // Perform search
-    console.log('Searching Pinecone...');
+    console.log("Searching Pinecone...");
     const searchResults = await index.query({
       vector: queryEmbedding,
       topK: 5,
@@ -64,7 +64,7 @@ async function verifyUpsert() {
     );
 
     if (searchResults.matches && searchResults.matches.length > 0) {
-      console.log('\nTop results:');
+      console.log("\nTop results:");
 
       for (let i = 0; i < searchResults.matches.length; i++) {
         const match = searchResults.matches[i];
@@ -73,45 +73,45 @@ async function verifyUpsert() {
         console.log(`  Score: ${match.score}`);
 
         if (match.metadata) {
-          console.log(`  Bylaw: ${match.metadata.bylawNumber || 'Unknown'}`);
-          console.log(`  Title: ${match.metadata.title || 'Unknown'}`);
-          console.log(`  Section: ${match.metadata.section || 'Unknown'}`);
+          console.log(`  Bylaw: ${match.metadata.bylawNumber || "Unknown"}`);
+          console.log(`  Title: ${match.metadata.title || "Unknown"}`);
+          console.log(`  Section: ${match.metadata.section || "Unknown"}`);
           console.log(
-            `  Section Title: ${match.metadata.sectionTitle || 'Unknown'}`,
+            `  Section Title: ${match.metadata.sectionTitle || "Unknown"}`,
           );
-          console.log(`  Category: ${match.metadata.category || 'Unknown'}`);
+          console.log(`  Category: ${match.metadata.category || "Unknown"}`);
           console.log(
-            `  Is Consolidated: ${match.metadata.isConsolidated ? 'Yes' : 'No'}`,
+            `  Is Consolidated: ${match.metadata.isConsolidated ? "Yes" : "No"}`,
           );
 
           if (match.metadata.isConsolidated) {
             console.log(
-              `  Amended Bylaw: ${match.metadata.amendedBylaw || 'Unknown'}`,
+              `  Amended Bylaw: ${match.metadata.amendedBylaw || "Unknown"}`,
             );
             console.log(
-              `  Consolidated Date: ${match.metadata.consolidatedDate || 'Unknown'}`,
+              `  Consolidated Date: ${match.metadata.consolidatedDate || "Unknown"}`,
             );
           }
 
           // Show a snippet of the text
           const text = match.metadata.text as string;
           if (text) {
-            console.log('\n  Text snippet:');
+            console.log("\n  Text snippet:");
             console.log(`  "${text.substring(0, 150)}..."`);
           }
         }
       }
 
       console.log(
-        '\n✅ Verification successful. Bylaw data was properly upserted.',
+        "\n✅ Verification successful. Bylaw data was properly upserted.",
       );
     } else {
       console.log(
-        '\n❌ No results found. The bylaw may not have been properly upserted.',
+        "\n❌ No results found. The bylaw may not have been properly upserted.",
       );
     }
   } catch (error) {
-    console.error('\n❌ Verification failed:', error);
+    console.error("\n❌ Verification failed:", error);
     process.exit(1);
   }
 }

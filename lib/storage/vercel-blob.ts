@@ -5,14 +5,14 @@
  * For local development, it falls back to local file paths.
  */
 
-import { put, list, del } from '@vercel/blob';
-import fs from 'node:fs';
-import path from 'node:path';
-import { getFilenameForBylaw } from '../utils/bylaw-utils';
+import fs from "node:fs";
+import path from "node:path";
+import { del, list, put } from "@vercel/blob";
+import { getFilenameForBylaw } from "../utils/bylaw-utils";
 
 // Environment check
-const isProduction = process.env.NODE_ENV === 'production';
-const BLOB_STORE_ID = process.env.BLOB_STORE_ID || '';
+const isProduction = process.env.NODE_ENV === "production";
+const BLOB_STORE_ID = process.env.BLOB_STORE_ID || "";
 
 /**
  * Upload a PDF to Vercel Blob Storage
@@ -37,9 +37,9 @@ export async function uploadPdf(
     const fileBuffer = fs.readFileSync(filePath);
 
     const { url } = await put(`bylaws/${fileName}`, fileBuffer, {
-      access: 'public',
+      access: "public",
       addRandomSuffix: false, // Use exact filename for better caching
-      contentType: 'application/pdf',
+      contentType: "application/pdf",
     });
 
     console.log(`Uploaded bylaw ${bylawNumber} to ${url}`);
@@ -84,24 +84,24 @@ export async function getBlobPdfUrl(bylawNumber: string): Promise<string> {
  */
 export async function uploadAllPdfs(): Promise<string[]> {
   if (!isProduction) {
-    console.log('[Dev] Skipping bulk upload in development mode');
+    console.log("[Dev] Skipping bulk upload in development mode");
     return [];
   }
 
-  const pdfDir = path.resolve(process.cwd(), 'public/pdfs');
+  const pdfDir = path.resolve(process.cwd(), "public/pdfs");
   const files = fs.readdirSync(pdfDir);
   const uploadPromises: Promise<string>[] = [];
 
   console.log(`Uploading ${files.length} PDFs to Vercel Blob Storage...`);
 
   for (const file of files) {
-    if (file.endsWith('.pdf')) {
+    if (file.endsWith(".pdf")) {
       const filePath = path.join(pdfDir, file);
       const bylawNumber = file
-        .split('.')[0]
-        .split('-')[0]
-        .split('_')[0]
-        .replace(/\D/g, '');
+        .split(".")[0]
+        .split("-")[0]
+        .split("_")[0]
+        .replace(/\D/g, "");
 
       if (bylawNumber) {
         uploadPromises.push(uploadPdf(bylawNumber, filePath));
@@ -113,7 +113,7 @@ export async function uploadAllPdfs(): Promise<string[]> {
   const successUrls: string[] = [];
 
   results.forEach((result) => {
-    if (result.status === 'fulfilled') {
+    if (result.status === "fulfilled") {
       successUrls.push(result.value);
     }
   });

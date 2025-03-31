@@ -8,19 +8,19 @@
  * pnpm tsx scripts/upload-with-llama-embeddings.ts
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { Pinecone } from '@pinecone-database/pinecone';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import dotenv from 'dotenv';
-import { createHash } from 'node:crypto';
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Configurations
-const PDF_DIRECTORY = path.resolve(process.cwd(), 'public', 'pdfs');
+const PDF_DIRECTORY = path.resolve(process.cwd(), "public", "pdfs");
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
 const BATCH_SIZE = 5; // How many texts to embed in a single batch
@@ -40,7 +40,7 @@ async function getLlamaEmbeddings(texts: string[]): Promise<number[][]> {
     return texts.map((text) => {
       // Create a deterministic "embedding" for testing
       // This is NOT how you would do this in production!
-      const hash = createHash('sha256').update(text).digest('hex');
+      const hash = createHash("sha256").update(text).digest("hex");
 
       // Create an array of 1024 dimensions (llama-text-embed-v2 dimension size)
       return Array.from({ length: EMBEDDING_DIMENSIONS }, (_, i) => {
@@ -53,7 +53,7 @@ async function getLlamaEmbeddings(texts: string[]): Promise<number[][]> {
       });
     });
   } catch (error) {
-    console.error('Error generating llama embeddings:', error);
+    console.error("Error generating llama embeddings:", error);
     throw error;
   }
 }
@@ -74,7 +74,7 @@ function extractBylawInfo(filename: string): {
   const result: { number?: string; title?: string } = {};
 
   // Remove file extension
-  const basename = path.basename(filename, '.pdf');
+  const basename = path.basename(filename, ".pdf");
 
   // Various filename patterns
   const patterns = [
@@ -83,7 +83,7 @@ function extractBylawInfo(filename: string): {
       regex: /^bylaw-(\d+)(?:-(.+))?$/i,
       numIdx: 1,
       titleIdx: 2,
-      titleFn: (t: string) => t?.replace(/-/g, ' '),
+      titleFn: (t: string) => t?.replace(/-/g, " "),
     },
 
     // Pattern 2: "4747, Reserve Funds Bylaw, 2020 CONSOLIDATED" format
@@ -125,7 +125,7 @@ async function processPDF(filePath: string): Promise<{
   // Load and split the PDF
   const loader = new PDFLoader(filePath, { splitPages: false });
   const docs = await loader.load();
-  const pdfText = docs.map((doc) => doc.pageContent).join('\n');
+  const pdfText = docs.map((doc) => doc.pageContent).join("\n");
 
   // Split into chunks
   const textSplitter = new RecursiveCharacterTextSplitter({
@@ -139,12 +139,12 @@ async function processPDF(filePath: string): Promise<{
   const stats = fs.statSync(filePath);
   const metadata = {
     bylawNumber: fileInfo.number,
-    title: fileInfo.title || path.basename(filePath, '.pdf'),
+    title: fileInfo.title || path.basename(filePath, ".pdf"),
     filename: path.basename(filePath),
     fileSize: stats.size,
     lastModified: stats.mtime.toISOString(),
-    source: 'oak-bay-bylaws-v2',
-    model: 'llama-text-embed-v2',
+    source: "oak-bay-bylaws-v2",
+    model: "llama-text-embed-v2",
   };
 
   return { chunks, metadata };
@@ -178,7 +178,7 @@ async function createVectors(chunks: any[], metadata: any): Promise<any[]> {
         chunk: chunkIndex,
         page: chunk.metadata?.page,
         section: extractSection(chunk.pageContent),
-        category: determineCategory(metadata.title || '', chunk.pageContent),
+        category: determineCategory(metadata.title || "", chunk.pageContent),
         dateEnacted: extractDate(chunk.pageContent),
       };
 
@@ -187,7 +187,7 @@ async function createVectors(chunks: any[], metadata: any): Promise<any[]> {
 
       // Create vector record
       vectors.push({
-        id: `bylaw-${metadata.bylawNumber || 'unknown'}-${chunkIndex}`,
+        id: `bylaw-${metadata.bylawNumber || "unknown"}-${chunkIndex}`,
         values: normalizedEmbedding,
         metadata: chunkMetadata,
       });
@@ -215,7 +215,7 @@ function extractSection(text: string): string {
     return numberedHeadingMatch[1];
   }
 
-  return 'general';
+  return "general";
 }
 
 // Simple category determination
@@ -226,33 +226,33 @@ function determineCategory(title: string, text: string): string {
   // Check for common categories in title or text
   const categories = [
     {
-      name: 'zoning',
-      keywords: ['zoning', 'zone', 'land use', 'residential', 'commercial'],
+      name: "zoning",
+      keywords: ["zoning", "zone", "land use", "residential", "commercial"],
     },
     {
-      name: 'building',
-      keywords: ['building', 'construction', 'structure', 'permit'],
+      name: "building",
+      keywords: ["building", "construction", "structure", "permit"],
     },
     {
-      name: 'traffic',
-      keywords: ['traffic', 'parking', 'vehicle', 'street', 'road'],
+      name: "traffic",
+      keywords: ["traffic", "parking", "vehicle", "street", "road"],
     },
     {
-      name: 'utilities',
-      keywords: ['utilities', 'water', 'sewer', 'drainage', 'waste'],
+      name: "utilities",
+      keywords: ["utilities", "water", "sewer", "drainage", "waste"],
     },
     {
-      name: 'finance',
-      keywords: ['finance', 'tax', 'fee', 'budget', 'revenue'],
+      name: "finance",
+      keywords: ["finance", "tax", "fee", "budget", "revenue"],
     },
-    { name: 'parks', keywords: ['park', 'recreation', 'beach', 'playground'] },
+    { name: "parks", keywords: ["park", "recreation", "beach", "playground"] },
     {
-      name: 'governance',
-      keywords: ['council', 'committee', 'procedure', 'election'],
+      name: "governance",
+      keywords: ["council", "committee", "procedure", "election"],
     },
     {
-      name: 'licensing',
-      keywords: ['license', 'permit', 'business', 'application'],
+      name: "licensing",
+      keywords: ["license", "permit", "business", "application"],
     },
   ];
 
@@ -265,7 +265,7 @@ function determineCategory(title: string, text: string): string {
     }
   }
 
-  return 'general';
+  return "general";
 }
 
 // Extract date from text
@@ -281,24 +281,24 @@ function extractDate(text: string): string {
     const match = text.match(regex);
     if (match) {
       try {
-        return new Date(match[1]).toISOString().split('T')[0];
+        return new Date(match[1]).toISOString().split("T")[0];
       } catch (e) {
         // Ignore date parsing errors
       }
     }
   }
 
-  return '';
+  return "";
 }
 
 // Upload vectors to Pinecone
 async function upsertToPinecone(vectors: any[]): Promise<void> {
   // Initialize Pinecone client
   const pinecone = new Pinecone({
-    apiKey: process.env.PINECONE_API_KEY || '',
+    apiKey: process.env.PINECONE_API_KEY || "",
   });
 
-  const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+  const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
   console.log(`Connecting to Pinecone index '${indexName}'...`);
 
   const index = pinecone.index(indexName);
@@ -323,13 +323,13 @@ async function main() {
   try {
     // Validate environment
     if (!process.env.PINECONE_API_KEY) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     // Get PDF files
     const files = fs
       .readdirSync(PDF_DIRECTORY)
-      .filter((file) => file.toLowerCase().endsWith('.pdf'))
+      .filter((file) => file.toLowerCase().endsWith(".pdf"))
       .map((file) => path.join(PDF_DIRECTORY, file));
 
     console.log(`Found ${files.length} PDF files in ${PDF_DIRECTORY}`);
@@ -352,9 +352,9 @@ async function main() {
       }
     }
 
-    console.log('✅ All PDFs have been processed and uploaded to Pinecone');
+    console.log("✅ All PDFs have been processed and uploaded to Pinecone");
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
     process.exit(1);
   }
 }

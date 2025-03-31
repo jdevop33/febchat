@@ -2,30 +2,30 @@
 
 // This script uses ESM imports
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { glob } from 'glob';
-import { OpenAI } from 'openai';
-import dotenv from 'dotenv';
-import chalk from 'chalk';
-import minimist from 'minimist';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import dotenv from "dotenv";
+import { glob } from "glob";
+import minimist from "minimist";
+import { OpenAI } from "openai";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
-  string: ['output', 'focus'],
-  boolean: ['summary', 'verbose', 'help'],
+  string: ["output", "focus"],
+  boolean: ["summary", "verbose", "help"],
   alias: {
-    o: 'output',
-    f: 'focus',
-    s: 'summary',
-    v: 'verbose',
-    h: 'help',
+    o: "output",
+    f: "focus",
+    s: "summary",
+    v: "verbose",
+    h: "help",
   },
   default: {
-    output: 'ai-analysis-results.json',
+    output: "ai-analysis-results.json",
     summary: false,
     verbose: false,
     help: false,
@@ -35,21 +35,21 @@ const argv = minimist(process.argv.slice(2), {
 // Show help message
 if (argv.help) {
   console.log(`
-${chalk.bold('AI Codebase Analyzer')}
+${chalk.bold("AI Codebase Analyzer")}
 
 This tool uses OpenAI to analyze your codebase and provide insights.
 
-${chalk.bold('Usage:')}
+${chalk.bold("Usage:")}
   npx tsx scripts/ai-codebase-analyzer.mjs [options]
 
-${chalk.bold('Options:')}
+${chalk.bold("Options:")}
   -o, --output <file>    Output file for analysis results (default: ai-analysis-results.json)
   -f, --focus <pattern>  Focus analysis on specific files (glob pattern like "**/*.ts")
   -s, --summary          Only generate a high-level summary (faster)
   -v, --verbose          Show detailed logs during analysis
   -h, --help             Show this help message
 
-${chalk.bold('Examples:')}
+${chalk.bold("Examples:")}
   npx tsx scripts/ai-codebase-analyzer.mjs --focus "lib/**/*.ts" --verbose
   npx tsx scripts/ai-codebase-analyzer.mjs --summary
   `);
@@ -64,18 +64,18 @@ const openai = new OpenAI({
 // Configuration
 const CONFIG = {
   // Directories to include in the analysis
-  includeDirs: ['app', 'components', 'lib', 'hooks', 'types', 'artifacts'],
+  includeDirs: ["app", "components", "lib", "hooks", "types", "artifacts"],
   // Files or directories to exclude
   excludePatterns: [
-    'node_modules',
-    '.next',
-    '**/*.test.ts',
-    '**/*.test.tsx',
-    'public',
-    '**/node_modules/**',
+    "node_modules",
+    ".next",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "public",
+    "**/node_modules/**",
   ],
   // File extensions to analyze
-  extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  extensions: [".ts", ".tsx", ".js", ".jsx"],
   // Max tokens for OpenAI
   maxTokens: 2000,
   // Max file size to analyze (in bytes)
@@ -85,7 +85,7 @@ const CONFIG = {
   // Delay between API calls to avoid rate limiting (in ms)
   apiDelay: 1000,
   // Model to use for analysis
-  model: 'gpt-4-turbo',
+  model: "gpt-4-turbo",
 };
 
 // Get custom focus pattern if provided
@@ -96,9 +96,9 @@ if (argv.focus) {
 // Analysis result structure
 const analysisResult = {
   summary: {
-    title: 'FebChat Codebase Analysis',
-    highLevelOverview: '',
-    architectureEvaluation: '',
+    title: "FebChat Codebase Analysis",
+    highLevelOverview: "",
+    architectureEvaluation: "",
     keyChallenges: [],
     recommendations: [],
   },
@@ -117,10 +117,10 @@ const analysisResult = {
 // Main function
 async function runAnalysis() {
   try {
-    console.log(chalk.blue('🔍 Starting AI codebase analysis...'));
+    console.log(chalk.blue("🔍 Starting AI codebase analysis..."));
 
     // 1. Find all source files
-    console.log(chalk.blue('📁 Scanning project files...'));
+    console.log(chalk.blue("📁 Scanning project files..."));
     let allFiles;
 
     if (argv.focus) {
@@ -131,7 +131,7 @@ async function runAnalysis() {
       });
     } else {
       const patterns = CONFIG.includeDirs.map(
-        (dir) => `${dir}/**/*{${CONFIG.extensions.join(',')}}`,
+        (dir) => `${dir}/**/*{${CONFIG.extensions.join(",")}}`,
       );
       allFiles = await glob(patterns, {
         ignore: CONFIG.excludePatterns,
@@ -146,27 +146,27 @@ async function runAnalysis() {
 
     // 2. If summary-only mode, analyze project structure only
     if (argv.summary) {
-      console.log(chalk.blue('📊 Generating high-level summary only...'));
+      console.log(chalk.blue("📊 Generating high-level summary only..."));
       await analyzeProjectStructure(allFiles);
     } else {
       // 3. Analyze files in batches
-      console.log(chalk.blue('🔎 Analyzing files in batches...'));
+      console.log(chalk.blue("🔎 Analyzing files in batches..."));
       await analyzeFilesInBatches(allFiles);
 
       // 4. Analyze architectural patterns
-      console.log(chalk.blue('🏗️ Identifying architectural patterns...'));
+      console.log(chalk.blue("🏗️ Identifying architectural patterns..."));
       await analyzeArchitecture(allFiles);
 
       // 5. Identify performance issues
-      console.log(chalk.blue('⚡ Identifying potential performance issues...'));
+      console.log(chalk.blue("⚡ Identifying potential performance issues..."));
       await analyzePerformance();
 
       // 6. Generate overall quality metrics
-      console.log(chalk.blue('🔢 Calculating quality metrics...'));
+      console.log(chalk.blue("🔢 Calculating quality metrics..."));
       await calculateQualityMetrics();
 
       // 7. Create comprehensive summary
-      console.log(chalk.blue('📝 Creating comprehensive summary...'));
+      console.log(chalk.blue("📝 Creating comprehensive summary..."));
       await createSummary(allFiles);
     }
 
@@ -179,7 +179,7 @@ async function runAnalysis() {
     // Print key findings to console
     printSummary();
   } catch (error) {
-    console.error(chalk.red('❌ Error during analysis:'), error);
+    console.error(chalk.red("❌ Error during analysis:"), error);
     process.exit(1);
   }
 }
@@ -191,15 +191,15 @@ async function analyzeProjectStructure(allFiles) {
     const directoryStructure = buildDirectoryStructure(allFiles);
 
     // Get package.json info
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const packageJsonPath = path.join(process.cwd(), "package.json");
     let packageInfo = {};
 
     if (fs.existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
       packageInfo = {
         name: packageJson.name,
         version: packageJson.version,
-        description: packageJson.description || '',
+        description: packageJson.description || "",
         dependencies: Object.keys(packageJson.dependencies || {}),
         devDependencies: Object.keys(packageJson.devDependencies || {}),
         scripts: packageJson.scripts || {},
@@ -210,12 +210,12 @@ async function analyzeProjectStructure(allFiles) {
     const prompt = `
 You are an expert software architect analyzing a Next.js application codebase.
 
-Project name: ${packageInfo.name || 'Unknown'}
-Project version: ${packageInfo.version || 'Unknown'}
-Description: ${packageInfo.description || 'A Next.js application'}
+Project name: ${packageInfo.name || "Unknown"}
+Project version: ${packageInfo.version || "Unknown"}
+Description: ${packageInfo.description || "A Next.js application"}
 
 Key dependencies (truncated):
-${packageInfo.dependencies?.slice(0, 20).join(', ')}
+${packageInfo.dependencies?.slice(0, 20).join(", ")}
 
 Directory structure (truncated):
 ${JSON.stringify(directoryStructure, null, 2)}
@@ -230,12 +230,12 @@ Be specific and actionable in your recommendations.
 `;
 
     if (argv.verbose) {
-      console.log(chalk.gray('Sending project structure for analysis...'));
+      console.log(chalk.gray("Sending project structure for analysis..."));
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 1500,
     });
 
@@ -244,14 +244,14 @@ Be specific and actionable in your recommendations.
     // Extract sections from the analysis
     const sections = extractSectionsFromAnalysis(analysis);
 
-    analysisResult.summary.highLevelOverview = sections.overview || '';
-    analysisResult.summary.architectureEvaluation = sections.architecture || '';
+    analysisResult.summary.highLevelOverview = sections.overview || "";
+    analysisResult.summary.architectureEvaluation = sections.architecture || "";
     analysisResult.summary.keyChallenges = sections.challenges || [];
     analysisResult.summary.recommendations = sections.recommendations || [];
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error analyzing project structure:'), error);
+    console.error(chalk.red("Error analyzing project structure:"), error);
     return false;
   }
 }
@@ -283,8 +283,8 @@ function buildDirectoryStructure(files) {
 // Extract sections from the AI analysis
 function extractSectionsFromAnalysis(analysis) {
   const result = {
-    overview: '',
-    architecture: '',
+    overview: "",
+    architecture: "",
     challenges: [],
     recommendations: [],
   };
@@ -349,7 +349,7 @@ function extractNumberedItems(text) {
 
   // If still no items found, split by newlines
   if (items.length === 0) {
-    return text.split('\n').filter((line) => line.trim().length > 10);
+    return text.split("\n").filter((line) => line.trim().length > 10);
   }
 
   return items;
@@ -420,12 +420,12 @@ async function analyzeBatch(files) {
         }
         return {
           file,
-          content: 'FILE_TOO_LARGE',
+          content: "FILE_TOO_LARGE",
           relativePath: path.relative(process.cwd(), file),
         };
       }
 
-      const content = fs.readFileSync(file, 'utf-8');
+      const content = fs.readFileSync(file, "utf-8");
       return {
         file,
         content,
@@ -436,7 +436,7 @@ async function analyzeBatch(files) {
       console.error(chalk.red(`Error reading file ${file}:`), error);
       return {
         file,
-        content: 'ERROR_READING_FILE',
+        content: "ERROR_READING_FILE",
         relativePath: path.relative(process.cwd(), file),
       };
     }
@@ -444,7 +444,7 @@ async function analyzeBatch(files) {
 
   // Filter out files that are too large or had errors
   const validFiles = fileContents.filter(
-    (f) => f.content !== 'FILE_TOO_LARGE' && f.content !== 'ERROR_READING_FILE',
+    (f) => f.content !== "FILE_TOO_LARGE" && f.content !== "ERROR_READING_FILE",
   );
 
   if (validFiles.length === 0) {
@@ -462,7 +462,7 @@ async function analyzeBatch(files) {
 
       return `File: ${f.relativePath}\n\`\`\`\n${truncatedContent}\n\`\`\``;
     })
-    .join('\n\n');
+    .join("\n\n");
 
   const prompt = `
 You are an expert code reviewer analyzing a batch of files from a Next.js application.
@@ -498,9 +498,9 @@ ${fileDetailsForPrompt}
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: CONFIG.maxTokens,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
     });
 
     const analysisText = response.choices[0].message.content.trim();
@@ -514,12 +514,12 @@ ${fileDetailsForPrompt}
 
       return true;
     } catch (jsonError) {
-      console.error(chalk.red('Error parsing JSON response:'), jsonError);
-      console.log(chalk.yellow('Raw response:'), analysisText);
+      console.error(chalk.red("Error parsing JSON response:"), jsonError);
+      console.log(chalk.yellow("Raw response:"), analysisText);
       return false;
     }
   } catch (error) {
-    console.error(chalk.red('Error analyzing batch:'), error);
+    console.error(chalk.red("Error analyzing batch:"), error);
     return false;
   }
 }
@@ -555,7 +555,7 @@ ${
   importData
     ? `And the following import relationships between files:
 ${importData}`
-    : ''
+    : ""
 }
 
 Identify:
@@ -577,14 +577,14 @@ Format your response as a JSON array of architectural patterns and insights, lik
 `;
 
     if (argv.verbose) {
-      console.log(chalk.gray('Analyzing architectural patterns...'));
+      console.log(chalk.gray("Analyzing architectural patterns..."));
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 1000,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
     });
 
     const analysisText = response.choices[0].message.content.trim();
@@ -598,12 +598,12 @@ Format your response as a JSON array of architectural patterns and insights, lik
 
       return true;
     } catch (jsonError) {
-      console.error(chalk.red('Error parsing JSON response:'), jsonError);
-      console.log(chalk.yellow('Raw response:'), analysisText);
+      console.error(chalk.red("Error parsing JSON response:"), jsonError);
+      console.log(chalk.yellow("Raw response:"), analysisText);
       return false;
     }
   } catch (error) {
-    console.error(chalk.red('Error analyzing architecture:'), error);
+    console.error(chalk.red("Error analyzing architecture:"), error);
     return false;
   }
 }
@@ -612,7 +612,7 @@ Format your response as a JSON array of architectural patterns and insights, lik
 function extractImportRelationships() {
   // This would need a more sophisticated analysis to be accurate
   // For now, return a placeholder or nothing
-  return '';
+  return "";
 }
 
 // Analyze performance issues
@@ -627,10 +627,10 @@ async function analyzePerformance() {
       if (analysis.issues) {
         const perfIssues = analysis.issues.filter(
           (issue) =>
-            issue.toLowerCase().includes('performance') ||
-            issue.toLowerCase().includes('slow') ||
-            issue.toLowerCase().includes('memory') ||
-            issue.toLowerCase().includes('optimize'),
+            issue.toLowerCase().includes("performance") ||
+            issue.toLowerCase().includes("slow") ||
+            issue.toLowerCase().includes("memory") ||
+            issue.toLowerCase().includes("optimize"),
         );
 
         if (perfIssues.length > 0) {
@@ -659,14 +659,14 @@ Format your response as a JSON array of performance issues and insights.
 `;
 
     if (argv.verbose) {
-      console.log(chalk.gray('Analyzing performance issues...'));
+      console.log(chalk.gray("Analyzing performance issues..."));
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 1000,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
     });
 
     const analysisText = response.choices[0].message.content.trim();
@@ -680,12 +680,12 @@ Format your response as a JSON array of performance issues and insights.
 
       return true;
     } catch (jsonError) {
-      console.error(chalk.red('Error parsing JSON response:'), jsonError);
-      console.log(chalk.yellow('Raw response:'), analysisText);
+      console.error(chalk.red("Error parsing JSON response:"), jsonError);
+      console.log(chalk.yellow("Raw response:"), analysisText);
       return false;
     }
   } catch (error) {
-    console.error(chalk.red('Error analyzing performance issues:'), error);
+    console.error(chalk.red("Error analyzing performance issues:"), error);
     return false;
   }
 }
@@ -730,14 +730,14 @@ Format your response as a JSON object with these metrics.
 `;
 
     if (argv.verbose) {
-      console.log(chalk.gray('Calculating quality metrics...'));
+      console.log(chalk.gray("Calculating quality metrics..."));
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 500,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
     });
 
     const analysisText = response.choices[0].message.content.trim();
@@ -751,12 +751,12 @@ Format your response as a JSON object with these metrics.
 
       return true;
     } catch (jsonError) {
-      console.error(chalk.red('Error parsing JSON response:'), jsonError);
-      console.log(chalk.yellow('Raw response:'), analysisText);
+      console.error(chalk.red("Error parsing JSON response:"), jsonError);
+      console.log(chalk.yellow("Raw response:"), analysisText);
       return false;
     }
   } catch (error) {
-    console.error(chalk.red('Error calculating quality metrics:'), error);
+    console.error(chalk.red("Error calculating quality metrics:"), error);
     return false;
   }
 }
@@ -820,12 +820,12 @@ Be concise, specific, and actionable in your recommendations.
 `;
 
     if (argv.verbose) {
-      console.log(chalk.gray('Creating comprehensive summary...'));
+      console.log(chalk.gray("Creating comprehensive summary..."));
     }
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 1500,
     });
 
@@ -834,26 +834,26 @@ Be concise, specific, and actionable in your recommendations.
     // Extract sections from the summary
     const sections = extractSectionsFromAnalysis(summaryText);
 
-    analysisResult.summary.highLevelOverview = sections.overview || '';
-    analysisResult.summary.architectureEvaluation = sections.architecture || '';
+    analysisResult.summary.highLevelOverview = sections.overview || "";
+    analysisResult.summary.architectureEvaluation = sections.architecture || "";
     analysisResult.summary.keyChallenges = sections.challenges || [];
     analysisResult.summary.recommendations = sections.recommendations || [];
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error creating summary:'), error);
+    console.error(chalk.red("Error creating summary:"), error);
     return false;
   }
 }
 
 // Print summary to the console
 function printSummary() {
-  console.log(chalk.blue.bold('\n📋 AI CODEBASE ANALYSIS SUMMARY'));
-  console.log(chalk.blue('============================\n'));
+  console.log(chalk.blue.bold("\n📋 AI CODEBASE ANALYSIS SUMMARY"));
+  console.log(chalk.blue("============================\n"));
 
   // Print high-level overview
   if (analysisResult.summary.highLevelOverview) {
-    console.log(chalk.yellow.bold('Overview:'));
+    console.log(chalk.yellow.bold("Overview:"));
     console.log(analysisResult.summary.highLevelOverview);
     console.log();
   }
@@ -863,7 +863,7 @@ function printSummary() {
     analysisResult.summary.keyChallenges &&
     analysisResult.summary.keyChallenges.length > 0
   ) {
-    console.log(chalk.yellow.bold('Key Challenges:'));
+    console.log(chalk.yellow.bold("Key Challenges:"));
     analysisResult.summary.keyChallenges.forEach((challenge, index) => {
       console.log(`${index + 1}. ${challenge}`);
     });
@@ -875,7 +875,7 @@ function printSummary() {
     analysisResult.summary.recommendations &&
     analysisResult.summary.recommendations.length > 0
   ) {
-    console.log(chalk.yellow.bold('Recommendations:'));
+    console.log(chalk.yellow.bold("Recommendations:"));
     analysisResult.summary.recommendations.forEach((recommendation, index) => {
       console.log(`${index + 1}. ${recommendation}`);
     });
@@ -884,30 +884,30 @@ function printSummary() {
 
   // Print quality metrics if available
   if (analysisResult.qualityMetrics && !argv.summary) {
-    console.log(chalk.yellow.bold('Quality Metrics:'));
+    console.log(chalk.yellow.bold("Quality Metrics:"));
 
     const metrics = analysisResult.qualityMetrics;
     const labels = {
-      maintainability: 'Maintainability',
-      modularity: 'Modularity',
-      testability: 'Testability',
-      consistency: 'Consistency',
+      maintainability: "Maintainability",
+      modularity: "Modularity",
+      testability: "Testability",
+      consistency: "Consistency",
     };
 
     for (const [key, value] of Object.entries(metrics)) {
       const label = labels[key] || key;
       const score = Math.round(value);
       const barLength = Math.round(score / 5);
-      const bar = '█'.repeat(barLength);
+      const bar = "█".repeat(barLength);
 
       console.log(
-        `${label.padEnd(15)} ${score}% ${`▕${bar}${' '.repeat(20 - barLength)}▏`}`,
+        `${label.padEnd(15)} ${score}% ${`▕${bar}${" ".repeat(20 - barLength)}▏`}`,
       );
     }
     console.log();
   }
 
-  console.log(chalk.blue.bold('Full analysis details saved to:'));
+  console.log(chalk.blue.bold("Full analysis details saved to:"));
   console.log(argv.output);
 }
 

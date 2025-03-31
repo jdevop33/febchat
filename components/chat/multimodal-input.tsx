@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
 import type {
   Attachment,
   ChatRequestOptions,
   CreateMessage,
   Message,
-} from 'ai';
-import cx from 'classnames';
+} from "ai";
+import cx from "classnames";
 import {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
+  type ChangeEvent,
   type Dispatch,
   type SetStateAction,
-  type ChangeEvent,
   memo,
-} from 'react';
-import { toast } from 'sonner';
-import { useLocalStorage, useWindowSize } from 'usehooks-ts';
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { toast } from "sonner";
+import { useLocalStorage, useWindowSize } from "usehooks-ts";
 
-import { sanitizeUIMessages } from '@/lib/utils';
+import { sanitizeUIMessages } from "@/lib/utils";
 
-import { ArrowUpIcon, PaperclipIcon, StopIcon } from '@/components/shared/icons';
-import { PreviewAttachment } from '@/components/ui/preview-attachment';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { SuggestedActions } from '@/components/ui/suggested-actions';
-import equal from 'fast-deep-equal';
+import {
+  ArrowUpIcon,
+  PaperclipIcon,
+  StopIcon,
+} from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
+import { PreviewAttachment } from "@/components/ui/preview-attachment";
+import { SuggestedActions } from "@/components/ui/suggested-actions";
+import { Textarea } from "@/components/ui/textarea";
+import equal from "fast-deep-equal";
 
 function PureMultimodalInput({
   chatId,
@@ -77,28 +81,28 @@ function PureMultimodalInput({
 
   const adjustHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
     }
   };
 
   const resetHeight = () => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = '98px';
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = "98px";
     }
   };
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    'input',
-    '',
+    "input",
+    "",
   );
 
   useEffect(() => {
     if (textareaRef.current) {
       const domValue = textareaRef.current.value;
       // Prefer DOM value over localStorage to handle hydration
-      const finalValue = domValue || localStorageInput || '';
+      const finalValue = domValue || localStorageInput || "";
       setInput(finalValue);
       adjustHeight();
     }
@@ -120,15 +124,15 @@ function PureMultimodalInput({
 
   const submitForm = useCallback(() => {
     if (disabled) return;
-    
-    window.history.replaceState({}, '', `/chat/${chatId}`);
+
+    window.history.replaceState({}, "", `/chat/${chatId}`);
 
     handleSubmit(undefined, {
       experimental_attachments: attachments,
     });
 
     setAttachments([]);
-    setLocalStorageInput('');
+    setLocalStorageInput("");
     resetHeight();
 
     if (width && width > 768) {
@@ -146,11 +150,11 @@ function PureMultimodalInput({
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
     try {
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
+      const response = await fetch("/api/files/upload", {
+        method: "POST",
         body: formData,
       });
 
@@ -167,7 +171,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (error) {
-      toast.error('Failed to upload file, please try again!');
+      toast.error("Failed to upload file, please try again!");
     }
   };
 
@@ -189,7 +193,7 @@ function PureMultimodalInput({
           ...successfullyUploadedAttachments,
         ]);
       } catch (error) {
-        console.error('Error uploading files!', error);
+        console.error("Error uploading files!", error);
       } finally {
         setUploadQueue([]);
       }
@@ -203,7 +207,11 @@ function PureMultimodalInput({
         attachments.length === 0 &&
         uploadQueue.length === 0 &&
         input.length === 0 && (
-          <SuggestedActions append={append} chatId={chatId} disabled={disabled} />
+          <SuggestedActions
+            append={append}
+            chatId={chatId}
+            disabled={disabled}
+          />
         )}
 
       <input
@@ -226,9 +234,9 @@ function PureMultimodalInput({
             <PreviewAttachment
               key={filename}
               attachment={{
-                url: '',
+                url: "",
                 name: filename,
-                contentType: '',
+                contentType: "",
               }}
               isUploading={true}
             />
@@ -242,7 +250,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'max-h-[calc(75dvh)] min-h-[24px] resize-none overflow-hidden rounded-2xl bg-muted pb-10 !text-base dark:border-zinc-700',
+          "max-h-[calc(75dvh)] min-h-[24px] resize-none overflow-hidden rounded-2xl bg-muted pb-10 !text-base dark:border-zinc-700",
           className,
         )}
         rows={2}
@@ -251,23 +259,23 @@ function PureMultimodalInput({
         aria-describedby="message-input-instructions"
         disabled={disabled || isLoading}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
+          if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
 
             if (isLoading) {
-              toast.error('Please wait for the model to finish its response!');
+              toast.error("Please wait for the model to finish its response!");
             } else {
               submitForm();
             }
           } else if (
-            event.key === 'Tab' &&
+            event.key === "Tab" &&
             attachments.length > 0 &&
             !event.shiftKey
           ) {
             // Allow tabbing to attachments
             event.preventDefault();
             const attachmentButton = document.querySelector(
-              '[data-attachment-button]',
+              "[data-attachment-button]",
             );
             if (attachmentButton) {
               (attachmentButton as HTMLElement).focus();
@@ -281,9 +289,16 @@ function PureMultimodalInput({
       </div>
 
       <div className="absolute bottom-0 right-0 flex h-10 items-center justify-end gap-2 p-2">
-        <AttachmentsButton fileInputRef={fileInputRef} isLoading={isLoading || !!disabled} />
+        <AttachmentsButton
+          fileInputRef={fileInputRef}
+          isLoading={isLoading || !!disabled}
+        />
         {isLoading ? (
-          <StopButton stop={stop} setMessages={setMessages} disabled={disabled} />
+          <StopButton
+            stop={stop}
+            setMessages={setMessages}
+            disabled={disabled}
+          />
         ) : (
           <SendButton
             submitForm={submitForm}
@@ -352,30 +367,30 @@ function PureStopButton({
       className="rounded-full bg-black text-white hover:bg-black/90 dark:bg-muted dark:text-white/90 dark:hover:bg-zinc-800"
       onClick={(event) => {
         event.preventDefault();
-        
+
         // Adding a spinning message to indicate we're stopping generation
         setMessages((messages) => {
           // Find the last assistant message and mark it as incomplete
           const lastAssistantMessageIndex = [...messages]
             .reverse()
-            .findIndex((message) => message.role === 'assistant');
-          
+            .findIndex((message) => message.role === "assistant");
+
           if (lastAssistantMessageIndex >= 0) {
             const newMessages = [...messages];
             const actualIndex = messages.length - 1 - lastAssistantMessageIndex;
-            
+
             // Mark the message as user-stopped
             newMessages[actualIndex] = {
               ...newMessages[actualIndex],
               content: `${newMessages[actualIndex].content} [Stopped by user]`,
             };
-            
+
             return newMessages;
           }
-          
+
           return messages;
         });
-        
+
         stop();
       }}
       aria-label="Stop generating"
@@ -407,8 +422,7 @@ function PureSendButton({
       type="button"
       onClick={submitForm}
       disabled={
-        disabled || 
-        (!input.trim() && uploadQueue.length === 0 && !input.length)
+        disabled || (!input.trim() && uploadQueue.length === 0 && !input.length)
       }
       size="icon"
       variant="ghost"

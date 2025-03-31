@@ -2,9 +2,9 @@
  * Batching utilities for vector search operations
  */
 
-import { APIBatcher } from '../utils/api-batching';
-import { profiler } from '../utils/profiler';
-import type { PineconeRecord } from '@pinecone-database/pinecone';
+import type { PineconeRecord } from "@pinecone-database/pinecone";
+import { APIBatcher } from "../utils/api-batching";
+import { profiler } from "../utils/profiler";
 
 export type SearchQuery = {
   query: string;
@@ -39,9 +39,9 @@ export class BatchedVectorSearch {
    */
   public async search(
     query: string,
-    options?: SearchQuery['options'],
+    options?: SearchQuery["options"],
   ): Promise<SearchResult[]> {
-    return profiler.measure('batched-vector-search', async () => {
+    return profiler.measure("batched-vector-search", async () => {
       return this.batcher.add({ query, options });
     });
   }

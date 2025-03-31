@@ -1,4 +1,4 @@
 // This file is maintained for backward compatibility
 // Import from the new structure instead
 
-export * from '@/components/messages/message';
+export * from "@/components/messages/message";

@@ -2,42 +2,42 @@
 
 // This script uses ESM imports
 
-import { execSync } from 'node:child_process';
-import path from 'node:path';
-import fs from 'node:fs';
-import chalk from 'chalk';
-import minimist from 'minimist';
+import { execSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import minimist from "minimist";
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
   boolean: [
-    'all',
-    'analyze',
-    'improve',
-    'context',
-    'fix-circular',
-    'help',
-    'dry-run',
+    "all",
+    "analyze",
+    "improve",
+    "context",
+    "fix-circular",
+    "help",
+    "dry-run",
   ],
-  string: ['focus', 'output-dir'],
+  string: ["focus", "output-dir"],
   alias: {
-    a: 'all',
-    n: 'analyze',
-    i: 'improve',
-    c: 'context',
-    f: 'focus',
-    o: 'output-dir',
-    d: 'dry-run',
-    h: 'help',
+    a: "all",
+    n: "analyze",
+    i: "improve",
+    c: "context",
+    f: "focus",
+    o: "output-dir",
+    d: "dry-run",
+    h: "help",
   },
   default: {
     all: false,
     analyze: false,
     improve: false,
     context: false,
-    'fix-circular': false,
-    'dry-run': false,
-    'output-dir': 'ai-audit',
+    "fix-circular": false,
+    "dry-run": false,
+    "output-dir": "ai-audit",
     help: false,
   },
 });
@@ -49,17 +49,17 @@ if (
     !argv.analyze &&
     !argv.improve &&
     !argv.context &&
-    !argv['fix-circular'])
+    !argv["fix-circular"])
 ) {
   console.log(`
-${chalk.bold('AI Code Audit')}
+${chalk.bold("AI Code Audit")}
 
 This tool orchestrates various AI-powered code analysis and improvement tools.
 
-${chalk.bold('Usage:')}
+${chalk.bold("Usage:")}
   npx tsx scripts/ai-code-audit.mjs [options]
 
-${chalk.bold('Options:')}
+${chalk.bold("Options:")}
   -a, --all               Run all audit processes
   -n, --analyze           Run codebase analysis
   -i, --improve           Run code improvement on key files
@@ -70,7 +70,7 @@ ${chalk.bold('Options:')}
   -d, --dry-run           Don't modify files, just show what would change
   -h, --help              Show this help message
 
-${chalk.bold('Examples:')}
+${chalk.bold("Examples:")}
   npx tsx scripts/ai-code-audit.mjs --all
   npx tsx scripts/ai-code-audit.mjs --analyze --focus "lib/**/*.ts"
   npx tsx scripts/ai-code-audit.mjs --improve --dry-run
@@ -82,47 +82,47 @@ ${chalk.bold('Examples:')}
 // Define key files for targeted improvement
 const KEY_FILES = [
   // Components with the most dependencies or most used
-  'components/message.tsx',
-  'components/artifact.tsx',
-  'components/document-preview.tsx',
-  'components/document.tsx',
-  'components/ui/button.tsx',
+  "components/message.tsx",
+  "components/artifact.tsx",
+  "components/document-preview.tsx",
+  "components/document.tsx",
+  "components/ui/button.tsx",
   // Core utilities and logic
-  'lib/utils.ts',
-  'lib/db/queries.ts',
-  'lib/vector/optimized-search-service.ts',
+  "lib/utils.ts",
+  "lib/db/queries.ts",
+  "lib/vector/optimized-search-service.ts",
   // Hooks
-  'hooks/use-artifact.ts',
+  "hooks/use-artifact.ts",
   // Circular dependency candidates
-  'components/artifact-messages.tsx',
+  "components/artifact-messages.tsx",
 ];
 
 // Files with known circular dependencies
 const CIRCULAR_DEPENDENCIES = [
   {
     files: [
-      'components/artifact.tsx',
-      'components/artifact-messages.tsx',
-      'components/message.tsx',
-      'components/document-preview.tsx',
-      'components/document.tsx',
+      "components/artifact.tsx",
+      "components/artifact-messages.tsx",
+      "components/message.tsx",
+      "components/document-preview.tsx",
+      "components/document.tsx",
     ],
-    solution: 'Extract shared interfaces to separate type files',
+    solution: "Extract shared interfaces to separate type files",
   },
   {
-    files: ['lib/editor/config.ts', 'lib/editor/functions.tsx'],
+    files: ["lib/editor/config.ts", "lib/editor/functions.tsx"],
     solution:
-      'Separate configuration constants and move common utility functions',
+      "Separate configuration constants and move common utility functions",
   },
 ];
 
 // Main function
 async function runAudit() {
   try {
-    console.log(chalk.blue.bold('🔍 Starting AI Code Audit'));
+    console.log(chalk.blue.bold("🔍 Starting AI Code Audit"));
 
     // Create output directory if it doesn't exist
-    const outputDir = argv['output-dir'];
+    const outputDir = argv["output-dir"];
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
       console.log(chalk.green(`Created output directory: ${outputDir}`));
@@ -138,32 +138,32 @@ async function runAudit() {
 
     // Run codebase analysis
     if (argv.all || argv.analyze) {
-      console.log(chalk.blue.bold('\n📊 Running Codebase Analysis'));
+      console.log(chalk.blue.bold("\n📊 Running Codebase Analysis"));
       results.analyze = await runCodebaseAnalysis(outputDir);
     }
 
     // Run code improvement on key files
     if (argv.all || argv.improve) {
-      console.log(chalk.blue.bold('\n🔧 Running Code Improvement'));
+      console.log(chalk.blue.bold("\n🔧 Running Code Improvement"));
       results.improve = await runCodeImprovement(outputDir);
     }
 
     // Generate context documentation
     if (argv.all || argv.context) {
-      console.log(chalk.blue.bold('\n📚 Generating Context Documentation'));
+      console.log(chalk.blue.bold("\n📚 Generating Context Documentation"));
       results.context = await generateContextDocumentation(outputDir);
     }
 
     // Fix circular dependencies
-    if (argv.all || argv['fix-circular']) {
-      console.log(chalk.blue.bold('\n🔄 Fixing Circular Dependencies'));
+    if (argv.all || argv["fix-circular"]) {
+      console.log(chalk.blue.bold("\n🔄 Fixing Circular Dependencies"));
       results.fixCircular = await fixCircularDependencies();
     }
 
     // Print summary
     printSummary(results);
   } catch (error) {
-    console.error(chalk.red('Error during audit:'), error);
+    console.error(chalk.red("Error during audit:"), error);
     process.exit(1);
   }
 }
@@ -171,20 +171,20 @@ async function runAudit() {
 // Run codebase analysis
 async function runCodebaseAnalysis(outputDir) {
   try {
-    console.log(chalk.blue('Running AI codebase analyzer...'));
+    console.log(chalk.blue("Running AI codebase analyzer..."));
 
-    let command = `npx tsx scripts/ai-codebase-analyzer.mjs --output ${path.join(outputDir, 'analysis-results.json')}`;
+    let command = `npx tsx scripts/ai-codebase-analyzer.mjs --output ${path.join(outputDir, "analysis-results.json")}`;
 
     if (argv.focus) {
       command += ` --focus "${argv.focus}"`;
     }
 
     console.log(chalk.gray(`Running: ${command}`));
-    execSync(command, { stdio: 'inherit' });
+    execSync(command, { stdio: "inherit" });
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error during codebase analysis:'), error);
+    console.error(chalk.red("Error during codebase analysis:"), error);
     return false;
   }
 }
@@ -208,7 +208,7 @@ async function runCodeImprovement(outputDir) {
       console.log(
         chalk.yellow(`No key files match the focus pattern: ${argv.focus}`),
       );
-      console.log(chalk.yellow('Defaulting to all key files'));
+      console.log(chalk.yellow("Defaulting to all key files"));
       filesToImprove = [...KEY_FILES];
     }
   }
@@ -219,7 +219,7 @@ async function runCodeImprovement(outputDir) {
     try {
       if (!fs.existsSync(file)) {
         console.log(chalk.yellow(`File not found, skipping: ${file}`));
-        results.push({ file, success: false, error: 'File not found' });
+        results.push({ file, success: false, error: "File not found" });
         continue;
       }
 
@@ -227,14 +227,14 @@ async function runCodeImprovement(outputDir) {
 
       let command = `npx tsx scripts/ai-code-improvement.mjs --file ${file}`;
 
-      if (argv['dry-run']) {
-        command += ' --dry-run';
+      if (argv["dry-run"]) {
+        command += " --dry-run";
       } else {
         // Save improved file to output directory with original directory structure
         const relativeFilePath = file;
         const outputFilePath = path.join(
           outputDir,
-          'improved',
+          "improved",
           relativeFilePath,
         );
 
@@ -248,7 +248,7 @@ async function runCodeImprovement(outputDir) {
       }
 
       console.log(chalk.gray(`Running: ${command}`));
-      execSync(command, { stdio: 'inherit' });
+      execSync(command, { stdio: "inherit" });
 
       results.push({ file, success: true });
     } catch (error) {
@@ -263,9 +263,9 @@ async function runCodeImprovement(outputDir) {
 // Generate context documentation
 async function generateContextDocumentation(outputDir) {
   try {
-    console.log(chalk.blue('Generating context documentation...'));
+    console.log(chalk.blue("Generating context documentation..."));
 
-    const contextDir = path.join(outputDir, 'context');
+    const contextDir = path.join(outputDir, "context");
     let command = `npx tsx scripts/generate-context-files.mjs --output-dir ${contextDir}`;
 
     if (argv.focus) {
@@ -273,11 +273,11 @@ async function generateContextDocumentation(outputDir) {
     }
 
     console.log(chalk.gray(`Running: ${command}`));
-    execSync(command, { stdio: 'inherit' });
+    execSync(command, { stdio: "inherit" });
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error generating context documentation:'), error);
+    console.error(chalk.red("Error generating context documentation:"), error);
     return false;
   }
 }
@@ -285,23 +285,23 @@ async function generateContextDocumentation(outputDir) {
 // Fix circular dependencies
 async function fixCircularDependencies() {
   try {
-    console.log(chalk.blue('Analyzing circular dependencies...'));
+    console.log(chalk.blue("Analyzing circular dependencies..."));
 
     // First run the code audit to detect current circular dependencies
     console.log(
-      chalk.gray('Running code audit to detect circular dependencies...'),
+      chalk.gray("Running code audit to detect circular dependencies..."),
     );
-    execSync('npx tsx scripts/code-audit.ts', { stdio: 'inherit' });
+    execSync("npx tsx scripts/code-audit.ts", { stdio: "inherit" });
 
     // Check if we're in dry-run mode
-    if (argv['dry-run']) {
+    if (argv["dry-run"]) {
       console.log(
-        chalk.yellow('Dry run mode: Not fixing circular dependencies'),
+        chalk.yellow("Dry run mode: Not fixing circular dependencies"),
       );
-      console.log(chalk.yellow('Would fix these circular dependencies:'));
+      console.log(chalk.yellow("Would fix these circular dependencies:"));
 
       for (const { files, solution } of CIRCULAR_DEPENDENCIES) {
-        console.log(chalk.yellow('\nFiles involved:'));
+        console.log(chalk.yellow("\nFiles involved:"));
         for (const file of files) {
           console.log(chalk.yellow(`  - ${file}`));
         }
@@ -311,7 +311,7 @@ async function fixCircularDependencies() {
       return true;
     }
 
-    console.log(chalk.blue('Fixing circular dependencies...'));
+    console.log(chalk.blue("Fixing circular dependencies..."));
 
     // For demonstration purposes, we'll just outline what would happen
     // In a real implementation, you'd use OpenAI to generate solutions
@@ -320,7 +320,7 @@ async function fixCircularDependencies() {
     let fixCount = 0;
 
     for (const { files, solution } of CIRCULAR_DEPENDENCIES) {
-      console.log(chalk.blue('\nFixing circular dependency in:'));
+      console.log(chalk.blue("\nFixing circular dependency in:"));
       for (const file of files) {
         console.log(chalk.blue(`  - ${file}`));
       }
@@ -335,21 +335,21 @@ async function fixCircularDependencies() {
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error fixing circular dependencies:'), error);
+    console.error(chalk.red("Error fixing circular dependencies:"), error);
     return false;
   }
 }
 
 // Print summary of the audit
 function printSummary(results) {
-  console.log(chalk.blue.bold('\n📋 AI CODE AUDIT SUMMARY'));
-  console.log(chalk.blue('=======================\n'));
+  console.log(chalk.blue.bold("\n📋 AI CODE AUDIT SUMMARY"));
+  console.log(chalk.blue("=======================\n"));
 
   // Analysis results
   if (results.analyze !== null) {
     const status = results.analyze
-      ? chalk.green('✅ SUCCESS')
-      : chalk.red('❌ FAILED');
+      ? chalk.green("✅ SUCCESS")
+      : chalk.red("❌ FAILED");
     console.log(`${status} Codebase Analysis`);
   }
 
@@ -372,11 +372,11 @@ function printSummary(results) {
       );
 
       // List failed files
-      console.log(chalk.yellow('  Failed files:'));
+      console.log(chalk.yellow("  Failed files:"));
       for (const result of results.improve.filter((r) => !r.success)) {
         console.log(
           chalk.yellow(
-            `  - ${result.file}: ${result.error || 'Unknown error'}`,
+            `  - ${result.file}: ${result.error || "Unknown error"}`,
           ),
         );
       }
@@ -386,25 +386,25 @@ function printSummary(results) {
   // Context documentation results
   if (results.context !== null) {
     const status = results.context
-      ? chalk.green('✅ SUCCESS')
-      : chalk.red('❌ FAILED');
+      ? chalk.green("✅ SUCCESS")
+      : chalk.red("❌ FAILED");
     console.log(`${status} Context Documentation`);
   }
 
   // Circular dependency fix results
   if (results.fixCircular !== null) {
     const status = results.fixCircular
-      ? chalk.green('✅ SUCCESS')
-      : chalk.red('❌ FAILED');
+      ? chalk.green("✅ SUCCESS")
+      : chalk.red("❌ FAILED");
     console.log(`${status} Circular Dependency Fixes`);
   }
 
-  console.log(chalk.blue('\nOutput location:'));
-  console.log(chalk.blue(path.resolve(argv['output-dir'])));
+  console.log(chalk.blue("\nOutput location:"));
+  console.log(chalk.blue(path.resolve(argv["output-dir"])));
 
-  if (argv['dry-run']) {
+  if (argv["dry-run"]) {
     console.log(
-      chalk.yellow('\nNote: This was a dry run. No files were modified.'),
+      chalk.yellow("\nNote: This was a dry run. No files were modified."),
     );
   }
 }

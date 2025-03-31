@@ -5,7 +5,7 @@
  * appropriate segments for embedding and retrieval.
  */
 
-import type { BylawMetadata } from '../../vector/types';
+import type { BylawMetadata } from "../../vector/types";
 
 /**
  * A document chunk with text and metadata
@@ -69,7 +69,7 @@ export function chunkBySection(
     if (sectionText.length > maxLength) {
       // Section is too large, may need to split further
       const sentences = sectionText.match(/[^.!?]+[.!?]+/g) || [];
-      let currentChunk = '';
+      let currentChunk = "";
 
       for (const sentence of sentences) {
         if (currentChunk.length + sentence.length > maxLength) {
@@ -117,7 +117,7 @@ export function chunkBySection(
   // If no sections were found with the enhanced pattern, try a fallback approach
   if (chunks.length === 0) {
     console.log(
-      'No sections found with primary pattern, using fallback method...',
+      "No sections found with primary pattern, using fallback method...",
     );
 
     // Fallback pattern for less structured documents
@@ -142,7 +142,7 @@ export function chunkBySection(
         if (sectionText.length > maxLength) {
           // Split into chunks as with the primary pattern
           const sentences = sectionText.match(/[^.!?]+[.!?]+/g) || [];
-          let currentChunk = '';
+          let currentChunk = "";
 
           for (const sentence of sentences) {
             if (currentChunk.length + sentence.length > maxLength) {
@@ -184,7 +184,7 @@ export function chunkBySection(
     // If still no sections found, use basic chunking as a last resort
     if (chunks.length === 0) {
       console.log(
-        'No sections found with fallback pattern either, using basic paragraph chunking...',
+        "No sections found with fallback pattern either, using basic paragraph chunking...",
       );
 
       // Split by paragraphs
@@ -235,7 +235,7 @@ export function chunkBySize(
 
   // Split text into sentences
   const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
-  let currentChunk = '';
+  let currentChunk = "";
   let currentPosition = 0;
 
   for (const sentence of sentences) {
@@ -250,11 +250,11 @@ export function chunkBySize(
       });
 
       // Start new chunk with overlap
-      const words = currentChunk.split(' ');
+      const words = currentChunk.split(" ");
       const overlapWords = words.slice(
         words.length - Math.floor(chunkOverlap / 5),
       );
-      currentChunk = overlapWords.join(' ') + sentence;
+      currentChunk = overlapWords.join(" ") + sentence;
       currentPosition += 1;
     } else {
       currentChunk += sentence;

@@ -1,10 +1,10 @@
-import type { Document } from '@/lib/db/schema';
+import type { Document } from "@/lib/db/schema";
 import type {
   ArtifactKind,
-  UIArtifact,
   SharedDocumentProps,
   SharedEditorProps,
-} from '@/types/shared/shared-types';
+  UIArtifact,
+} from "@/types/shared/shared-types";
 
 // Document types
 export interface DocumentPreviewProps extends SharedDocumentProps {
@@ -13,13 +13,13 @@ export interface DocumentPreviewProps extends SharedDocumentProps {
 }
 
 export interface DocumentToolResultProps {
-  type: 'create' | 'update' | 'request-suggestions';
+  type: "create" | "update" | "request-suggestions";
   result: { id: string; title: string; kind: ArtifactKind };
   isReadonly: boolean;
 }
 
 export interface DocumentToolCallProps {
-  type: 'create' | 'update' | 'request-suggestions';
+  type: "create" | "update" | "request-suggestions";
   args: { title: string };
   isReadonly: boolean;
 }

@@ -19,4 +19,4 @@
  * Now they all depend on shared-types, eliminating the circular references.
  */
 
-console.log('Shared types approach for circular dependencies');
+console.log("Shared types approach for circular dependencies");

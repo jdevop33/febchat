@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Filter, X } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+} from "@/components/ui/select";
+import { Filter, X } from "lucide-react";
+import React, { useState } from "react";
 
 interface BylawSearchFiltersProps {
   onApplyFilters: (filters: {
@@ -25,31 +25,31 @@ interface BylawSearchFiltersProps {
 }
 
 const CATEGORIES = [
-  { value: 'zoning', label: 'Zoning & Land Use' },
-  { value: 'trees', label: 'Tree Protection' },
-  { value: 'animals', label: 'Animal Control' },
-  { value: 'noise', label: 'Noise Control' },
-  { value: 'building', label: 'Building & Construction' },
-  { value: 'traffic', label: 'Traffic & Parking' },
-  { value: 'general', label: 'General Regulations' },
+  { value: "zoning", label: "Zoning & Land Use" },
+  { value: "trees", label: "Tree Protection" },
+  { value: "animals", label: "Animal Control" },
+  { value: "noise", label: "Noise Control" },
+  { value: "building", label: "Building & Construction" },
+  { value: "traffic", label: "Traffic & Parking" },
+  { value: "general", label: "General Regulations" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'repealed', label: 'Repealed' },
-  { value: 'superseded', label: 'Superseded' },
-  { value: 'draft', label: 'Draft' },
+  { value: "active", label: "Active" },
+  { value: "repealed", label: "Repealed" },
+  { value: "superseded", label: "Superseded" },
+  { value: "draft", label: "Draft" },
 ];
 
 export function BylawSearchFilters({
   onApplyFilters,
 }: BylawSearchFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [category, setCategory] = useState('');
-  const [bylawNumber, setBylawNumber] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [status, setStatus] = useState('active');
+  const [category, setCategory] = useState("");
+  const [bylawNumber, setBylawNumber] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [status, setStatus] = useState("active");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const handleApplyFilters = () => {
@@ -83,11 +83,11 @@ export function BylawSearchFilters({
   };
 
   const handleReset = () => {
-    setCategory('');
-    setBylawNumber('');
-    setDateFrom('');
-    setDateTo('');
-    setStatus('active');
+    setCategory("");
+    setBylawNumber("");
+    setDateFrom("");
+    setDateTo("");
+    setStatus("active");
     setActiveFilters([]);
     onApplyFilters({});
   };
@@ -102,7 +102,7 @@ export function BylawSearchFilters({
           className="mb-2"
         >
           <Filter size={16} className="mr-2" />
-          {isExpanded ? 'Hide Filters' : 'Show Filters'}
+          {isExpanded ? "Hide Filters" : "Show Filters"}
           {activeFilters.length > 0 && !isExpanded && (
             <span className="ml-2 rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200">
               {activeFilters.length}

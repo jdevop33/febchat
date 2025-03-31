@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Copy } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { toast } from 'sonner';
-import { formatCitation } from '@/lib/utils/citation-formatter';
+} from "@/components/ui/tooltip";
+import { formatCitation } from "@/lib/utils/citation-formatter";
+import { Copy } from "lucide-react";
+import React from "react";
+import { toast } from "sonner";
 
 interface CitationFormatterProps {
   bylawNumber: string;
@@ -19,8 +19,8 @@ interface CitationFormatterProps {
   consolidatedDate?: string;
   effectiveDate?: string;
   excerpt?: string;
-  citationFormat: 'standard' | 'legal' | 'apa';
-  setCitationFormat: (format: 'standard' | 'legal' | 'apa') => void;
+  citationFormat: "standard" | "legal" | "apa";
+  setCitationFormat: (format: "standard" | "legal" | "apa") => void;
 }
 
 export function CitationFormatter({
@@ -50,7 +50,7 @@ export function CitationFormatter({
     );
 
     // Check if navigator is available (only in browser context)
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard
         .writeText(content)
         .then(() => {
@@ -59,13 +59,13 @@ export function CitationFormatter({
           );
         })
         .catch((err) => {
-          console.error('Failed to copy text: ', err);
-          toast.error('Failed to copy to clipboard');
+          console.error("Failed to copy text: ", err);
+          toast.error("Failed to copy to clipboard");
         });
     } else {
       // Fallback for non-browser environments (SSR)
-      console.log('Clipboard API not available');
-      toast.info('Copy function is only available in the browser');
+      console.log("Clipboard API not available");
+      toast.info("Copy function is only available in the browser");
     }
   };
 
@@ -76,7 +76,7 @@ export function CitationFormatter({
           className="h-7 rounded-md border border-input bg-transparent px-1 py-0 text-xs"
           value={citationFormat}
           onChange={(e) =>
-            setCitationFormat(e.target.value as 'standard' | 'legal' | 'apa')
+            setCitationFormat(e.target.value as "standard" | "legal" | "apa")
           }
           onClick={(e) => e.stopPropagation()}
         >

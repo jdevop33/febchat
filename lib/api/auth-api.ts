@@ -32,10 +32,10 @@ export interface AuthResponse {
  * Login with email and password
  */
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
-  const response = await fetch('/api/auth/login', {
-    method: 'POST',
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(credentials),
   });
@@ -45,7 +45,7 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
   if (!response.ok) {
     return {
       success: false,
-      error: data.error || 'Login failed',
+      error: data.error || "Login failed",
     };
   }
 
@@ -61,10 +61,10 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 export async function register(
   userData: RegisterRequest,
 ): Promise<AuthResponse> {
-  const response = await fetch('/api/auth/register', {
-    method: 'POST',
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(userData),
   });
@@ -74,7 +74,7 @@ export async function register(
   if (!response.ok) {
     return {
       success: false,
-      error: data.error || 'Registration failed',
+      error: data.error || "Registration failed",
     };
   }
 
@@ -88,8 +88,8 @@ export async function register(
  * Logout the current user
  */
 export async function logout(): Promise<{ success: boolean }> {
-  const response = await fetch('/api/auth/logout', {
-    method: 'POST',
+  const response = await fetch("/api/auth/logout", {
+    method: "POST",
   });
 
   if (!response.ok) {

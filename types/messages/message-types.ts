@@ -1,7 +1,7 @@
-import type { Message, ChatRequestOptions } from 'ai';
-import type { Vote } from '@/lib/db/schema';
-import type { Dispatch, SetStateAction } from 'react';
-import type { SharedMessageProps } from '@/types/shared/shared-types';
+import type { Vote } from "@/lib/db/schema";
+import type { SharedMessageProps } from "@/types/shared/shared-types";
+import type { ChatRequestOptions, Message } from "ai";
+import type { Dispatch, SetStateAction } from "react";
 
 // Message component props
 export interface MessageProps extends SharedMessageProps {
@@ -12,7 +12,7 @@ export interface MessageProps extends SharedMessageProps {
 // Message editor props
 export interface MessageEditorProps {
   message: Message;
-  setMode: Dispatch<SetStateAction<'view' | 'edit'>>;
+  setMode: Dispatch<SetStateAction<"view" | "edit">>;
   setMessages: (
     messages: Message[] | ((messages: Message[]) => Message[]),
   ) => void;

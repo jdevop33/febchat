@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import useSWR from 'swr';
-import type { UIArtifact } from '@/components/artifact';
-import { useCallback, useMemo } from 'react';
+import type { UIArtifact } from "@/components/artifact";
+import { useCallback, useMemo } from "react";
+import useSWR from "swr";
 
 export const initialArtifactData: UIArtifact = {
-  documentId: 'init',
-  content: '',
-  kind: 'text',
-  title: '',
-  status: 'idle',
+  documentId: "init",
+  content: "",
+  kind: "text",
+  title: "",
+  status: "idle",
   isVisible: false,
   boundingBox: {
     top: 0,
@@ -24,7 +24,7 @@ type Selector<T> = (state: UIArtifact) => T;
 export function useArtifactSelector<Selected>(selector: Selector<Selected>) {
   // Apply default value directly in the destructuring to ensure it's never undefined
   const { data: localArtifact = initialArtifactData } = useSWR<UIArtifact>(
-    'artifact',
+    "artifact",
     null,
     {
       fallbackData: initialArtifactData,
@@ -45,7 +45,7 @@ export function useArtifact() {
   const {
     data: localArtifact = initialArtifactData,
     mutate: setLocalArtifact,
-  } = useSWR<UIArtifact>('artifact', null, {
+  } = useSWR<UIArtifact>("artifact", null, {
     fallbackData: initialArtifactData,
   });
 
@@ -60,14 +60,14 @@ export function useArtifact() {
           // Always ensure we have a valid artifact
           const artifactToUpdate = currentArtifact || initialArtifactData;
 
-          if (typeof updaterFn === 'function') {
+          if (typeof updaterFn === "function") {
             return updaterFn(artifactToUpdate);
           }
 
           return updaterFn || initialArtifactData; // Safety check
         });
       } catch (error) {
-        console.error('Error updating artifact:', error);
+        console.error("Error updating artifact:", error);
         // Fallback: set to initialArtifactData in case of error
         setLocalArtifact(initialArtifactData);
       }

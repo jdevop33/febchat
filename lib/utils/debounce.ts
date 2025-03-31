@@ -5,7 +5,7 @@
  * useful for search inputs, window resize handlers, and other high-frequency events.
  */
 
-import { useCallback, useRef, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * A hook that returns a debounced version of the passed function.

@@ -7,13 +7,13 @@
  * UPDATED: Migrated from Prisma to Drizzle ORM
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { eq, and, desc, like, or } from 'drizzle-orm';
+import fs from "node:fs";
+import path from "node:path";
+import { and, desc, eq, like, or } from "drizzle-orm";
 
 // Import the centralized database client from Drizzle
-import db from '@/lib/db';
-import { bylaw, bylawSection, citationFeedback } from '@/lib/db/schema';
+import db from "@/lib/db";
+import { bylaw, bylawSection, citationFeedback } from "@/lib/db/schema";
 
 /**
  * Interface for section information
@@ -84,7 +84,7 @@ export async function verifyBylaw(
         content: section.content,
       })),
       amendedBylaw: foundBylaw.amendments
-        ? foundBylaw.amendments.split(',')
+        ? foundBylaw.amendments.split(",")
         : undefined,
     };
   } catch (error) {
@@ -138,7 +138,7 @@ export async function verifyBylawSection(
 export async function recordCitationFeedback(
   bylawNumber: string,
   section: string,
-  feedback: 'accurate' | 'inaccurate' | 'incomplete' | 'outdated',
+  feedback: "accurate" | "inaccurate" | "incomplete" | "outdated",
   userComment?: string,
 ): Promise<boolean> {
   try {
@@ -160,7 +160,7 @@ export async function recordCitationFeedback(
       );
       // Store feedback in application logs at minimum
       console.info(
-        `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`,
+        `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || "no comment"}`,
       );
       return false;
     }
@@ -171,7 +171,7 @@ export async function recordCitationFeedback(
     );
     // Store feedback in application logs at minimum
     console.info(
-      `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || 'no comment'}`,
+      `CITATION_FEEDBACK: ${bylawNumber}, ${section}, ${feedback}, ${userComment || "no comment"}`,
     );
     return false;
   }
@@ -218,7 +218,7 @@ export async function findSimilarBylaws(
         consolidatedDate: item.consolidatedDate,
         enactmentDate: item.enactmentDate,
         amendments: item.amendments,
-        amendedBylaw: item.amendments ? item.amendments.split(',') : undefined,
+        amendedBylaw: item.amendments ? item.amendments.split(",") : undefined,
       };
 
       // Add sections if they exist
@@ -246,10 +246,10 @@ export async function findSimilarBylaws(
 export function getFilenameForBylaw(bylawNumber: string): string | null {
   // Map of known bylaw numbers to PDF filenames
   const bylawMap: Record<string, string> = {
-    '3210': '3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf',
-    '4742': 'Tree-Protection-Bylaw.pdf',
-    '3531': 'Zoning-Bylaw-Oak-Bay.pdf',
-    '4700': 'Official-Community-Plan-2020.pdf',
+    "3210": "3210 -  Anti-Noise Bylaw - Consolidated to 4594.pdf",
+    "4742": "Tree-Protection-Bylaw.pdf",
+    "3531": "Zoning-Bylaw-Oak-Bay.pdf",
+    "4700": "Official-Community-Plan-2020.pdf",
   };
 
   // If we know about this bylaw, return its filename
@@ -258,11 +258,11 @@ export function getFilenameForBylaw(bylawNumber: string): string | null {
   }
 
   // Try to find a matching PDF by bylaw number in the public dir
-  const publicDir = path.resolve(process.cwd(), 'public/pdfs');
+  const publicDir = path.resolve(process.cwd(), "public/pdfs");
   const dirExists = fs.existsSync(publicDir);
 
   if (!dirExists) {
-    console.warn('Public PDFs directory not found');
+    console.warn("Public PDFs directory not found");
     return null;
   }
 
@@ -282,7 +282,7 @@ export function getFilenameForBylaw(bylawNumber: string): string | null {
 
     // If no exact match, look for any file containing the bylaw number
     const fuzzyMatch = files.find(
-      (file) => file.includes(`${bylawNumber}`) && file.endsWith('.pdf'),
+      (file) => file.includes(`${bylawNumber}`) && file.endsWith(".pdf"),
     );
 
     if (fuzzyMatch) return fuzzyMatch;
@@ -290,7 +290,7 @@ export function getFilenameForBylaw(bylawNumber: string): string | null {
     // No match found
     return null;
   } catch (error) {
-    console.error('Error searching for bylaw PDF:', error);
+    console.error("Error searching for bylaw PDF:", error);
     return null;
   }
 }
@@ -335,7 +335,7 @@ export async function getMostRecentVerifiedBylaw(): Promise<VerifiedBylawData | 
       })),
     };
   } catch (error) {
-    console.error('Error getting most recent verified bylaw:', error);
+    console.error("Error getting most recent verified bylaw:", error);
     return null;
   }
 }
@@ -346,7 +346,7 @@ export async function getMostRecentVerifiedBylaw(): Promise<VerifiedBylawData | 
 export async function upsertBylaw(
   bylawData: Omit<
     VerifiedBylawData,
-    'lastVerified' | 'sections' | 'amendedBylaw'
+    "lastVerified" | "sections" | "amendedBylaw"
   > & {
     sections?: { sectionNumber: string; title?: string; content: string }[];
   },

@@ -8,27 +8,27 @@
  * pnpm tsx scripts/bylaw-upsert.ts [pdf-directory or single-pdf-file]
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { Pinecone } from '@pinecone-database/pinecone';
-import pdfParse from 'pdf-parse';
-import dotenv from 'dotenv';
+import fs from "node:fs";
+import path from "node:path";
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import pdfParse from "pdf-parse";
 import {
-  getEmbeddingsModel,
   EmbeddingProvider,
-} from '../lib/vector-search/embedding-models';
+  getEmbeddingsModel,
+} from "../lib/vector-search/embedding-models";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Configuration
 const PDF_DIRECTORY =
-  process.argv[2] || path.resolve(process.cwd(), 'public', 'pdfs');
+  process.argv[2] || path.resolve(process.cwd(), "public", "pdfs");
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
 const UPSERT_BATCH_SIZE = 100;
 const EMBEDDING_BATCH_SIZE = 5;
-const NAMESPACE = 'bylaws'; // Default namespace
+const NAMESPACE = "bylaws"; // Default namespace
 
 /**
  * Extract bylaw information from filename, with special handling for consolidated/amended bylaws
@@ -53,7 +53,7 @@ function extractBylawInfo(filename: string): {
   };
 
   // Remove file extension
-  const basename = path.basename(filename, '.pdf');
+  const basename = path.basename(filename, ".pdf");
 
   // Check if this is a consolidated version
   const consolidatedMatch = basename.match(
@@ -91,7 +91,7 @@ function extractBylawInfo(filename: string): {
 
   if (organizedMatch) {
     result.number = organizedMatch[1];
-    result.title = organizedMatch[2]?.replace(/-/g, ' ');
+    result.title = organizedMatch[2]?.replace(/-/g, " ");
     return result;
   }
 
@@ -231,7 +231,7 @@ function chunkText(
   // Split text by paragraphs to avoid cutting in the middle of sentences if possible
   const paragraphs = text.split(/\n\s*\n/);
 
-  let currentChunk = '';
+  let currentChunk = "";
 
   for (const paragraph of paragraphs) {
     // If adding this paragraph would exceed the chunk size,
@@ -250,11 +250,11 @@ function chunkText(
       const words = currentChunk.split(/\s+/);
       const overlapWords = words.slice(-Math.floor(chunkOverlap / 7)); // Approximate words in overlap
 
-      currentChunk = `${overlapWords.join(' ')}\n\n${paragraph}`;
+      currentChunk = `${overlapWords.join(" ")}\n\n${paragraph}`;
     } else {
       // Add paragraph to current chunk
       if (currentChunk.length > 0) {
-        currentChunk += '\n\n';
+        currentChunk += "\n\n";
       }
       currentChunk += paragraph;
     }
@@ -281,33 +281,33 @@ function determineCategory(title: string, text: string): string {
   // Check for common categories in title or text
   const categories = [
     {
-      name: 'zoning',
-      keywords: ['zoning', 'zone', 'land use', 'residential', 'commercial'],
+      name: "zoning",
+      keywords: ["zoning", "zone", "land use", "residential", "commercial"],
     },
     {
-      name: 'building',
-      keywords: ['building', 'construction', 'structure', 'permit'],
+      name: "building",
+      keywords: ["building", "construction", "structure", "permit"],
     },
     {
-      name: 'traffic',
-      keywords: ['traffic', 'parking', 'vehicle', 'street', 'road'],
+      name: "traffic",
+      keywords: ["traffic", "parking", "vehicle", "street", "road"],
     },
     {
-      name: 'utilities',
-      keywords: ['utilities', 'water', 'sewer', 'drainage', 'waste'],
+      name: "utilities",
+      keywords: ["utilities", "water", "sewer", "drainage", "waste"],
     },
     {
-      name: 'finance',
-      keywords: ['finance', 'tax', 'fee', 'budget', 'revenue'],
+      name: "finance",
+      keywords: ["finance", "tax", "fee", "budget", "revenue"],
     },
-    { name: 'parks', keywords: ['park', 'recreation', 'beach', 'playground'] },
+    { name: "parks", keywords: ["park", "recreation", "beach", "playground"] },
     {
-      name: 'governance',
-      keywords: ['council', 'committee', 'procedure', 'election'],
+      name: "governance",
+      keywords: ["council", "committee", "procedure", "election"],
     },
     {
-      name: 'licensing',
-      keywords: ['license', 'permit', 'business', 'application'],
+      name: "licensing",
+      keywords: ["license", "permit", "business", "application"],
     },
   ];
 
@@ -320,7 +320,7 @@ function determineCategory(title: string, text: string): string {
     }
   }
 
-  return 'general';
+  return "general";
 }
 
 /**
@@ -335,11 +335,11 @@ async function processPDF(filePath: string): Promise<{
 
   // Extract metadata from filename
   const fileInfo = extractBylawInfo(path.basename(filePath));
-  console.log('File info extracted:', fileInfo);
+  console.log("File info extracted:", fileInfo);
 
   try {
     // Load the PDF
-    console.log('Loading PDF content...');
+    console.log("Loading PDF content...");
     const pdfBuffer = fs.readFileSync(filePath);
     const pdfData = await pdfParse(pdfBuffer);
     const pdfText = pdfData.text;
@@ -348,10 +348,10 @@ async function processPDF(filePath: string): Promise<{
 
     // Extract amendment references and dates from content
     const amendmentInfo = extractAmendmentReferences(pdfText);
-    console.log('Amendment info extracted:', amendmentInfo);
+    console.log("Amendment info extracted:", amendmentInfo);
 
     // Split into chunks with custom implementation
-    console.log('Splitting content into chunks...');
+    console.log("Splitting content into chunks...");
 
     // Simple chunking with overlap
     const chunks = chunkText(pdfText, CHUNK_SIZE, CHUNK_OVERLAP);
@@ -363,11 +363,11 @@ async function processPDF(filePath: string): Promise<{
     const stats = fs.statSync(filePath);
     const metadata = {
       bylawNumber: fileInfo.number,
-      title: fileInfo.title || path.basename(filePath, '.pdf'),
+      title: fileInfo.title || path.basename(filePath, ".pdf"),
       filename: path.basename(filePath),
       fileSize: stats.size,
       lastModified: stats.mtime.toISOString(),
-      source: 'oak-bay-bylaws',
+      source: "oak-bay-bylaws",
       isConsolidated: fileInfo.isConsolidated,
       consolidatedDate: fileInfo.consolidatedDate,
       amendedBylaw: fileInfo.amendedBylaw,
@@ -377,12 +377,12 @@ async function processPDF(filePath: string): Promise<{
       processingDate: new Date().toISOString(),
     };
 
-    console.log('Base metadata created:', metadata);
+    console.log("Base metadata created:", metadata);
 
     // Generate embeddings
-    console.log('Generating embeddings...');
+    console.log("Generating embeddings...");
     const embeddings = getEmbeddingsModel(
-      process.env.EMBEDDING_PROVIDER === 'openai'
+      process.env.EMBEDDING_PROVIDER === "openai"
         ? EmbeddingProvider.OPENAI
         : EmbeddingProvider.LLAMAINDEX,
     );
@@ -418,12 +418,12 @@ async function processPDF(filePath: string): Promise<{
           page: chunk.metadata?.page,
           section: sectionInfo.section || `chunk-${chunkIndex}`,
           sectionTitle: sectionInfo.title,
-          category: determineCategory(metadata.title || '', chunk.pageContent),
+          category: determineCategory(metadata.title || "", chunk.pageContent),
         };
 
         // Create vector record
         vectors.push({
-          id: `bylaw-${metadata.bylawNumber || 'unknown'}-${chunkIndex}`,
+          id: `bylaw-${metadata.bylawNumber || "unknown"}-${chunkIndex}`,
           values: batchEmbeddings[j],
           metadata: chunkMetadata,
         });
@@ -446,10 +446,10 @@ async function upsertVectors(vectors: any[]): Promise<void> {
   try {
     // Get config
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     console.log(
@@ -510,7 +510,7 @@ async function upsertVectors(vectors: any[]): Promise<void> {
 
     console.log(`✅ All vectors upserted successfully to index '${indexName}'`);
   } catch (error) {
-    console.error('Error upserting vectors to Pinecone:', error);
+    console.error("Error upserting vectors to Pinecone:", error);
     throw error;
   }
 }
@@ -530,7 +530,7 @@ async function processDirectory(dirPath: string): Promise<void> {
     // Get list of PDF files
     const files = fs
       .readdirSync(dirPath)
-      .filter((file) => file.toLowerCase().endsWith('.pdf'))
+      .filter((file) => file.toLowerCase().endsWith(".pdf"))
       .map((file) => path.join(dirPath, file));
 
     console.log(`Found ${files.length} PDF files to process`);
@@ -554,9 +554,9 @@ async function processDirectory(dirPath: string): Promise<void> {
       }
     }
 
-    console.log('\n✅ All files processed');
+    console.log("\n✅ All files processed");
   } catch (error) {
-    console.error('Error processing directory:', error);
+    console.error("Error processing directory:", error);
     throw error;
   }
 }
@@ -591,19 +591,19 @@ async function main(): Promise<void> {
   try {
     // Validate environment variables
     if (!process.env.PINECONE_API_KEY) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is required');
+      throw new Error("OPENAI_API_KEY is required");
     }
 
-    console.log('Starting bylaw upsert process...');
+    console.log("Starting bylaw upsert process...");
     console.log(
-      `Using Pinecone index: ${process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'}`,
+      `Using Pinecone index: ${process.env.PINECONE_INDEX || "oak-bay-bylaws-v2"}`,
     );
     console.log(
-      `Using embedding provider: ${process.env.EMBEDDING_PROVIDER || 'llamaindex'}`,
+      `Using embedding provider: ${process.env.EMBEDDING_PROVIDER || "llamaindex"}`,
     );
 
     // Get input path
@@ -615,15 +615,15 @@ async function main(): Promise<void> {
 
     if (stats.isDirectory()) {
       await processDirectory(inputPath);
-    } else if (stats.isFile() && inputPath.toLowerCase().endsWith('.pdf')) {
+    } else if (stats.isFile() && inputPath.toLowerCase().endsWith(".pdf")) {
       await processFile(inputPath);
     } else {
-      throw new Error('Input path must be a directory or a PDF file');
+      throw new Error("Input path must be a directory or a PDF file");
     }
 
-    console.log('\n✅ Bylaw upsert process completed successfully');
+    console.log("\n✅ Bylaw upsert process completed successfully");
   } catch (error) {
-    console.error('\n❌ Bylaw upsert process failed:', error);
+    console.error("\n❌ Bylaw upsert process failed:", error);
     process.exit(1);
   }
 }

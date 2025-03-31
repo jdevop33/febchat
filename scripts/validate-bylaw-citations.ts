@@ -8,13 +8,13 @@
  * pnpm tsx scripts/validate-bylaw-citations.ts
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import pdfParse from 'pdf-parse';
-import db from '@/lib/db';
-import { bylaw, bylawSection } from '@/lib/db/schema';
-import { mockBylawData } from '../lib/bylaw-search';
-import * as VerificationDB from '../lib/vector/verification-database';
+import fs from "node:fs";
+import path from "node:path";
+import db from "@/lib/db";
+import { bylaw, bylawSection } from "@/lib/db/schema";
+import pdfParse from "pdf-parse";
+import { mockBylawData } from "../lib/bylaw-search";
+import * as VerificationDB from "../lib/vector/verification-database";
 
 /**
  * Extract core text from a bylaw PDF
@@ -26,7 +26,7 @@ async function extractTextFromPDF(filePath: string): Promise<string> {
     return pdfData.text;
   } catch (error) {
     console.error(`Error extracting text from ${filePath}:`, error);
-    return '';
+    return "";
   }
 }
 
@@ -35,8 +35,8 @@ async function extractTextFromPDF(filePath: string): Promise<string> {
  */
 function checkContentInPDF(pdfText: string, contentToCheck: string): boolean {
   // Normalize both texts for comparison (remove extra spaces, line breaks, etc.)
-  const normalizedPDF = pdfText.replace(/\s+/g, ' ').toLowerCase();
-  const normalizedContent = contentToCheck.replace(/\s+/g, ' ').toLowerCase();
+  const normalizedPDF = pdfText.replace(/\s+/g, " ").toLowerCase();
+  const normalizedContent = contentToCheck.replace(/\s+/g, " ").toLowerCase();
 
   return normalizedPDF.includes(normalizedContent);
 }
@@ -56,7 +56,7 @@ async function validateBylawCitation(
     return false;
   }
 
-  const pdfPath = path.join(process.cwd(), 'public', 'pdfs', filename);
+  const pdfPath = path.join(process.cwd(), "public", "pdfs", filename);
   if (!fs.existsSync(pdfPath)) {
     console.warn(
       `⚠️ PDF file not found for bylaw ${bylawNumber} at path ${pdfPath}`,
@@ -76,8 +76,8 @@ async function validateBylawCitation(
 
   // Check for section reference
   const sectionPattern = new RegExp(
-    `\\b${section.replace(/[()]/g, '\\$&')}\\b`,
-    'i',
+    `\\b${section.replace(/[()]/g, "\\$&")}\\b`,
+    "i",
   );
   const hasSectionReference = sectionPattern.test(pdfText);
 
@@ -88,7 +88,7 @@ async function validateBylawCitation(
  * Validate all mock bylaw data
  */
 async function validateMockBylawData() {
-  console.log('🔍 Validating mock bylaw data...');
+  console.log("🔍 Validating mock bylaw data...");
 
   for (const [index, item] of mockBylawData.entries()) {
     const bylawNumber = item.metadata.bylawNumber as string;
@@ -120,14 +120,14 @@ async function validateMockBylawData() {
  * Validate database bylaw data
  */
 async function validateDatabaseBylawData() {
-  console.log('\n🔍 Validating database bylaw data...');
+  console.log("\n🔍 Validating database bylaw data...");
 
   // Get all bylaw sections from database
   const sections = await db
     .select()
     .from(bylawSection)
     .catch((err) => {
-      console.error('Error querying database:', err);
+      console.error("Error querying database:", err);
       return null;
     });
 
@@ -136,7 +136,7 @@ async function validateDatabaseBylawData() {
     sections && sections.length > 0 ? await db.select().from(bylaw) : [];
 
   if (!sections || sections.length === 0) {
-    console.log('No sections found in database to validate');
+    console.log("No sections found in database to validate");
     return;
   }
 
@@ -172,7 +172,7 @@ async function validateDatabaseBylawData() {
  */
 async function main() {
   try {
-    console.log('Starting bylaw citation validation');
+    console.log("Starting bylaw citation validation");
 
     // Validate mock data
     await validateMockBylawData();
@@ -180,9 +180,9 @@ async function main() {
     // Validate database data
     await validateDatabaseBylawData();
 
-    console.log('\n✅ Validation complete');
+    console.log("\n✅ Validation complete");
   } catch (error) {
-    console.error('Error during validation:', error);
+    console.error("Error during validation:", error);
   } finally {
     // No need for disconnection with Drizzle
   }

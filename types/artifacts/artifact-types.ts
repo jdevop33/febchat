@@ -1,16 +1,16 @@
+import {
+  ArtifactKind,
+  type SharedMessageProps,
+  type UIArtifact,
+  artifactKinds,
+} from "@/types/shared/shared-types";
 import type {
   Attachment,
   ChatRequestOptions,
   CreateMessage,
   Message,
-} from 'ai';
-import type { Dispatch, SetStateAction } from 'react';
-import {
-  ArtifactKind,
-  artifactKinds,
-  type UIArtifact,
-  type SharedMessageProps,
-} from '@/types/shared/shared-types';
+} from "ai";
+import type { Dispatch, SetStateAction } from "react";
 
 // Re-export for backward compatibility
 export { ArtifactKind, artifactKinds };
@@ -42,5 +42,5 @@ export interface ArtifactProps extends SharedMessageProps {
 
 // Artifact messages props
 export interface ArtifactMessagesProps extends SharedMessageProps {
-  artifactStatus: UIArtifact['status'];
+  artifactStatus: UIArtifact["status"];
 }

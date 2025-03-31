@@ -5,10 +5,10 @@
  */
 
 // Message components
-export { PreviewMessage, ThinkingMessage } from './message';
-export { MessageActions } from '@/components/chat/message-actions';
-export { MessageReasoning } from '@/components/chat/message-reasoning';
-export { MessageEditor } from '@/components/chat/message-editor';
+export { PreviewMessage, ThinkingMessage } from "./message";
+export { MessageActions } from "@/components/chat/message-actions";
+export { MessageReasoning } from "@/components/chat/message-reasoning";
+export { MessageEditor } from "@/components/chat/message-editor";
 
 // Types
 export type {
@@ -16,4 +16,4 @@ export type {
   MessageEditorProps,
   MessageReasoningProps,
   MessageActionsProps,
-} from '@/types/messages/message-types';
+} from "@/types/messages/message-types";

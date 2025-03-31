@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ThumbsUp, ThumbsDown, MessageCircle, Send, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { MessageCircle, Send, ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 
 interface CitationFeedbackProps {
   bylawNumber: string;
@@ -32,14 +32,14 @@ export function CitationFeedback({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [feedbackType, setFeedbackType] = useState<
-    'correct' | 'incorrect' | 'incomplete' | 'outdated' | null
+    "correct" | "incorrect" | "incomplete" | "outdated" | null
   >(null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
 
   const handleFeedback = async (
-    type: 'correct' | 'incorrect' | 'incomplete' | 'outdated',
+    type: "correct" | "incorrect" | "incomplete" | "outdated",
   ) => {
-    if (type !== 'correct') {
+    if (type !== "correct") {
       setFeedbackType(type);
       setShowCommentBox(true);
       return;
@@ -50,15 +50,15 @@ export function CitationFeedback({
   };
 
   const submitFeedback = async (
-    type: 'correct' | 'incorrect' | 'incomplete' | 'outdated',
+    type: "correct" | "incorrect" | "incomplete" | "outdated",
   ) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/bylaws/feedback', {
-        method: 'POST',
+      const response = await fetch("/api/bylaws/feedback", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           bylawNumber,
@@ -73,16 +73,16 @@ export function CitationFeedback({
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Thank you for your feedback!');
+        toast.success("Thank you for your feedback!");
         setShowCommentBox(false);
-        setComment('');
+        setComment("");
         setFeedbackType(null);
       } else {
-        throw new Error(data.error || 'Failed to submit feedback');
+        throw new Error(data.error || "Failed to submit feedback");
       }
     } catch (error) {
-      console.error('Error submitting feedback:', error);
-      toast.error('Failed to submit feedback. Please try again.');
+      console.error("Error submitting feedback:", error);
+      toast.error("Failed to submit feedback. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,12 +90,12 @@ export function CitationFeedback({
 
   const cancelFeedback = () => {
     setShowCommentBox(false);
-    setComment('');
+    setComment("");
     setFeedbackType(null);
   };
 
   return (
-    <div className={cn('mt-1', className)}>
+    <div className={cn("mt-1", className)}>
       {!showCommentBox ? (
         <div className="flex items-center justify-end gap-1">
           <span className="mr-1 text-xs text-muted-foreground">
@@ -108,7 +108,7 @@ export function CitationFeedback({
                 variant="ghost"
                 size="icon"
                 className="size-6"
-                onClick={() => handleFeedback('correct')}
+                onClick={() => handleFeedback("correct")}
               >
                 <ThumbsUp className="size-3.5 text-green-600" />
               </Button>
@@ -122,7 +122,7 @@ export function CitationFeedback({
                 variant="ghost"
                 size="icon"
                 className="size-6"
-                onClick={() => handleFeedback('incorrect')}
+                onClick={() => handleFeedback("incorrect")}
               >
                 <ThumbsDown className="size-3.5 text-red-600" />
               </Button>
@@ -136,7 +136,7 @@ export function CitationFeedback({
                 variant="ghost"
                 size="icon"
                 className="size-6"
-                onClick={() => handleFeedback('incomplete')}
+                onClick={() => handleFeedback("incomplete")}
               >
                 <MessageCircle className="size-3.5 text-amber-600" />
               </Button>
@@ -148,11 +148,11 @@ export function CitationFeedback({
         <div className="space-y-2">
           <div className="rounded-md border bg-muted/50 p-2">
             <p className="mb-1 text-xs text-muted-foreground">
-              {feedbackType === 'incorrect' &&
-                'What is incorrect about this citation?'}
-              {feedbackType === 'incomplete' &&
-                'What information is missing from this citation?'}
-              {feedbackType === 'outdated' && 'How is this citation outdated?'}
+              {feedbackType === "incorrect" &&
+                "What is incorrect about this citation?"}
+              {feedbackType === "incomplete" &&
+                "What information is missing from this citation?"}
+              {feedbackType === "outdated" && "How is this citation outdated?"}
             </p>
 
             <Textarea

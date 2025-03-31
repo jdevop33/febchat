@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { FileText, AlertTriangle, FileSearch } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
+import { AlertTriangle, FileSearch, FileText } from "lucide-react";
+import React from "react";
 
 interface CitationHeaderProps {
   formattedTitle: string;

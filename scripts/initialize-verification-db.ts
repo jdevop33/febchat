@@ -10,33 +10,33 @@
  * Updated: Migrated from Prisma to Drizzle ORM
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import dotenv from 'dotenv';
-import pdfParse from 'pdf-parse';
+import fs from "node:fs";
+import path from "node:path";
+import dotenv from "dotenv";
+import pdfParse from "pdf-parse";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Import Drizzle database client
-import db from '@/lib/db';
-import { bylaw, bylawSection } from '@/lib/db/schema';
-import { eq, count } from 'drizzle-orm';
+import db from "@/lib/db";
+import { bylaw, bylawSection } from "@/lib/db/schema";
+import { count, eq } from "drizzle-orm";
 
 async function main() {
   try {
-    console.log('Initializing verification database...');
+    console.log("Initializing verification database...");
 
     // Initialize database manually
-    console.log('Manual database initialization starting...');
+    console.log("Manual database initialization starting...");
 
     // Get PDF directory
-    const pdfDir = path.join(process.cwd(), 'public', 'pdfs');
+    const pdfDir = path.join(process.cwd(), "public", "pdfs");
 
     // Process a specific bylaw in more detail for testing
-    await processSpecificBylaw('3210', pdfDir);
+    await processSpecificBylaw("3210", pdfDir);
 
-    console.log('Verification database initialized successfully');
+    console.log("Verification database initialized successfully");
 
     // Optional: Print verification database stats
     const [bylawCountResult] = await db.select({ count: count() }).from(bylaw);
@@ -44,11 +44,11 @@ async function main() {
       .select({ count: count() })
       .from(bylawSection);
 
-    console.log('Database stats:');
+    console.log("Database stats:");
     console.log(`- ${bylawCountResult.count} bylaws`);
     console.log(`- ${sectionCountResult.count} bylaw sections`);
   } catch (error) {
-    console.error('Initialization failed:', error);
+    console.error("Initialization failed:", error);
     process.exit(1);
   }
 }
@@ -75,8 +75,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     const isConsolidated = /consolidated|consolidation/i.test(bylawFile);
 
     // Extract title
-    let title = bylawFile.replace(/\.pdf$/i, '');
-    title = title.replace(/^(\d{4})[-,\s]+/, ''); // Remove bylaw number prefix
+    let title = bylawFile.replace(/\.pdf$/i, "");
+    title = title.replace(/^(\d{4})[-,\s]+/, ""); // Remove bylaw number prefix
 
     // Load PDF content
     const filePath = path.join(pdfDir, bylawFile);
@@ -127,8 +127,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     );
     if (section3Match) {
       sections.push({
-        sectionNumber: '3',
-        title: 'General Noise Prohibition',
+        sectionNumber: "3",
+        title: "General Noise Prohibition",
         content: section3Match[0].trim(),
       });
     }
@@ -139,8 +139,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     );
     if (section4Match) {
       sections.push({
-        sectionNumber: '4',
-        title: 'Specific Prohibitions',
+        sectionNumber: "4",
+        title: "Specific Prohibitions",
         content: section4Match[0].trim(),
       });
     }
@@ -151,8 +151,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     );
     if (section5Match) {
       sections.push({
-        sectionNumber: '5',
-        title: 'Exemptions',
+        sectionNumber: "5",
+        title: "Exemptions",
         content: section5Match[0].trim(),
       });
     }
@@ -164,8 +164,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     );
     if (constructionMatch) {
       sections.push({
-        sectionNumber: '4(7)',
-        title: 'Construction Noise',
+        sectionNumber: "4(7)",
+        title: "Construction Noise",
         content: constructionMatch[0].trim(),
       });
     }
@@ -175,8 +175,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     const leafBlowerDefMatch = pdfText.match(/"LEAF BLOWER"[^;]*;/i);
     if (leafBlowerDefMatch) {
       sections.push({
-        sectionNumber: '2(b)',
-        title: 'Leaf Blower Definition',
+        sectionNumber: "2(b)",
+        title: "Leaf Blower Definition",
         content: leafBlowerDefMatch[0].trim(),
       });
     }
@@ -187,8 +187,8 @@ async function processSpecificBylaw(bylawNumber: string, pdfDir: string) {
     );
     if (leafBlowerRegMatch) {
       sections.push({
-        sectionNumber: '4(5)',
-        title: 'Leaf Blower Restrictions',
+        sectionNumber: "4(5)",
+        title: "Leaf Blower Restrictions",
         content: leafBlowerRegMatch[0].trim(),
       });
     }

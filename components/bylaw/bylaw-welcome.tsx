@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FileTextIcon } from '@/components/shared/icons';
+import { FileTextIcon } from "@/components/shared/icons";
 
 export function BylawWelcome() {
   return (
@@ -149,7 +149,7 @@ export function BylawWelcome() {
       <div className="flex justify-center">
         <button
           type="button"
-          onClick={() => document.getElementById('chat-input')?.focus()}
+          onClick={() => document.getElementById("chat-input")?.focus()}
           className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground shadow transition-all hover:bg-primary/90 hover:shadow-md"
         >
           <svg

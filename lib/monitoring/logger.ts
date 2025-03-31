@@ -9,18 +9,18 @@ const getTimestamp = () => new Date().toISOString();
 
 // Log event types for categorization and filtering
 type LogEventType =
-  | 'search'
-  | 'error'
-  | 'api'
-  | 'bylaw_access'
-  | 'authentication'
-  | 'performance'
-  | 'feedback'
-  | 'admin'
-  | 'security';
+  | "search"
+  | "error"
+  | "api"
+  | "bylaw_access"
+  | "authentication"
+  | "performance"
+  | "feedback"
+  | "admin"
+  | "security";
 
 // Severity levels for alerts and monitoring
-type LogSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
+type LogSeverity = "debug" | "info" | "warn" | "error" | "critical";
 
 // Log entry structure for consistent format
 interface LogEntry {
@@ -43,7 +43,7 @@ const MAX_BUFFER_SIZE = 20;
 const FLUSH_INTERVAL_MS = 10000; // 10 seconds
 
 // Set up periodic buffer flush
-if (typeof setInterval !== 'undefined') {
+if (typeof setInterval !== "undefined") {
   setInterval(() => {
     flushLogBuffer();
   }, FLUSH_INTERVAL_MS);
@@ -56,7 +56,7 @@ function flushLogBuffer(): void {
   if (logBuffer.length === 0) return;
 
   // In a production setup, this would send logs to a centralized logging service
-  if (process.env.NODE_ENV === 'production' && process.env.LOG_ENDPOINT) {
+  if (process.env.NODE_ENV === "production" && process.env.LOG_ENDPOINT) {
     // This is where you'd send logs to your logging service
     // fetch(process.env.LOG_ENDPOINT, {
     //   method: 'POST',
@@ -66,22 +66,22 @@ function flushLogBuffer(): void {
   }
 
   // For development, just print to console
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     logBuffer.forEach((entry) => {
       const message = `[${entry.timestamp}] [${entry.eventType}] ${entry.message}`;
 
       switch (entry.severity) {
-        case 'debug':
+        case "debug":
           console.debug(message, entry.data);
           break;
-        case 'info':
+        case "info":
           console.log(message, entry.data);
           break;
-        case 'warn':
+        case "warn":
           console.warn(message, entry.data);
           break;
-        case 'error':
-        case 'critical':
+        case "error":
+        case "critical":
           console.error(message, entry.data);
           break;
       }
@@ -98,14 +98,14 @@ function flushLogBuffer(): void {
  */
 function writeLog(entry: LogEntry): void {
   // Remove sensitive data in production
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // Sanitize the entry data to remove potentially sensitive information
     if (entry.data) {
       // Remove passwords, tokens, etc.
       const sanitizedData = { ...entry.data };
-      ['password', 'token', 'secret', 'key', 'apiKey'].forEach((key) => {
+      ["password", "token", "secret", "key", "apiKey"].forEach((key) => {
         if (key in sanitizedData) {
-          sanitizedData[key] = '[REDACTED]';
+          sanitizedData[key] = "[REDACTED]";
         }
       });
       entry.data = sanitizedData;
@@ -116,12 +116,12 @@ function writeLog(entry: LogEntry): void {
   logBuffer.push(entry);
 
   // If buffer is full or entry is critical, flush immediately
-  if (logBuffer.length >= MAX_BUFFER_SIZE || entry.severity === 'critical') {
+  if (logBuffer.length >= MAX_BUFFER_SIZE || entry.severity === "critical") {
     flushLogBuffer();
   }
 
   // For critical errors in production, also trigger immediate alerts
-  if (entry.severity === 'critical' && process.env.NODE_ENV === 'production') {
+  if (entry.severity === "critical" && process.env.NODE_ENV === "production") {
     // This would integrate with an alerting system
     // sendAlert(entry);
   }
@@ -140,11 +140,11 @@ export function logSearch(
     error?: Error;
   },
 ): void {
-  const severity = options?.error ? 'error' : 'info';
+  const severity = options?.error ? "error" : "info";
 
   writeLog({
     timestamp: getTimestamp(),
-    eventType: 'search',
+    eventType: "search",
     severity,
     message: `Bylaw search: "${query}" (${resultCount} results in ${duration}ms)`,
     data: {
@@ -164,19 +164,19 @@ export function logSearch(
 export function logBylawAccess(
   bylawNumber: string,
   section: string | undefined,
-  action: 'view' | 'download' | 'cite',
+  action: "view" | "download" | "cite",
   options?: {
     userId?: string;
     error?: Error;
   },
 ): void {
-  const severity = options?.error ? 'error' : 'info';
+  const severity = options?.error ? "error" : "info";
 
   writeLog({
     timestamp: getTimestamp(),
-    eventType: 'bylaw_access',
+    eventType: "bylaw_access",
     severity,
-    message: `Bylaw ${action}: No. ${bylawNumber}${section ? `, Section ${section}` : ''}`,
+    message: `Bylaw ${action}: No. ${bylawNumber}${section ? `, Section ${section}` : ""}`,
     data: {
       action,
       error: options?.error ? options.error.message : undefined,
@@ -201,18 +201,18 @@ export function logApiPerformance(
   },
 ): void {
   // Determine severity based on duration thresholds
-  let severity: LogSeverity = 'info';
+  let severity: LogSeverity = "info";
   if (duration > 5000) {
-    severity = 'warn';
+    severity = "warn";
   } else if (duration > 10000) {
-    severity = 'error';
+    severity = "error";
   }
 
   writeLog({
     timestamp: getTimestamp(),
-    eventType: 'performance',
+    eventType: "performance",
     severity,
-    message: `API ${options?.method || 'GET'} ${endpoint} completed in ${duration}ms`,
+    message: `API ${options?.method || "GET"} ${endpoint} completed in ${duration}ms`,
     data: {
       endpoint,
       duration,
@@ -241,8 +241,8 @@ export function logError(
 ): void {
   writeLog({
     timestamp: getTimestamp(),
-    eventType: 'error',
-    severity: options?.critical ? 'critical' : 'error',
+    eventType: "error",
+    severity: options?.critical ? "critical" : "error",
     message: `Error in ${context}: ${error.message}`,
     data: {
       errorName: error.name,
@@ -262,7 +262,7 @@ export function logError(
 export function logFeedback(
   bylawNumber: string,
   section: string | undefined,
-  feedbackType: 'correct' | 'incorrect' | 'incomplete' | 'outdated',
+  feedbackType: "correct" | "incorrect" | "incomplete" | "outdated",
   options?: {
     userId?: string;
     comment?: string;
@@ -270,9 +270,9 @@ export function logFeedback(
 ): void {
   writeLog({
     timestamp: getTimestamp(),
-    eventType: 'feedback',
-    severity: feedbackType === 'correct' ? 'info' : 'warn',
-    message: `User feedback: ${feedbackType} for Bylaw No. ${bylawNumber}${section ? `, Section ${section}` : ''}`,
+    eventType: "feedback",
+    severity: feedbackType === "correct" ? "info" : "warn",
+    message: `User feedback: ${feedbackType} for Bylaw No. ${bylawNumber}${section ? `, Section ${section}` : ""}`,
     data: {
       feedbackType,
       comment: options?.comment,
@@ -328,8 +328,8 @@ export const logger = {
   info: (message: string, data?: any) => {
     writeLog({
       timestamp: getTimestamp(),
-      eventType: 'api',
-      severity: 'info',
+      eventType: "api",
+      severity: "info",
       message,
       data,
     });
@@ -337,8 +337,8 @@ export const logger = {
   warn: (message: string, data?: any) => {
     writeLog({
       timestamp: getTimestamp(),
-      eventType: 'api',
-      severity: 'warn',
+      eventType: "api",
+      severity: "warn",
       message,
       data,
     });
@@ -346,8 +346,8 @@ export const logger = {
   debug: (message: string, data?: any) => {
     writeLog({
       timestamp: getTimestamp(),
-      eventType: 'api',
-      severity: 'debug',
+      eventType: "api",
+      severity: "debug",
       message,
       data,
     });

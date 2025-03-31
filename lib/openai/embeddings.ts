@@ -1,4 +1,4 @@
-import { OpenAI } from 'openai';
+import { OpenAI } from "openai";
 
 /**
  * Custom embeddings class that uses OpenAI for embeddings
@@ -16,11 +16,11 @@ export class PineconeEmbeddings {
   ) {
     const apiKey = options.openAIApiKey || process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error('OpenAI API key is required');
+      throw new Error("OpenAI API key is required");
     }
 
     this.client = new OpenAI({ apiKey });
-    this.model = options.model || 'text-embedding-3-small';
+    this.model = options.model || "text-embedding-3-small";
   }
 
   /**
@@ -28,7 +28,7 @@ export class PineconeEmbeddings {
    */
   async embedQuery(text: string): Promise<number[]> {
     // Embedding requires at least 1 character
-    const safeText = text?.trim() || 'Empty text';
+    const safeText = text?.trim() || "Empty text";
 
     try {
       const response = await this.client.embeddings.create({

@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { type ReactNode, useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { type ReactNode, useMemo, useState } from "react";
 
 import {
   CheckCircleFillIcon,
   ChevronDownIcon,
   GlobeIcon,
   LockIcon,
-} from '@/components/shared/icons';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
+} from "@/components/shared/icons";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
 
-export type VisibilityType = 'private' | 'public';
+export type VisibilityType = "private" | "public";
 
 const visibilities: Array<{
   id: VisibilityType;
@@ -27,15 +27,15 @@ const visibilities: Array<{
   icon: ReactNode;
 }> = [
   {
-    id: 'private',
-    label: 'Private',
-    description: 'Only you can access this chat',
+    id: "private",
+    label: "Private",
+    description: "Only you can access this chat",
     icon: <LockIcon />,
   },
   {
-    id: 'public',
-    label: 'Public',
-    description: 'Anyone with the link can access this chat',
+    id: "public",
+    label: "Public",
+    description: "Anyone with the link can access this chat",
     icon: <GlobeIcon />,
   },
 ];
@@ -65,7 +65,7 @@ export function VisibilitySelector({
       <DropdownMenuTrigger
         asChild
         className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+          "w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground",
           className,
         )}
       >

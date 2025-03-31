@@ -1,10 +1,10 @@
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
-    signIn: '/login',
-    newUser: '/',
-    error: '/auth-error', // Add a custom error page
+    signIn: "/login",
+    newUser: "/",
+    error: "/auth-error", // Add a custom error page
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -12,7 +12,7 @@ export const authConfig = {
   ],
   session: {
     // Use JWT strategy with strong settings
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours instead of 30 days for better security
     updateAge: 60 * 60, // 1 hour - force session refresh
   },
@@ -21,12 +21,12 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
 
       // Define protected and public paths more clearly
-      const isPublicApi = nextUrl.pathname.startsWith('/api/public');
-      const isApiRoute = nextUrl.pathname.startsWith('/api');
+      const isPublicApi = nextUrl.pathname.startsWith("/api/public");
+      const isApiRoute = nextUrl.pathname.startsWith("/api");
       const isAuthRoute =
-        nextUrl.pathname.startsWith('/login') ||
-        nextUrl.pathname.startsWith('/register') ||
-        nextUrl.pathname.startsWith('/auth-error');
+        nextUrl.pathname.startsWith("/login") ||
+        nextUrl.pathname.startsWith("/register") ||
+        nextUrl.pathname.startsWith("/auth-error");
       const isStaticAsset = nextUrl.pathname.match(
         /\.(jpg|jpeg|png|gif|svg|css|js)$/,
       );
@@ -39,7 +39,7 @@ export const authConfig = {
 
       // Redirect authenticated users away from auth pages
       if (isLoggedIn && isAuthRoute) {
-        return Response.redirect(new URL('/', nextUrl));
+        return Response.redirect(new URL("/", nextUrl));
       }
 
       // Allow access to auth routes for everyone
@@ -74,12 +74,12 @@ export const authConfig = {
   // Enhance security headers
   cookies: {
     sessionToken: {
-      name: '__Secure-next-auth.session-token',
+      name: "__Secure-next-auth.session-token",
       options: {
         httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },

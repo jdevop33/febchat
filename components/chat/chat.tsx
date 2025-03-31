@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import type { Attachment, Message } from 'ai';
-import { useChat } from 'ai/react';
-import { useState, useEffect, useCallback, useRef } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
+import type { Attachment, Message } from "ai";
+import { useChat } from "ai/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
-import { ChatHeader } from './chat-header';
-import type { Vote } from '@/lib/db/schema';
-import { fetcher, generateUUID } from '@/lib/utils';
-import { MultimodalInput } from './multimodal-input';
-import { Messages } from './messages';
-import type { VisibilityType } from '@/components/ui/visibility-selector';
-import { useArtifactSelector } from '@/hooks/use-artifact';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
-import { toast } from 'sonner';
-import { AlertTriangle, X, RefreshCw } from 'lucide-react';
+import type { VisibilityType } from "@/components/ui/visibility-selector";
+import { useArtifactSelector } from "@/hooks/use-artifact";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import type { Vote } from "@/lib/db/schema";
+import { fetcher, generateUUID } from "@/lib/utils";
+import { AlertTriangle, RefreshCw, X } from "lucide-react";
+import { toast } from "sonner";
+import { ChatHeader } from "./chat-header";
+import { Messages } from "./messages";
+import { MultimodalInput } from "./multimodal-input";
 
 export function Chat({
   id,
@@ -33,12 +33,14 @@ export function Chat({
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState<
-    'connected' | 'reconnecting' | 'disconnected'
-  >('connected');
-  
+    "connected" | "reconnecting" | "disconnected"
+  >("connected");
+
   // Store reload function in a ref to avoid dependency cycles
-  const reloadFnRef = useRef<(() => Promise<string | null | undefined>) | null>(null);
-  
+  const reloadFnRef = useRef<(() => Promise<string | null | undefined>) | null>(
+    null,
+  );
+
   // Initialize chat visibility
   const { setVisibilityType } = useChatVisibility({
     chatId: id,
@@ -54,15 +56,15 @@ export function Chat({
 
   // Error handling function
   const handleChatError = useCallback((error: unknown) => {
-    console.error('Chat request error:', error);
+    console.error("Chat request error:", error);
     setHasError(true);
 
     // Default error messages
-    let errorMessage = 'An error occurred, please try again!';
-    let errorDescription = 'The system is experiencing technical difficulties.';
+    let errorMessage = "An error occurred, please try again!";
+    let errorDescription = "The system is experiencing technical difficulties.";
 
     // Parse structured error from server if available
-    if (typeof error === 'string') {
+    if (typeof error === "string") {
       try {
         const errorData = JSON.parse(error);
         if (errorData.error) {
@@ -78,26 +80,27 @@ export function Chat({
     }
 
     // Check for common network errors
-    const isNetworkError = 
-      errorMessage.includes('network') || 
-      errorMessage.includes('fetch') ||
-      errorMessage.includes('connection') ||
-      errorMessage.includes('timeout');
-    
+    const isNetworkError =
+      errorMessage.includes("network") ||
+      errorMessage.includes("fetch") ||
+      errorMessage.includes("connection") ||
+      errorMessage.includes("timeout");
+
     if (isNetworkError) {
-      setConnectionStatus('reconnecting');
-      errorDescription = 'There might be an issue with your network connection. We\'ll try to reconnect.';
-      
+      setConnectionStatus("reconnecting");
+      errorDescription =
+        "There might be an issue with your network connection. We'll try to reconnect.";
+
       // Attempt to automatically retry for network errors
-      setRetryCount(currentCount => {
+      setRetryCount((currentCount) => {
         const newCount = currentCount + 1;
-        
+
         if (newCount <= 2) {
-          toast.warning('Connection issue detected', {
+          toast.warning("Connection issue detected", {
             description: `Attempting to reconnect (try ${newCount}/3)...`,
             duration: 3000,
           });
-          
+
           // Try to reload the chat after a delay
           setTimeout(() => {
             if (reloadFnRef.current) {
@@ -105,10 +108,10 @@ export function Chat({
             }
           }, 2000);
         }
-        
+
         return newCount;
       });
-      
+
       return;
     }
 
@@ -134,13 +137,13 @@ export function Chat({
     id,
     body: { id, selectedChatModel },
     initialMessages,
-    api: '/api/chat',
+    api: "/api/chat",
     sendExtraMessageFields: true,
     generateId: generateUUID,
     onFinish: () => {
-      mutate('/api/history');
+      mutate("/api/history");
       setHasError(false);
-      setConnectionStatus('connected');
+      setConnectionStatus("connected");
       setRetryCount(0);
     },
     onError: handleChatError,
@@ -154,25 +157,25 @@ export function Chat({
   // Network and connection status monitoring
   useEffect(() => {
     const handleOnline = () => {
-      setConnectionStatus('connected');
-      toast.success('Connection restored', {
-        description: 'You are now back online',
+      setConnectionStatus("connected");
+      toast.success("Connection restored", {
+        description: "You are now back online",
       });
     };
 
     const handleOffline = () => {
-      setConnectionStatus('disconnected');
-      toast.error('Connection lost', {
-        description: 'Your network connection has been lost',
+      setConnectionStatus("disconnected");
+      toast.error("Connection lost", {
+        description: "Your network connection has been lost",
       });
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -181,8 +184,8 @@ export function Chat({
     setHasError(false);
     setRetryCount(0);
     reload();
-    toast.info('Retrying connection', {
-      description: 'Attempting to reconnect to the AI service',
+    toast.info("Retrying connection", {
+      description: "Attempting to reconnect to the AI service",
     });
   };
 
@@ -193,20 +196,26 @@ export function Chat({
   );
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
-  const isArtifactVisible = useArtifactSelector((state: {isVisible: boolean}) => state.isVisible);
+  const isArtifactVisible = useArtifactSelector(
+    (state: { isVisible: boolean }) => state.isVisible,
+  );
 
   // Early return if no ID is provided
   if (!id) {
-    return <div className="flex h-dvh items-center justify-center">Invalid chat session</div>;
+    return (
+      <div className="flex h-dvh items-center justify-center">
+        Invalid chat session
+      </div>
+    );
   }
 
   return (
     <div className="flex h-dvh min-w-0 flex-col bg-background">
       <ChatHeader chatId={id} />
-      
-      {connectionStatus !== 'connected' && (
+
+      {connectionStatus !== "connected" && (
         <div className="bg-amber-100 p-2 text-center text-sm text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
-          {connectionStatus === 'reconnecting' ? (
+          {connectionStatus === "reconnecting" ? (
             <span className="flex items-center justify-center gap-2">
               <RefreshCw className="size-4 animate-spin" />
               Attempting to reconnect...
@@ -236,23 +245,25 @@ export function Chat({
           <div className="border-t border-amber-200 bg-amber-50/50 p-3 text-center dark:border-amber-800/30 dark:bg-amber-900/20">
             <div className="flex items-center justify-center gap-2">
               <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-amber-800 dark:text-amber-300">Connection issue detected</span>
+              <span className="text-amber-800 dark:text-amber-300">
+                Connection issue detected
+              </span>
               <button
-  onClick={handleRetry}
-  className="ml-2 flex items-center gap-1 rounded bg-amber-200 px-3 py-1 text-sm font-medium text-amber-900 hover:bg-amber-300 dark:bg-amber-700/50 dark:text-amber-100 dark:hover:bg-amber-700"
-  aria-label="Retry connection"
->
-  <RefreshCw className="size-3" aria-hidden="true" />
-  <span>Retry</span>
-</button>
-<button
-  onClick={() => setHasError(false)}
-  className="ml-1 rounded-full p-1 text-amber-600 hover:bg-amber-200 dark:text-amber-400 dark:hover:bg-amber-800"
-  aria-label="Dismiss error message"
->
-  <X className="size-4" aria-hidden="true" />
-  <span className="sr-only">Close</span>
-</button>
+                onClick={handleRetry}
+                className="ml-2 flex items-center gap-1 rounded bg-amber-200 px-3 py-1 text-sm font-medium text-amber-900 hover:bg-amber-300 dark:bg-amber-700/50 dark:text-amber-100 dark:hover:bg-amber-700"
+                aria-label="Retry connection"
+              >
+                <RefreshCw className="size-3" aria-hidden="true" />
+                <span>Retry</span>
+              </button>
+              <button
+                onClick={() => setHasError(false)}
+                className="ml-1 rounded-full p-1 text-amber-600 hover:bg-amber-200 dark:text-amber-400 dark:hover:bg-amber-800"
+                aria-label="Dismiss error message"
+              >
+                <X className="size-4" aria-hidden="true" />
+                <span className="sr-only">Close</span>
+              </button>
             </div>
           </div>
         )}
@@ -272,7 +283,7 @@ export function Chat({
                 messages={messages}
                 setMessages={setMessages}
                 append={append}
-                disabled={connectionStatus === 'disconnected'}
+                disabled={connectionStatus === "disconnected"}
               />
             )}
           </form>

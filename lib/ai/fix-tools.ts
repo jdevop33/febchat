@@ -25,10 +25,10 @@ export function createToolExecutor<TInput = unknown, TOutput = unknown>(
       if (options) {
         return await originalExecute(input, options);
       }
-        // Try without options
-        return await originalExecute(input);
+      // Try without options
+      return await originalExecute(input);
     } catch (error) {
-      console.error('Error executing tool:', error);
+      console.error("Error executing tool:", error);
       throw error;
     }
   };

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { updateChatVisibility } from '@/app/(chat)/actions';
-import type { VisibilityType } from '@/components/ui/visibility-selector';
-import type { Chat } from '@/lib/db/schema';
-import { useMemo } from 'react';
-import useSWR, { useSWRConfig } from 'swr';
+import { updateChatVisibility } from "@/app/(chat)/actions";
+import type { VisibilityType } from "@/components/ui/visibility-selector";
+import type { Chat } from "@/lib/db/schema";
+import { useMemo } from "react";
+import useSWR, { useSWRConfig } from "swr";
 
 export function useChatVisibility({
   chatId,
@@ -16,7 +16,7 @@ export function useChatVisibility({
   const { mutate } = useSWRConfig();
 
   // FIXED: Don't access cache directly, use useSWR with fallback
-  const { data: history = [] } = useSWR<Array<Chat>>('/api/history', null, {
+  const { data: history = [] } = useSWR<Array<Chat>>("/api/history", null, {
     fallbackData: [],
   });
 
@@ -32,7 +32,7 @@ export function useChatVisibility({
     // Safely access history with fallback
     const safeHistory = history || [];
     const chat = safeHistory.find((chat) => chat.id === chatId);
-    if (!chat) return localVisibility || 'private';
+    if (!chat) return localVisibility || "private";
     return chat.visibility;
   }, [history, chatId, localVisibility]);
 
@@ -42,7 +42,7 @@ export function useChatVisibility({
     // Safely update the history cache with error handling
     try {
       mutate<Array<Chat>>(
-        '/api/history',
+        "/api/history",
         (prevHistory) => {
           const safeHistory = prevHistory || [];
           return safeHistory.map((chat) => {
@@ -63,10 +63,10 @@ export function useChatVisibility({
         chatId: chatId,
         visibility: updatedVisibilityType,
       }).catch((err) => {
-        console.error('Failed to update chat visibility:', err);
+        console.error("Failed to update chat visibility:", err);
       });
     } catch (error) {
-      console.error('Error updating visibility in cache:', error);
+      console.error("Error updating visibility in cache:", error);
     }
   };
 

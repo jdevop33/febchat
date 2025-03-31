@@ -1,16 +1,16 @@
-import type { Node } from 'prosemirror-model';
-import { Plugin, PluginKey } from 'prosemirror-state';
+import type { Node } from "prosemirror-model";
+import { Plugin, PluginKey } from "prosemirror-state";
 import {
   type Decoration,
   DecorationSet,
   type EditorView,
-} from 'prosemirror-view';
-import { createRoot } from 'react-dom/client';
+} from "prosemirror-view";
+import { createRoot } from "react-dom/client";
 
-import { Suggestion as PreviewSuggestion } from '@/components/ui/suggestion';
-import type { Suggestion } from '@/lib/db/schema';
-import type { ArtifactKind } from '@/types/artifacts/artifact-types';
-import type { UISuggestion } from '../types';
+import { Suggestion as PreviewSuggestion } from "@/components/ui/suggestion";
+import type { Suggestion } from "@/lib/db/schema";
+import type { ArtifactKind } from "@/types/artifacts/artifact-types";
+import type { UISuggestion } from "../types";
 
 interface Position {
   start: number;
@@ -54,8 +54,8 @@ export function projectWithPositions(
         selectionEnd: 0,
         originalText: suggestion.originalText,
         suggestedText: suggestion.suggestedText,
-        description: suggestion.description || '', // Convert null to empty string
-        type: 'suggestion',
+        description: suggestion.description || "", // Convert null to empty string
+        type: "suggestion",
         metadata: {
           documentId: suggestion.documentId,
           userId: suggestion.userId,
@@ -70,8 +70,8 @@ export function projectWithPositions(
       selectionEnd: positions.end,
       originalText: suggestion.originalText,
       suggestedText: suggestion.suggestedText,
-      description: suggestion.description || '', // Convert null to empty string
-      type: 'suggestion',
+      description: suggestion.description || "", // Convert null to empty string
+      type: "suggestion",
       metadata: {
         documentId: suggestion.documentId,
         userId: suggestion.userId,
@@ -84,12 +84,12 @@ export function projectWithPositions(
 export function createSuggestionWidget(
   suggestion: UISuggestion,
   view: EditorView,
-  artifactKind: ArtifactKind = 'text',
+  artifactKind: ArtifactKind = "text",
 ): { dom: HTMLElement; destroy: () => void } {
-  const dom = document.createElement('span');
+  const dom = document.createElement("span");
   const root = createRoot(dom);
 
-  dom.addEventListener('mousedown', (event) => {
+  dom.addEventListener("mousedown", (event) => {
     event.preventDefault();
     view.dom.blur();
   });
@@ -122,7 +122,7 @@ export function createSuggestionWidget(
       state.schema.text(suggestion.suggestedText),
     );
 
-    textTransaction.setMeta('no-debounce', true);
+    textTransaction.setMeta("no-debounce", true);
 
     dispatch(textTransaction);
   };
@@ -146,7 +146,7 @@ export function createSuggestionWidget(
   };
 }
 
-export const suggestionsPluginKey = new PluginKey('suggestions');
+export const suggestionsPluginKey = new PluginKey("suggestions");
 export const suggestionsPlugin = new Plugin({
   key: suggestionsPluginKey,
   state: {

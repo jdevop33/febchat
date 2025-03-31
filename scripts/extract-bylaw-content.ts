@@ -7,19 +7,19 @@
  * pnpm tsx scripts/extract-bylaw-content.ts <bylaw-number>
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import pdfParse from 'pdf-parse';
+import fs from "node:fs";
+import path from "node:path";
+import pdfParse from "pdf-parse";
 
 // Bylaw number from command line
-const bylawNumber = process.argv[2] || '3210';
+const bylawNumber = process.argv[2] || "3210";
 
 async function extractBylawContent() {
   try {
     console.log(`Extracting content from Bylaw No. ${bylawNumber}`);
 
     // Find the PDF file
-    const pdfDir = path.resolve(process.cwd(), 'public', 'pdfs');
+    const pdfDir = path.resolve(process.cwd(), "public", "pdfs");
     const files = fs.readdirSync(pdfDir);
 
     // Find the file that matches the bylaw number
@@ -33,23 +33,23 @@ async function extractBylawContent() {
     const filePath = path.join(pdfDir, bylawFile);
 
     // Extract text from PDF
-    console.log('Extracting text from PDF...');
+    console.log("Extracting text from PDF...");
     const pdfBuffer = fs.readFileSync(filePath);
     const pdfData = await pdfParse(pdfBuffer);
     const text = pdfData.text;
 
-    console.log('\n----------------------------------------');
+    console.log("\n----------------------------------------");
     console.log(`BYLAW ${bylawNumber} CONTENT:`);
-    console.log('----------------------------------------\n');
+    console.log("----------------------------------------\n");
     console.log(text.substring(0, 1000));
-    console.log('\n...\n');
+    console.log("\n...\n");
 
     // Look for important sections
 
     // General noise prohibitions (section 3)
-    console.log('\n----------------------------------------');
-    console.log('GENERAL NOISE PROHIBITIONS (SECTION 3):');
-    console.log('----------------------------------------\n');
+    console.log("\n----------------------------------------");
+    console.log("GENERAL NOISE PROHIBITIONS (SECTION 3):");
+    console.log("----------------------------------------\n");
 
     const section3Match = text.match(
       /3\s+\([1-9]\)[^\n]*(?:\n[^\n]+)*?(?=\([2-9]\)|\n\s*4\s+)/s,
@@ -57,13 +57,13 @@ async function extractBylawContent() {
     if (section3Match) {
       console.log(section3Match[0].trim());
     } else {
-      console.log('Section 3 not found.');
+      console.log("Section 3 not found.");
     }
 
     // Specific prohibited noises (Section 4)
-    console.log('\n----------------------------------------');
-    console.log('SPECIFIC NOISE PROHIBITIONS (SECTION 4):');
-    console.log('----------------------------------------\n');
+    console.log("\n----------------------------------------");
+    console.log("SPECIFIC NOISE PROHIBITIONS (SECTION 4):");
+    console.log("----------------------------------------\n");
 
     const section4Match = text.match(
       /4\s+No person shall[^\n]*(?:\n[^\n]+)*?(?=\n\s*5\s+The provisions)/s,
@@ -72,23 +72,23 @@ async function extractBylawContent() {
       console.log(section4Match[0].trim());
     } else {
       console.log(
-        'Section 4 not found - this contains the construction noise regulations.',
+        "Section 4 not found - this contains the construction noise regulations.",
       );
 
       // Try to find section 4 manually by looking for key elements
       if (
-        text.includes('No person shall') &&
+        text.includes("No person shall") &&
         text.includes(
-          'operate, use or permit to be operated or used, the following:',
+          "operate, use or permit to be operated or used, the following:",
         )
       ) {
         // Extract section 4 and its subsections
         const section4Lines = [];
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         let inSection4 = false;
 
         for (const line of lines) {
-          if (line.trim().startsWith('4') && line.includes('No person shall')) {
+          if (line.trim().startsWith("4") && line.includes("No person shall")) {
             inSection4 = true;
           }
 
@@ -98,8 +98,8 @@ async function extractBylawContent() {
 
           if (
             inSection4 &&
-            line.trim().startsWith('5') &&
-            line.includes('provisions of this Bylaw shall not apply')
+            line.trim().startsWith("5") &&
+            line.includes("provisions of this Bylaw shall not apply")
           ) {
             inSection4 = false;
             break;
@@ -107,12 +107,12 @@ async function extractBylawContent() {
         }
 
         if (section4Lines.length > 0) {
-          console.log(section4Lines.join('\n'));
+          console.log(section4Lines.join("\n"));
         }
       }
 
       // Try an alternative approach by looking for specific subsections
-      console.log('\nConstruction-related regulations:');
+      console.log("\nConstruction-related regulations:");
       const constructionRegex =
         /\([0-9]\)[^\(]*?(?:construction|demolition|erection)[^(]*/gi;
       let constructionMatch: RegExpExecArray | null;
@@ -127,7 +127,7 @@ async function extractBylawContent() {
       }
 
       // Look specifically for hours restrictions
-      console.log('\nHours restrictions:');
+      console.log("\nHours restrictions:");
       const hoursRegex =
         /(?:between|before|after)[^(]*?(?:\d+:\d+|\d+) (?:a\.m\.|p\.m\.|AM|PM)[^(]*?(?:Sunday|Saturday|holiday)/gi;
       let hoursMatch: RegExpExecArray | null;
@@ -142,9 +142,9 @@ async function extractBylawContent() {
     }
 
     // Leaf blowers
-    console.log('\n----------------------------------------');
-    console.log('LEAF BLOWER SECTION:');
-    console.log('----------------------------------------\n');
+    console.log("\n----------------------------------------");
+    console.log("LEAF BLOWER SECTION:");
+    console.log("----------------------------------------\n");
 
     // Find all mentions of leaf blowers
     const leafSections = [];
@@ -170,13 +170,13 @@ async function extractBylawContent() {
         console.log(`Section ${i + 1}:\n${section}\n`);
       });
     } else {
-      console.log('No leaf blower section found.');
+      console.log("No leaf blower section found.");
     }
 
     // Exemptions
-    console.log('\n----------------------------------------');
-    console.log('EXEMPTIONS SECTION:');
-    console.log('----------------------------------------\n');
+    console.log("\n----------------------------------------");
+    console.log("EXEMPTIONS SECTION:");
+    console.log("----------------------------------------\n");
 
     // Find exemptions section - try to match section 5 specifically
     const exemptionSections = [];
@@ -205,12 +205,12 @@ async function extractBylawContent() {
         console.log(`Section ${i + 1}:\n${section}\n`);
       });
     } else {
-      console.log('No exemption section found.');
+      console.log("No exemption section found.");
     }
 
-    console.log('\n----------------------------------------');
+    console.log("\n----------------------------------------");
   } catch (error) {
-    console.error('Error extracting bylaw content:', error);
+    console.error("Error extracting bylaw content:", error);
   }
 }
 

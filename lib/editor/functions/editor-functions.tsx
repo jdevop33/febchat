@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { defaultMarkdownSerializer } from 'prosemirror-markdown';
-import { DOMParser } from 'prosemirror-model';
-import { Decoration, DecorationSet } from 'prosemirror-view';
-import { renderToString } from 'react-dom/server';
+import { defaultMarkdownSerializer } from "prosemirror-markdown";
+import { DOMParser } from "prosemirror-model";
+import { Decoration, DecorationSet } from "prosemirror-view";
+import { renderToString } from "react-dom/server";
 
-import { Markdown } from '@/components/shared/markdown';
-import { documentSchema } from '../config/constants';
-import type { HandleTransactionParams, UISuggestion } from '../types';
-import { createSuggestionWidget } from '../suggestions';
+import { Markdown } from "@/components/shared/markdown";
+import { documentSchema } from "../config/constants";
+import { createSuggestionWidget } from "../suggestions";
+import type { HandleTransactionParams, UISuggestion } from "../types";
 
 export const buildDocumentFromContent = (content: string) => {
   const parser = DOMParser.fromSchema(documentSchema);
   const stringFromMarkdown = renderToString(<Markdown>{content}</Markdown>);
-  const tempContainer = document.createElement('div');
+  const tempContainer = document.createElement("div");
   tempContainer.innerHTML = stringFromMarkdown;
   return parser.parse(tempContainer);
 };
@@ -32,10 +32,10 @@ export const handleTransaction = ({
   const newState = editorRef.current.state.apply(transaction);
   editorRef.current.updateState(newState);
 
-  if (transaction.docChanged && !transaction.getMeta('no-save')) {
+  if (transaction.docChanged && !transaction.getMeta("no-save")) {
     const updatedContent = buildContentFromDocument(newState.doc);
 
-    if (transaction.getMeta('no-debounce')) {
+    if (transaction.getMeta("no-debounce")) {
       onSaveContent(updatedContent, false);
     } else {
       onSaveContent(updatedContent, true);
@@ -55,11 +55,11 @@ export const createDecorations = (
         suggestion.selectionStart,
         suggestion.selectionEnd,
         {
-          class: 'suggestion-highlight',
+          class: "suggestion-highlight",
         },
         {
           suggestionId: suggestion.id,
-          type: 'highlight',
+          type: "highlight",
         },
       ),
     );
@@ -73,7 +73,7 @@ export const createDecorations = (
         },
         {
           suggestionId: suggestion.id,
-          type: 'widget',
+          type: "widget",
         },
       ),
     );

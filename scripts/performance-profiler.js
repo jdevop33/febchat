@@ -1,13 +1,13 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 // List of components to instrument
 const COMPONENTS_TO_PROFILE = [
-  'sheet-editor.tsx',
-  'diffview.tsx',
-  'chat.tsx',
-  'messages.tsx',
-  'artifact.tsx',
+  "sheet-editor.tsx",
+  "diffview.tsx",
+  "chat.tsx",
+  "messages.tsx",
+  "artifact.tsx",
 ];
 
 // Profiling code to inject
@@ -26,40 +26,40 @@ useEffect(() => {
 
 // Function to inject profiling code into components
 function injectProfilingCode(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
 
   // Only inject if not already profiled
-  if (content.includes('[PROFILER]')) {
+  if (content.includes("[PROFILER]")) {
     console.log(`Skipping already profiled component: ${filePath}`);
     return;
   }
 
   // Find insertion point after imports and before component definition
-  const lines = content.split('\n');
+  const lines = content.split("\n");
   let insertionLine = 0;
 
   // Find the last import statement
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim().startsWith('import ')) {
+    if (lines[i].trim().startsWith("import ")) {
       insertionLine = i + 1;
     }
     if (
-      lines[i].includes('function ') &&
-      lines[i].includes('(') &&
-      lines[i].includes(')')
+      lines[i].includes("function ") &&
+      lines[i].includes("(") &&
+      lines[i].includes(")")
     ) {
       break;
     }
   }
 
   // Add performance.now import if needed
-  if (!content.includes('performance')) {
+  if (!content.includes("performance")) {
     lines.splice(insertionLine, 0, `import { useEffect } from 'react';`);
     insertionLine++;
   }
 
   // Insert profiling code
-  const componentName = path.basename(filePath, '.tsx');
+  const componentName = path.basename(filePath, ".tsx");
   const modifiedProfilingCode = PROFILING_CODE.replace(
     /Component\.name/g,
     `'${componentName}'`,
@@ -68,10 +68,10 @@ function injectProfilingCode(filePath) {
   // Find where to insert the profiling code (after component function declaration)
   for (let i = insertionLine; i < lines.length; i++) {
     if (
-      lines[i].includes('return (') ||
-      lines[i].includes('return (') ||
-      lines[i].trim() === 'return (' ||
-      lines[i].trim() === '{'
+      lines[i].includes("return (") ||
+      lines[i].includes("return (") ||
+      lines[i].trim() === "return (" ||
+      lines[i].trim() === "{"
     ) {
       lines.splice(i, 0, modifiedProfilingCode);
       break;
@@ -80,13 +80,13 @@ function injectProfilingCode(filePath) {
 
   // Write modified content
   fs.writeFileSync(`${filePath}.bak`, content); // Create backup
-  fs.writeFileSync(filePath, lines.join('\n'));
+  fs.writeFileSync(filePath, lines.join("\n"));
   console.log(`Profiling added to: ${filePath}`);
 }
 
 // Find all components
 function findComponents() {
-  const componentsDir = path.join(process.cwd(), 'components');
+  const componentsDir = path.join(process.cwd(), "components");
   const matches = [];
 
   function searchDir(dir) {
@@ -116,8 +116,8 @@ componentFiles.forEach((filePath) => {
   injectProfilingCode(filePath);
 });
 
-console.log('Profiling instrumentation complete!');
-console.log('Run your app and check the console for [PROFILER] output.');
+console.log("Profiling instrumentation complete!");
+console.log("Run your app and check the console for [PROFILER] output.");
 console.log(
-  'You may want to remove the profiling code before production deployment.',
+  "You may want to remove the profiling code before production deployment.",
 );

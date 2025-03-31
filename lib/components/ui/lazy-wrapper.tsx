@@ -2,16 +2,16 @@
  * Lazy component wrapper for code splitting
  */
 
-'use client';
+"use client";
 
-import type React from 'react';
+import { cn } from "@/lib/utils";
+import type React from "react";
 import {
+  type ComponentType,
+  type LazyExoticComponent,
   Suspense,
   lazy,
-  type LazyExoticComponent,
-  type ComponentType,
-} from 'react';
-import { cn } from '@/lib/utils';
+} from "react";
 
 type LazyWrapperProps = {
   component: LazyExoticComponent<ComponentType<any>>;
@@ -33,7 +33,7 @@ export function LazyWrapper({
   props = {},
 }: LazyWrapperProps) {
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn("w-full", className)}>
       <Suspense fallback={fallback}>
         <Component {...props} />
       </Suspense>

@@ -1,53 +1,53 @@
 #!/usr/bin/env node
 
 // This script uses ESM imports
-import fs from 'node:fs';
-import path from 'node:path';
-import { OpenAI } from 'openai';
-import dotenv from 'dotenv';
-import chalk from 'chalk';
-import minimist from 'minimist';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import dotenv from "dotenv";
+import minimist from "minimist";
+import { OpenAI } from "openai";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
-  string: ['file', 'output'],
-  boolean: ['verbose', 'help', 'dry-run'],
+  string: ["file", "output"],
+  boolean: ["verbose", "help", "dry-run"],
   alias: {
-    f: 'file',
-    o: 'output',
-    v: 'verbose',
-    h: 'help',
-    d: 'dry-run',
+    f: "file",
+    o: "output",
+    v: "verbose",
+    h: "help",
+    d: "dry-run",
   },
   default: {
-    output: '',
+    output: "",
     verbose: false,
     help: false,
-    'dry-run': false,
+    "dry-run": false,
   },
 });
 
 // Show help message
 if (argv.help || !argv.file) {
   console.log(`
-${chalk.bold('AI Code Improvement')}
+${chalk.bold("AI Code Improvement")}
 
 This tool uses OpenAI to analyze and improve a specific file.
 
-${chalk.bold('Usage:')}
+${chalk.bold("Usage:")}
   npx tsx scripts/ai-code-improvement.mjs --file <filepath> [options]
 
-${chalk.bold('Options:')}
+${chalk.bold("Options:")}
   -f, --file <filepath>    Path to the file to analyze and improve (required)
   -o, --output <filepath>  Output path for improved code (defaults to modifying the input file)
   -d, --dry-run            Don't write changes, just show the improvements
   -v, --verbose            Show detailed logs during analysis
   -h, --help               Show this help message
 
-${chalk.bold('Examples:')}
+${chalk.bold("Examples:")}
   npx tsx scripts/ai-code-improvement.mjs --file lib/utils.ts --dry-run
   npx tsx scripts/ai-code-improvement.mjs --file components/message.tsx --output components/message.improved.tsx
   `);
@@ -61,7 +61,7 @@ const openai = new OpenAI({
 
 // Configuration
 const CONFIG = {
-  model: 'gpt-4-turbo',
+  model: "gpt-4-turbo",
   maxTokens: 4000,
 };
 
@@ -79,7 +79,7 @@ async function improveCode() {
     }
 
     // Read file content
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const fileContent = fs.readFileSync(filePath, "utf-8");
     const fileExt = path.extname(filePath);
     const fileName = path.basename(filePath);
 
@@ -101,7 +101,7 @@ async function improveCode() {
     );
 
     if (!improvedCode) {
-      console.error(chalk.red('Error: Failed to improve code'));
+      console.error(chalk.red("Error: Failed to improve code"));
       process.exit(1);
     }
 
@@ -109,17 +109,17 @@ async function improveCode() {
     const outputPath = argv.output || filePath;
 
     // Save the improved code or show diff
-    if (argv['dry-run']) {
-      console.log(chalk.yellow('\n=== ORIGINAL CODE ===\n'));
+    if (argv["dry-run"]) {
+      console.log(chalk.yellow("\n=== ORIGINAL CODE ===\n"));
       console.log(fileContent);
-      console.log(chalk.green('\n=== IMPROVED CODE ===\n'));
+      console.log(chalk.green("\n=== IMPROVED CODE ===\n"));
       console.log(improvedCode);
     } else {
       fs.writeFileSync(outputPath, improvedCode);
       console.log(chalk.green(`✅ Code improved and saved to: ${outputPath}`));
     }
   } catch (error) {
-    console.error(chalk.red('Error during code improvement:'), error);
+    console.error(chalk.red("Error during code improvement:"), error);
     process.exit(1);
   }
 }
@@ -127,25 +127,25 @@ async function improveCode() {
 // Helper function to determine file type
 function getFileType(fileExt) {
   const typeMap = {
-    '.js': 'JavaScript',
-    '.jsx': 'React JavaScript',
-    '.ts': 'TypeScript',
-    '.tsx': 'React TypeScript',
-    '.css': 'CSS',
-    '.scss': 'SCSS',
-    '.html': 'HTML',
-    '.json': 'JSON',
-    '.md': 'Markdown',
+    ".js": "JavaScript",
+    ".jsx": "React JavaScript",
+    ".ts": "TypeScript",
+    ".tsx": "React TypeScript",
+    ".css": "CSS",
+    ".scss": "SCSS",
+    ".html": "HTML",
+    ".json": "JSON",
+    ".md": "Markdown",
   };
 
-  return typeMap[fileExt] || 'Unknown';
+  return typeMap[fileExt] || "Unknown";
 }
 
 // Function to analyze and improve code
 async function analyzeAndImprove(code, fileType, fileName) {
   try {
     if (argv.verbose) {
-      console.log(chalk.gray('Sending code for analysis and improvement...'));
+      console.log(chalk.gray("Sending code for analysis and improvement..."));
     }
 
     // Generate a prompt based on the file type
@@ -178,7 +178,7 @@ IMPORTANT: Respond ONLY with the improved code, without explanations or commenta
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: CONFIG.maxTokens,
     });
 
@@ -189,7 +189,7 @@ IMPORTANT: Respond ONLY with the improved code, without explanations or commenta
 
     return extractedCode;
   } catch (error) {
-    console.error(chalk.red('Error analyzing and improving code:'), error);
+    console.error(chalk.red("Error analyzing and improving code:"), error);
     return null;
   }
 }

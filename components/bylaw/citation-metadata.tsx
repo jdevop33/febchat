@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface CitationMetadataProps {
   effectiveDate?: string;
@@ -24,7 +24,7 @@ export function CitationMetadata({
       )}
       {isConsolidated && (
         <span className="rounded bg-purple-100 px-2 py-0.5 text-xs dark:bg-purple-900/40">
-          Consolidated{consolidatedDate ? `: ${consolidatedDate}` : ''}
+          Consolidated{consolidatedDate ? `: ${consolidatedDate}` : ""}
         </span>
       )}
       <span>{formattedSection}</span>

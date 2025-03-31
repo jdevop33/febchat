@@ -2,8 +2,8 @@
  * API batching utilities for optimizing LLM API calls
  */
 
-import { cache } from 'react';
-import { profiler } from './profiler';
+import { cache } from "react";
+import { profiler } from "./profiler";
 
 type BatchOptions = {
   maxBatchSize?: number;
@@ -45,7 +45,7 @@ export class APIBatcher<T, R> {
    * Adds a request to the batch queue
    */
   public async add(input: T): Promise<R> {
-    this.profilerInstance.start('batch-queue-time');
+    this.profilerInstance.start("batch-queue-time");
 
     return new Promise<R>((resolve, reject) => {
       this.queue.push({ input, resolve, reject });
@@ -91,7 +91,7 @@ export class APIBatcher<T, R> {
 
     const inputs = batch.map((item) => item.input);
 
-    this.profilerInstance.start('batch-processing-time');
+    this.profilerInstance.start("batch-processing-time");
 
     try {
       // Process the batch with retries
@@ -99,16 +99,16 @@ export class APIBatcher<T, R> {
 
       // Resolve each promise with its corresponding result
       batch.forEach((item, index) => {
-        const queueTime = this.profilerInstance.end('batch-queue-time');
-        this.profilerInstance.start('batch-process-individual');
+        const queueTime = this.profilerInstance.end("batch-queue-time");
+        this.profilerInstance.start("batch-process-individual");
         item.resolve(results[index]);
-        this.profilerInstance.end('batch-process-individual');
+        this.profilerInstance.end("batch-process-individual");
       });
     } catch (error) {
       // If batch processing fails, reject all promises
       batch.forEach((item) => item.reject(error));
     } finally {
-      this.profilerInstance.end('batch-processing-time');
+      this.profilerInstance.end("batch-processing-time");
     }
   }
 

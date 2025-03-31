@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import type { ChatRequestOptions, Message } from 'ai';
-import { PreviewMessage, ThinkingMessage } from './message';
-import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Overview } from '@/components/app/overview';
-import { memo } from 'react';
-import type { Vote } from '@/lib/db/schema';
-import equal from 'fast-deep-equal';
+import { Overview } from "@/components/app/overview";
+import { useScrollToBottom } from "@/hooks/use-scroll-to-bottom";
+import type { Vote } from "@/lib/db/schema";
+import type { ChatRequestOptions, Message } from "ai";
+import equal from "fast-deep-equal";
+import { memo } from "react";
+import { PreviewMessage, ThinkingMessage } from "./message";
 
 interface MessagesProps {
   chatId: string;
@@ -63,7 +63,7 @@ function PureMessages({
 
       {isLoading &&
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'user' && <ThinkingMessage />}
+        messages[messages.length - 1].role === "user" && <ThinkingMessage />}
 
       <div
         ref={messagesEndRef}

@@ -1,32 +1,32 @@
 // @ts-nocheck
 /*
- * This file has pending TypeScript fixes. 
+ * This file has pending TypeScript fixes.
  * We're temporarily disabling type checking to prevent blocking development.
  * TODO: Fix TypeScript errors in this file progressively.
  * Key errors identified:
- * - Parameter 'item' implicitly has an 'any' type 
+ * - Parameter 'item' implicitly has an 'any' type
  * - Ensure mockBylawData is properly imported
- * - Fix error handling types 
+ * - Fix error handling types
  * - Ensure match objects have proper type definitions
  * - Fix BylawSearchFilters property access issues
  */
 
-import { getPineconeIndex } from './pinecone-client';
-import { logger } from '../monitoring/logger';
+import { logger } from "../monitoring/logger";
+import { mockBylawData } from "./index";
+import { getPineconeIndex } from "./pinecone-client";
 import type {
+  BylawChunk,
+  BylawSearchFilters,
   BylawSearchOptions,
   BylawSearchResult,
-  BylawSearchFilters,
   ChunkMetadata,
-  BylawChunk,
-} from './types';
-import { mockBylawData } from './index';
+} from "./types";
 
 // Import embedding models
-import { getEmbeddingsModel, EmbeddingProvider } from './embedding-models';
+import { EmbeddingProvider, getEmbeddingsModel } from "./embedding-models";
 
 // Add these at the appropriate location in the import section
-import { LRUCache } from 'lru-cache';
+import { LRUCache } from "lru-cache";
 
 // Improve the cache implementation for better performance
 const CACHE_TTL = 10 * 60 * 1000; // Cache results for 10 minutes
@@ -42,7 +42,7 @@ interface CacheEntry {
   results: BylawSearchResult[];
   timestamp: number;
   isFallback?: boolean;
-  source?: 'pinecone' | 'keyword' | 'static';
+  source?: "pinecone" | "keyword" | "static";
 }
 
 /**
@@ -83,7 +83,7 @@ export async function searchBylaws(
   // Start performance tracking
   const startTime = Date.now();
   let attemptCount = 0;
-  
+
   async function attemptSearch(): Promise<BylawSearchResult[]> {
     attemptCount++;
     try {
@@ -95,7 +95,7 @@ export async function searchBylaws(
         if (cachedResult && isCacheValid(cachedResult)) {
           logger.info(
             `Cache hit for query: "${query}" (${Date.now() - startTime}ms)`,
-            { source: cachedResult.source || 'unknown' }
+            { source: cachedResult.source || "unknown" },
           );
           return cachedResult.results;
         }
@@ -110,7 +110,7 @@ export async function searchBylaws(
       try {
         if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
           logger.info(`Attempting Pinecone search for: "${query}"`);
-          
+
           const results = await performPineconeSearch(
             query,
             filters,
@@ -124,38 +124,46 @@ export async function searchBylaws(
             searchCache.set(cacheKey, {
               results,
               timestamp: Date.now(),
-              source: 'pinecone',
+              source: "pinecone",
             });
           }
 
-          logger.info(`Pinecone search completed in ${Date.now() - startTime}ms`);
+          logger.info(
+            `Pinecone search completed in ${Date.now() - startTime}ms`,
+          );
           return results;
         }
       } catch (error) {
         const errorObj =
           error instanceof Error ? error : new Error(String(error));
-        
+
         logger.error(
           errorObj,
           `Pinecone search failed (attempt ${attemptCount}/${MAX_RETRY_ATTEMPTS + 1})`,
         );
-        
+
         // Retry logic for Pinecone
         if (attemptCount <= MAX_RETRY_ATTEMPTS) {
           logger.info(`Retrying Pinecone search (attempt ${attemptCount + 1})`);
           return attemptSearch();
         }
-        
-        logger.warn('Max retry attempts reached, falling back to keyword search');
+
+        logger.warn(
+          "Max retry attempts reached, falling back to keyword search",
+        );
       }
 
       // Fall back to keyword search
-      logger.info('Initiating fallback keyword search');
+      logger.info("Initiating fallback keyword search");
       try {
-        const fallbackResults = await performKeywordSearch(query, filters, limit);
-        
+        const fallbackResults = await performKeywordSearch(
+          query,
+          filters,
+          limit,
+        );
+
         logger.info(`Fallback search completed in ${Date.now() - startTime}ms`);
-        
+
         // Cache fallback results if caching is enabled
         if (options?.useCache !== false) {
           const cacheKey = generateCacheKey(query, options);
@@ -163,20 +171,22 @@ export async function searchBylaws(
             results: fallbackResults,
             timestamp: Date.now(),
             isFallback: true,
-            source: 'keyword',
+            source: "keyword",
           });
         }
-        
+
         return fallbackResults;
       } catch (fallbackError) {
         logger.error(
-          fallbackError instanceof Error ? fallbackError : new Error(String(fallbackError)),
-          'Enhanced keyword search failed, using last resort search'
+          fallbackError instanceof Error
+            ? fallbackError
+            : new Error(String(fallbackError)),
+          "Enhanced keyword search failed, using last resort search",
         );
-        
+
         // Last resort: use static data files
         const staticResults = await performStaticFileSearch(query, limit);
-        
+
         // Cache static results if caching is enabled
         if (options?.useCache !== false) {
           const cacheKey = generateCacheKey(query, options);
@@ -184,19 +194,21 @@ export async function searchBylaws(
             results: staticResults,
             timestamp: Date.now(),
             isFallback: true,
-            source: 'static',
+            source: "static",
           });
         }
-        
-        logger.info(`Last resort search completed in ${Date.now() - startTime}ms`);
+
+        logger.info(
+          `Last resort search completed in ${Date.now() - startTime}ms`,
+        );
         return staticResults;
       }
     } catch (error) {
       logger.error(
         error instanceof Error ? error : new Error(String(error)),
-        'All search methods failed'
+        "All search methods failed",
       );
-      
+
       // Absolute last resort: return empty results rather than failing
       return [];
     }
@@ -220,12 +232,14 @@ async function performPineconeSearch(
   // Get Pinecone index
   const index = getPineconeIndex();
 
+  // ** REVERTED CHANGE: Use environment variable or default logic **
   // Get embeddings model based on environment configuration
   const embeddings = getEmbeddingsModel(
-    process.env.EMBEDDING_PROVIDER === 'openai'
+    process.env.EMBEDDING_PROVIDER === "openai"
       ? EmbeddingProvider.OPENAI
       : EmbeddingProvider.LLAMAINDEX,
   );
+  // const embeddings = getEmbeddingsModel(EmbeddingProvider.LLAMAINDEX); // Reverted this line
 
   // Generate embedding for query
   const queryEmbedding = await embeddings.embedQuery(query);
@@ -263,7 +277,7 @@ async function performPineconeSearch(
     .slice(0, limit) // Limit results
     .map((match: any) => ({
       id: match.id,
-      text: match.text || '',
+      text: match.text || "",
       metadata: match.metadata || {},
       score: match.score || 0,
     }));
@@ -281,15 +295,15 @@ async function performKeywordSearch(
 ): Promise<BylawSearchResult[]> {
   logger.info(`Performing keyword search for: "${query}"`);
 
-  logger.warn('Keyword search fallback is being used - results may be limited');
+  logger.warn("Keyword search fallback is being used - results may be limited");
 
   try {
     // Read actual bylaw data from files - more reliable than mock data
-    const fs = require('node:fs');
-    const path = require('node:path');
+    const fs = require("node:fs");
+    const path = require("node:path");
 
     // Get paths to actual bylaw PDF files
-    const pdfDirectory = path.join(process.cwd(), 'public', 'pdfs');
+    const pdfDirectory = path.join(process.cwd(), "public", "pdfs");
 
     // Check if directory exists
     if (!fs.existsSync(pdfDirectory)) {
@@ -300,7 +314,7 @@ async function performKeywordSearch(
     // Get list of PDF files
     const pdfFiles = fs
       .readdirSync(pdfDirectory)
-      .filter((file: string) => file.toLowerCase().endsWith('.pdf'))
+      .filter((file: string) => file.toLowerCase().endsWith(".pdf"))
       .map((file: string) => ({
         filename: file,
         bylawNumber: extractBylawNumber(file),
@@ -309,58 +323,64 @@ async function performKeywordSearch(
 
     // Apply filters if provided
     let filteredFiles = [...pdfFiles];
-    
+
     if (filters) {
       if (filters.bylawNumber) {
         filteredFiles = filteredFiles.filter(
-          (file: any) => file.bylawNumber === filters.bylawNumber
+          (file: any) => file.bylawNumber === filters.bylawNumber,
         );
       }
-      
+
       // Add other filter types as needed
     }
 
     // Filter by query
     const queryLower = query.toLowerCase();
-    const queryTerms = queryLower.split(/\s+/).filter(term => term.length > 2);
+    const queryTerms = queryLower
+      .split(/\s+/)
+      .filter((term) => term.length > 2);
 
     // Score files based on term matches (more complex matching)
-    const scoredFiles = filteredFiles.map((file: any) => {
-      let score = 0;
-      const filenameLower = file.filename.toLowerCase();
-      const titleLower = (file.title || '').toLowerCase();
-      
-      // Direct match in filename or title is high score
-      if (filenameLower.includes(queryLower) || titleLower.includes(queryLower)) {
-        score += 0.8;
-      }
-      
-      // Score individual term matches
-      for (const term of queryTerms) {
-        if (filenameLower.includes(term)) score += 0.3;
-        if (titleLower.includes(term)) score += 0.4;
-      }
-      
-      return {
-        ...file,
-        score: Math.min(score, 1.0) // Cap score at 1.0
-      };
-    })
-    .filter((file: any) => file.score > 0) // Only keep matches
-    .sort((a: any, b: any) => b.score - a.score) // Sort by score
-    .slice(0, limit);
+    const scoredFiles = filteredFiles
+      .map((file: any) => {
+        let score = 0;
+        const filenameLower = file.filename.toLowerCase();
+        const titleLower = (file.title || "").toLowerCase();
+
+        // Direct match in filename or title is high score
+        if (
+          filenameLower.includes(queryLower) ||
+          titleLower.includes(queryLower)
+        ) {
+          score += 0.8;
+        }
+
+        // Score individual term matches
+        for (const term of queryTerms) {
+          if (filenameLower.includes(term)) score += 0.3;
+          if (titleLower.includes(term)) score += 0.4;
+        }
+
+        return {
+          ...file,
+          score: Math.min(score, 1.0), // Cap score at 1.0
+        };
+      })
+      .filter((file: any) => file.score > 0) // Only keep matches
+      .sort((a: any, b: any) => b.score - a.score) // Sort by score
+      .slice(0, limit);
 
     // Convert to search results
     return scoredFiles.map((file: any) => ({
-      text: `Bylaw ${file.bylawNumber || 'Unknown'}: ${file.title || file.filename}`,
+      text: `Bylaw ${file.bylawNumber || "Unknown"}: ${file.title || file.filename}`,
       metadata: {
-        bylawNumber: file.bylawNumber || 'Unknown',
+        bylawNumber: file.bylawNumber || "Unknown",
         title: file.title || file.filename,
-        section: '',
+        section: "",
         filename: file.filename,
         url: `/pdfs/${file.filename}`,
-        officialUrl: `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${file.bylawNumber || 'unknown'}`,
-        isConsolidated: file.filename.toLowerCase().includes('consolidat'),
+        officialUrl: `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${file.bylawNumber || "unknown"}`,
+        isConsolidated: file.filename.toLowerCase().includes("consolidat"),
       },
       score: file.score,
       id: `file-${file.bylawNumber || file.filename}`,
@@ -379,15 +399,17 @@ async function performStaticFileSearch(
   query: string,
   limit = 5,
 ): Promise<BylawSearchResult[]> {
-  logger.warn('Using static file search - last resort!');
-  
+  logger.warn("Using static file search - last resort!");
+
   // Return basic results from the mock data
   return mockBylawData
     .filter((item: BylawChunk) => {
       const queryLower = query.toLowerCase();
-      return item.text.toLowerCase().includes(queryLower) ||
-        (item.metadata.title?.toLowerCase().includes(queryLower)) ||
-        (item.metadata.bylawNumber?.toLowerCase().includes(queryLower));
+      return (
+        item.text.toLowerCase().includes(queryLower) ||
+        item.metadata.title?.toLowerCase().includes(queryLower) ||
+        item.metadata.bylawNumber?.toLowerCase().includes(queryLower)
+      );
     })
     .slice(0, limit)
     .map((chunk: BylawChunk, index: number) => ({
@@ -411,9 +433,9 @@ function extractBylawNumber(filename: string): string | null {
  */
 function formatBylawTitle(filename: string): string {
   return filename
-    .replace(/\.pdf$/i, '')
-    .replace(/-/g, ' ')
-    .replace(/\d{4}/, '')
+    .replace(/\.pdf$/i, "")
+    .replace(/-/g, " ")
+    .replace(/\d{4}/, "")
     .trim();
 }
 
@@ -423,18 +445,18 @@ function formatBylawTitle(filename: string): string {
 export async function getRealBylawData(): Promise<BylawChunk[]> {
   try {
     // Attempt to load from verified bylaw answers file
-    const fs = require('node:fs');
-    const path = require('node:path');
+    const fs = require("node:fs");
+    const path = require("node:path");
 
     const verifiedDataPath = path.join(
       process.cwd(),
-      'data',
-      'verified-bylaw-answers.json',
+      "data",
+      "verified-bylaw-answers.json",
     );
 
     if (fs.existsSync(verifiedDataPath)) {
       const verifiedData = JSON.parse(
-        fs.readFileSync(verifiedDataPath, 'utf8'),
+        fs.readFileSync(verifiedDataPath, "utf8"),
       );
 
       if (Array.isArray(verifiedData) && verifiedData.length > 0) {
@@ -444,25 +466,25 @@ export async function getRealBylawData(): Promise<BylawChunk[]> {
 
         // Convert to BylawChunk format
         return verifiedData.map((item: any) => ({
-          text: item.text || item.content || item.answer || '',
+          text: item.text || item.content || item.answer || "",
           metadata: {
-            bylawNumber: item.bylawNumber || '',
-            title: item.title || '',
-            section: item.section || '',
-            sectionTitle: item.sectionTitle || '',
-            category: item.category || '',
-            url: item.url || '',
-            filename: item.filename || '',
+            bylawNumber: item.bylawNumber || "",
+            title: item.title || "",
+            section: item.section || "",
+            sectionTitle: item.sectionTitle || "",
+            category: item.category || "",
+            url: item.url || "",
+            filename: item.filename || "",
           },
         }));
       }
     }
 
     // Fallback to empty array if no verified data
-    logger.warn('No verified bylaw data found, using empty dataset');
+    logger.warn("No verified bylaw data found, using empty dataset");
     return [];
   } catch (error) {
-    logger.error('Error loading real bylaw data:', error);
+    logger.error("Error loading real bylaw data:", error);
     return [];
   }
 }
@@ -470,24 +492,26 @@ export async function getRealBylawData(): Promise<BylawChunk[]> {
 /**
  * Get a bylaw by ID directly from Pinecone
  */
-export async function getBylawById(id: string): Promise<BylawSearchResult | null> {
+export async function getBylawById(
+  id: string,
+): Promise<BylawSearchResult | null> {
   try {
     logger.info(`Fetching bylaw with ID: ${id}`);
-    
+
     const index = getPineconeIndex();
-    
+
     const response = await index.fetch({
       ids: [id],
       includeMetadata: true,
     });
-    
+
     if (!response.vectors || !response.vectors[id]) {
       logger.warn(`No bylaw found with ID: ${id}`);
       return null;
     }
-    
+
     const vector = response.vectors[id];
-    
+
     return {
       text: vector.metadata?.text as string,
       metadata: vector.metadata as ChunkMetadata,

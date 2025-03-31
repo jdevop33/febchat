@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import React from "react";
 
 interface CitationExcerptProps {
   excerpt?: string;
@@ -25,8 +25,8 @@ export function CitationExcerpt({
       {excerpt && (
         <div
           className={cn(
-            'mt-2 border-l-2 border-blue-300 pl-3 text-sm dark:border-blue-700',
-            expanded ? '' : 'line-clamp-3',
+            "mt-2 border-l-2 border-blue-300 pl-3 text-sm dark:border-blue-700",
+            expanded ? "" : "line-clamp-3",
           )}
           aria-hidden="true"
           role="presentation"
@@ -51,7 +51,7 @@ export function CitationExcerpt({
 
           {financialImpact && (
             <div className="rounded border-l-2 border-amber-400 bg-amber-50 p-2 dark:bg-amber-900/20">
-              <span className="font-medium">Financial Impact:</span>{' '}
+              <span className="font-medium">Financial Impact:</span>{" "}
               {financialImpact}
             </div>
           )}

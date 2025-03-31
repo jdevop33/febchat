@@ -1,29 +1,29 @@
 #!/usr/bin/env tsx
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
-import { glob } from 'glob';
-import chalk from 'chalk';
-import minimist from 'minimist';
+import { exec } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { promisify } from "node:util";
+import chalk from "chalk";
+import { glob } from "glob";
+import minimist from "minimist";
 
 const execAsync = promisify(exec);
 
 // Configuration
 const CONFIG = {
   // Directories to include in the analysis
-  includeDirs: ['app', 'components', 'lib', 'hooks', 'types', 'artifacts'],
+  includeDirs: ["app", "components", "lib", "hooks", "types", "artifacts"],
   // Files or directories to exclude
   excludePatterns: [
-    'node_modules',
-    '.next',
-    '**/*.test.ts',
-    '**/*.test.tsx',
-    'public',
+    "node_modules",
+    ".next",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "public",
   ],
   // File extensions to analyze
-  extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  extensions: [".ts", ".tsx", ".js", ".jsx"],
 };
 
 interface ImportData {
@@ -56,11 +56,11 @@ interface AuditResult {
 }
 
 async function runCodeAudit() {
-  console.log(chalk.blue('🔍 Starting code audit...'));
+  console.log(chalk.blue("🔍 Starting code audit..."));
 
   // Parse command-line arguments
   const args = minimist(process.argv.slice(2));
-  const outputFile = args.output || 'code-audit-results.json';
+  const outputFile = args.output || "code-audit-results.json";
   const verbose = args.verbose || false;
 
   // Result object
@@ -79,16 +79,16 @@ async function runCodeAudit() {
 
   try {
     // 1. Find all source files
-    console.log(chalk.blue('📁 Scanning project files...'));
+    console.log(chalk.blue("📁 Scanning project files..."));
     const allFiles = await findAllFiles();
     console.log(chalk.green(`Found ${allFiles.length} source files`));
 
     // 2. Parse imports and exports
-    console.log(chalk.blue('📊 Analyzing imports and exports...'));
+    console.log(chalk.blue("📊 Analyzing imports and exports..."));
     const importMap = await buildImportMap(allFiles);
 
     // 3. Identify unused files
-    console.log(chalk.blue('🗑️ Identifying unused files...'));
+    console.log(chalk.blue("🗑️ Identifying unused files..."));
     result.unusedFiles = await findUnusedFiles(allFiles, importMap);
     console.log(
       chalk.yellow(
@@ -97,7 +97,7 @@ async function runCodeAudit() {
     );
 
     // 4. Find uncovered components by running Jest coverage
-    console.log(chalk.blue('🧪 Checking test coverage...'));
+    console.log(chalk.blue("🧪 Checking test coverage..."));
     try {
       const coverageResult = await checkTestCoverage();
       result.uncoveredFiles = coverageResult.uncoveredFiles;
@@ -115,13 +115,13 @@ async function runCodeAudit() {
       );
     } catch (error) {
       console.error(
-        chalk.red('Failed to check test coverage. Is Jest installed?'),
+        chalk.red("Failed to check test coverage. Is Jest installed?"),
       );
       console.error(error);
     }
 
     // 5. Detect duplicate functionality
-    console.log(chalk.blue('🔄 Detecting duplicate functionality...'));
+    console.log(chalk.blue("🔄 Detecting duplicate functionality..."));
     result.duplicateFunctionality = await detectDuplicates(allFiles);
     console.log(
       chalk.yellow(
@@ -130,7 +130,7 @@ async function runCodeAudit() {
     );
 
     // 6. Build component dependency graph
-    console.log(chalk.blue('🔗 Building component dependency graph...'));
+    console.log(chalk.blue("🔗 Building component dependency graph..."));
     result.componentDependencies = await buildDependencyGraph(
       allFiles,
       importMap,
@@ -143,26 +143,26 @@ async function runCodeAudit() {
     );
 
     // 8. Generate visual dependency graph
-    console.log(chalk.blue('📊 Generating dependency visualization...'));
+    console.log(chalk.blue("📊 Generating dependency visualization..."));
     await generateDependencyVisualization(
       result.componentDependencies,
-      'dependency-graph.html',
+      "dependency-graph.html",
     );
     console.log(
-      chalk.green('✅ Dependency graph generated as dependency-graph.html'),
+      chalk.green("✅ Dependency graph generated as dependency-graph.html"),
     );
 
     // Print summary to console
     printSummary(result);
   } catch (error) {
-    console.error(chalk.red('❌ Error during code audit:'), error);
+    console.error(chalk.red("❌ Error during code audit:"), error);
     process.exit(1);
   }
 }
 
 async function findAllFiles(): Promise<string[]> {
   const patterns = CONFIG.includeDirs.map(
-    (dir) => `${dir}/**/*{${CONFIG.extensions.join(',')}}`,
+    (dir) => `${dir}/**/*{${CONFIG.extensions.join(",")}}`,
   );
 
   const files = await glob(patterns, {
@@ -181,7 +181,7 @@ async function buildImportMap(
 
   for (const file of files) {
     try {
-      const content = fs.readFileSync(file, 'utf-8');
+      const content = fs.readFileSync(file, "utf-8");
       const imports = extractImports(content, file);
 
       imports.forEach((importData) => {
@@ -230,13 +230,14 @@ function extractImports(content: string, filePath: string): ImportData[] {
 }
 
 function resolveImportPath(importPath: string, importingFile: string): string {
-  if (importPath.startsWith('.')) {
+  if (importPath.startsWith(".")) {
     // Relative import
     const dirName = path.dirname(importingFile);
     return path.resolve(dirName, importPath);
-  }if (importPath.startsWith('@/')) {
+  }
+  if (importPath.startsWith("@/")) {
     // Alias import (@/ usually points to the src directory)
-    return path.resolve(process.cwd(), importPath.replace('@/', ''));
+    return path.resolve(process.cwd(), importPath.replace("@/", ""));
   }
 
   // External package or cannot be resolved
@@ -252,17 +253,17 @@ async function findUnusedFiles(
   for (const file of allFiles) {
     // Skip entry points like pages, layouts, etc.
     if (
-      file.includes('page.') ||
-      file.includes('layout.') ||
-      file.includes('route.')
+      file.includes("page.") ||
+      file.includes("layout.") ||
+      file.includes("route.")
     ) {
       continue;
     }
 
     // Skip index files which are usually entry points
     if (
-      path.basename(file) === 'index.ts' ||
-      path.basename(file) === 'index.tsx'
+      path.basename(file) === "index.ts" ||
+      path.basename(file) === "index.tsx"
     ) {
       continue;
     }
@@ -273,7 +274,7 @@ async function findUnusedFiles(
       const resolvedPath = path.normalize(importPath);
       return (
         resolvedPath === normalizedPath ||
-        resolvedPath === normalizedPath.replace(/(\.ts|\.tsx)$/, '') ||
+        resolvedPath === normalizedPath.replace(/(\.ts|\.tsx)$/, "") ||
         normalizedPath.endsWith(resolvedPath)
       );
     });
@@ -289,13 +290,13 @@ async function findUnusedFiles(
 async function checkTestCoverage() {
   try {
     // Try to run Jest with coverage
-    await execAsync('npx jest --coverage --silent');
+    await execAsync("npx jest --coverage --silent");
 
     // Read coverage report
     const coverageJson = JSON.parse(
       fs.readFileSync(
-        path.join(process.cwd(), 'coverage/coverage-final.json'),
-        'utf-8',
+        path.join(process.cwd(), "coverage/coverage-final.json"),
+        "utf-8",
       ),
     );
 
@@ -311,7 +312,7 @@ async function checkTestCoverage() {
         : 0;
       const coveredStatements = fileCoverage.s
         ? Object.values(fileCoverage.s).filter(
-            (v): v is number => typeof v === 'number' && v > 0,
+            (v): v is number => typeof v === "number" && v > 0,
           ).length
         : 0;
 
@@ -336,10 +337,10 @@ async function checkTestCoverage() {
     };
   } catch (error) {
     // If Jest fails or isn't installed, use a mock approach to estimate coverage
-    console.warn('Jest not available, simulating coverage check...');
+    console.warn("Jest not available, simulating coverage check...");
 
     const allFiles = await findAllFiles();
-    const testFiles = await glob('**/*.{test,spec}.{ts,tsx,js,jsx}', {
+    const testFiles = await glob("**/*.{test,spec}.{ts,tsx,js,jsx}", {
       ignore: CONFIG.excludePatterns,
       nodir: true,
       absolute: true,
@@ -347,7 +348,7 @@ async function checkTestCoverage() {
 
     // Crude estimation: check which files have corresponding test files
     const uncoveredFiles = allFiles.filter((file) => {
-      const baseName = path.basename(file).replace(/\.(ts|tsx|js|jsx)$/, '');
+      const baseName = path.basename(file).replace(/\.(ts|tsx|js|jsx)$/, "");
       return !testFiles.some(
         (testFile) =>
           testFile.includes(`${baseName}.test`) ||
@@ -369,8 +370,8 @@ async function checkTestCoverage() {
 
 async function detectDuplicates(
   files: string[],
-): Promise<AuditResult['duplicateFunctionality']> {
-  const duplicates: AuditResult['duplicateFunctionality'] = [];
+): Promise<AuditResult["duplicateFunctionality"]> {
+  const duplicates: AuditResult["duplicateFunctionality"] = [];
 
   // Extract functions from files
   const functionsMap = new Map<
@@ -383,7 +384,7 @@ async function detectDuplicates(
 
   for (const file of files) {
     try {
-      const content = fs.readFileSync(file, 'utf-8');
+      const content = fs.readFileSync(file, "utf-8");
       const functionMatches = extractFunctions(content);
 
       functionMatches.forEach((functionMatch) => {
@@ -600,7 +601,7 @@ function getComponentName(filePath: string): string | null {
   if (!filePath) return null;
 
   // Component files typically end with .tsx and are PascalCased
-  const basename = path.basename(filePath).replace(/\.(ts|tsx|js|jsx)$/, '');
+  const basename = path.basename(filePath).replace(/\.(ts|tsx|js|jsx)$/, "");
 
   // Check if the filename follows PascalCase naming convention
   if (/^[A-Z][a-zA-Z0-9]*$/.test(basename)) {
@@ -611,7 +612,7 @@ function getComponentName(filePath: string): string | null {
   if (filePath.startsWith(process.cwd())) {
     return filePath
       .substring(process.cwd().length + 1)
-      .replace(/\.(ts|tsx|js|jsx)$/, '');
+      .replace(/\.(ts|tsx|js|jsx)$/, "");
   }
 
   return null;
@@ -813,17 +814,17 @@ async function generateDependencyVisualization(
 }
 
 function printSummary(result: AuditResult) {
-  console.log(`\n${chalk.blue.bold('📋 CODE AUDIT SUMMARY')}`);
-  console.log(chalk.blue('====================\n'));
+  console.log(`\n${chalk.blue.bold("📋 CODE AUDIT SUMMARY")}`);
+  console.log(chalk.blue("====================\n"));
 
   // 1. Unused Files
-  console.log(chalk.yellow.bold('🗑️ Unused Files:'));
+  console.log(chalk.yellow.bold("🗑️ Unused Files:"));
   if (result.unusedFiles.length === 0) {
-    console.log(chalk.green('  None found'));
+    console.log(chalk.green("  None found"));
   } else {
     console.log(chalk.red(`  ${result.unusedFiles.length} unused files found`));
     result.unusedFiles.slice(0, 5).forEach((file) => {
-      console.log(`  - ${file.replace(process.cwd(), '')}`);
+      console.log(`  - ${file.replace(process.cwd(), "")}`);
     });
     if (result.unusedFiles.length > 5) {
       console.log(`  ... and ${result.unusedFiles.length - 5} more`);
@@ -831,7 +832,7 @@ function printSummary(result: AuditResult) {
   }
 
   // 2. Test Coverage
-  console.log(`\n${chalk.yellow.bold('🧪 Test Coverage:')}`);
+  console.log(`\n${chalk.yellow.bold("🧪 Test Coverage:")}`);
   console.log(
     `  Overall: ${result.coverageStats.percentage.toFixed(2)}% (${result.coverageStats.covered}/${result.coverageStats.total} files)`,
   );
@@ -840,7 +841,7 @@ function printSummary(result: AuditResult) {
       chalk.red(`  ${result.uncoveredFiles.length} files with no tests`),
     );
     result.uncoveredFiles.slice(0, 5).forEach((file) => {
-      console.log(`  - ${file.replace(process.cwd(), '')}`);
+      console.log(`  - ${file.replace(process.cwd(), "")}`);
     });
     if (result.uncoveredFiles.length > 5) {
       console.log(`  ... and ${result.uncoveredFiles.length - 5} more`);
@@ -848,9 +849,9 @@ function printSummary(result: AuditResult) {
   }
 
   // 3. Duplicate Functionality
-  console.log(`\n${chalk.yellow.bold('🔄 Potential Code Duplication:')}`);
+  console.log(`\n${chalk.yellow.bold("🔄 Potential Code Duplication:")}`);
   if (result.duplicateFunctionality.length === 0) {
-    console.log(chalk.green('  None found'));
+    console.log(chalk.green("  None found"));
   } else {
     console.log(
       chalk.red(
@@ -864,7 +865,7 @@ function printSummary(result: AuditResult) {
       dup.files
         .slice(0, 2)
         .forEach((file) =>
-          console.log(`    ${file.replace(process.cwd(), '')}`),
+          console.log(`    ${file.replace(process.cwd(), "")}`),
         );
     });
     if (result.duplicateFunctionality.length > 5) {
@@ -873,7 +874,7 @@ function printSummary(result: AuditResult) {
   }
 
   // 4. Component Dependencies
-  console.log(`\n${chalk.yellow.bold('🔗 Component Dependencies:')}`);
+  console.log(`\n${chalk.yellow.bold("🔗 Component Dependencies:")}`);
   const depCounts = Object.values(result.componentDependencies).map(
     (dep) => dep.dependsOn.length,
   );
@@ -888,7 +889,7 @@ function printSummary(result: AuditResult) {
     .sort((a, b) => b.dependedOnBy.length - a.dependedOnBy.length)
     .slice(0, 5);
 
-  console.log('  Most used components:');
+  console.log("  Most used components:");
   mostDepended.forEach((dep) => {
     console.log(
       `  - ${dep.component}: used by ${dep.dependedOnBy.length} components`,
@@ -900,7 +901,7 @@ function printSummary(result: AuditResult) {
     .sort((a, b) => b.dependsOn.length - a.dependsOn.length)
     .slice(0, 5);
 
-  console.log('  Components with most dependencies:');
+  console.log("  Components with most dependencies:");
   mostDependencies.forEach((dep) => {
     console.log(
       `  - ${dep.component}: depends on ${dep.dependsOn.length} components`,
@@ -908,10 +909,10 @@ function printSummary(result: AuditResult) {
   });
 
   console.log(
-    `\n${chalk.blue.bold('View full results in code-audit-results.json')}`,
+    `\n${chalk.blue.bold("View full results in code-audit-results.json")}`,
   );
   console.log(
-    chalk.blue.bold('View dependency graph in dependency-graph.html'),
+    chalk.blue.bold("View dependency graph in dependency-graph.html"),
   );
 }
 

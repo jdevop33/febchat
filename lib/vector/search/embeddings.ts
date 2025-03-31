@@ -1,8 +1,8 @@
 /**
  * Embedding utilities for vector search
  */
-import { OpenAIEmbeddings } from '@langchain/openai';
-import type { EmbeddingModel } from './types';
+import { OpenAIEmbeddings } from "@langchain/openai";
+import type { EmbeddingModel } from "./types";
 
 // Cached embeddings model
 let embeddingsModel: EmbeddingModel | null = null;
@@ -13,7 +13,7 @@ let embeddingsModel: EmbeddingModel | null = null;
 export function getEmbeddingsModel(): EmbeddingModel {
   if (!embeddingsModel) {
     embeddingsModel = new OpenAIEmbeddings({
-      modelName: 'text-embedding-3-small',
+      modelName: "text-embedding-3-small",
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
   }

@@ -8,20 +8,20 @@
  * pnpm tsx scripts/improved-bylaw-search.ts <query> [--category=<category>] [--bylaw=<bylawNum>]
  */
 
-import { Pinecone } from '@pinecone-database/pinecone';
-import dotenv from 'dotenv';
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import minimist from "minimist";
 import {
-  getEmbeddingsModel,
   EmbeddingProvider,
-} from '../lib/vector-search/embedding-models';
-import minimist from 'minimist';
+  getEmbeddingsModel,
+} from "../lib/vector-search/embedding-models";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Parse command line arguments
 const args = minimist(process.argv.slice(2));
-const query = args._.join(' ');
+const query = args._.join(" ");
 const bylawFilter = args.bylaw;
 const categoryFilter = args.category;
 
@@ -39,10 +39,10 @@ async function searchBylaws() {
 
     // Initialize Pinecone client
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     console.log(`Connecting to Pinecone index: ${indexName}`);
@@ -51,13 +51,13 @@ async function searchBylaws() {
 
     // Get embeddings model
     const embeddings = getEmbeddingsModel(
-      process.env.EMBEDDING_PROVIDER === 'openai'
+      process.env.EMBEDDING_PROVIDER === "openai"
         ? EmbeddingProvider.OPENAI
         : EmbeddingProvider.LLAMAINDEX,
     );
 
     // Generate query embedding
-    console.log('Generating embedding for query...');
+    console.log("Generating embedding for query...");
     const queryEmbedding = await embeddings.embedQuery(query);
 
     // Build filter
@@ -75,7 +75,7 @@ async function searchBylaws() {
     const filterOption = Object.keys(filter).length > 0 ? filter : undefined;
 
     // For greater accuracy, we'll use a two-step search process
-    console.log('Searching Pinecone...');
+    console.log("Searching Pinecone...");
 
     // First, retrieve results with broader search
     const searchResults = await index.query({
@@ -116,7 +116,7 @@ async function searchBylaws() {
         const bylawNumber = match.metadata.bylawNumber as string;
         const entry = bylawResults.get(bylawNumber) || {
           bylawNumber,
-          title: (match.metadata.title as string) || 'Unknown',
+          title: (match.metadata.title as string) || "Unknown",
           isConsolidated: (match.metadata.isConsolidated as boolean) || false,
           consolidatedDate: match.metadata.consolidatedDate as
             | string
@@ -137,7 +137,7 @@ async function searchBylaws() {
 
           entry.snippets.push({
             text: relevantText,
-            section: (match.metadata.section as string) || 'Unknown',
+            section: (match.metadata.section as string) || "Unknown",
             sectionTitle: match.metadata.sectionTitle as string,
             score: match.score || 0,
           });
@@ -151,7 +151,7 @@ async function searchBylaws() {
         (a, b) => b.score - a.score,
       );
 
-      console.log('\nTop matching bylaws:');
+      console.log("\nTop matching bylaws:");
 
       sortedResults.forEach((result, index) => {
         console.log(
@@ -163,7 +163,7 @@ async function searchBylaws() {
 
         if (result.isConsolidated) {
           console.log(
-            `   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ''}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ''}`,
+            `   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ""}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ""}`,
           );
         }
 
@@ -172,22 +172,22 @@ async function searchBylaws() {
           .sort((a, b) => b.score - a.score)
           .slice(0, 3);
 
-        console.log('\n   Top relevant sections:');
+        console.log("\n   Top relevant sections:");
         sortedSnippets.forEach((snippet, i) => {
           console.log(
-            `   ${i + 1}. Section ${snippet.section}${snippet.sectionTitle ? `: ${snippet.sectionTitle}` : ''}`,
+            `   ${i + 1}. Section ${snippet.section}${snippet.sectionTitle ? `: ${snippet.sectionTitle}` : ""}`,
           );
           console.log(`      "${snippet.text}"`);
           console.log(`      Score: ${snippet.score.toFixed(6)}`);
         });
       });
 
-      console.log('\n✅ Search completed successfully');
+      console.log("\n✅ Search completed successfully");
     } else {
-      console.log('\n❌ No results found');
+      console.log("\n❌ No results found");
     }
   } catch (error) {
-    console.error('\n❌ Search failed:', error);
+    console.error("\n❌ Search failed:", error);
     process.exit(1);
   }
 }
@@ -206,7 +206,7 @@ function extractRelevantText(text: string, query: string): string {
   }
 
   // Create a regex pattern for matching query words
-  const pattern = new RegExp(`(${queryWords.join('|')})`, 'i');
+  const pattern = new RegExp(`(${queryWords.join("|")})`, "i");
 
   // Split text into sentences
   const sentences = text.split(/[.!?](?:\s|$)/);
@@ -242,7 +242,7 @@ function extractRelevantText(text: string, query: string): string {
     const start = Math.max(0, topIndex - 1);
     const end = Math.min(sentences.length, topIndex + 2);
 
-    const contextSnippet = sentences.slice(start, end).join('. ');
+    const contextSnippet = sentences.slice(start, end).join(". ");
 
     // Highlight query terms in the snippet
     const highlightedSnippet = contextSnippet.replace(
@@ -266,9 +266,9 @@ function extractRelevantText(text: string, query: string): string {
 if (query) {
   searchBylaws();
 } else {
-  console.log('Please provide a search query.');
+  console.log("Please provide a search query.");
   console.log(
-    'Usage: pnpm tsx scripts/improved-bylaw-search.ts <query> [--category=<category>] [--bylaw=<bylawNum>]',
+    "Usage: pnpm tsx scripts/improved-bylaw-search.ts <query> [--category=<category>] [--bylaw=<bylawNum>]",
   );
   process.exit(1);
 }

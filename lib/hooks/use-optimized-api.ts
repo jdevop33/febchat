@@ -3,10 +3,10 @@
  * Combines SWR caching with batched API calls
  */
 
-import { useCallback, useState } from 'react';
-import useSWR, { type SWRConfiguration } from 'swr';
-import { profiler } from '@/lib/utils/profiler';
-import { useDebounce } from '@/lib/utils/debounce';
+import { useDebounce } from "@/lib/utils/debounce";
+import { profiler } from "@/lib/utils/profiler";
+import { useCallback, useState } from "react";
+import useSWR, { type SWRConfiguration } from "swr";
 
 // Shared fetcher for SWR
 const defaultFetcher = async (url: string) => {
@@ -23,7 +23,7 @@ const defaultFetcher = async (url: string) => {
 };
 
 interface UseApiOptions<T>
-  extends Omit<SWRConfiguration<T>, 'onSuccess' | 'onError'> {
+  extends Omit<SWRConfiguration<T>, "onSuccess" | "onError"> {
   onSuccess?: (data: T) => void;
   onError?: (error: Error) => void;
   enabled?: boolean;
@@ -108,7 +108,7 @@ export function useSearch<T = any>(
       // Ensure all params are strings (not undefined)
       const safeParams: Record<string, string> = {};
       for (const [key, value] of Object.entries(params)) {
-        safeParams[key] = value ?? '';
+        safeParams[key] = value ?? "";
       }
 
       const newParams = { ...searchParams, ...safeParams };

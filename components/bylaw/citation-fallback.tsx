@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { getExternalPdfUrl } from '@/lib/utils/bylaw-shared';
+import { getExternalPdfUrl } from "@/lib/utils/bylaw-shared";
+import React from "react";
 
 interface CitationFallbackProps {
   bylawNumber: string;
@@ -15,7 +15,7 @@ export function CitationFallback({
   error,
 }: CitationFallbackProps) {
   // Get the external URL for linking to official source
-  let externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  let externalUrl = "https://www.oakbay.ca/municipal-services/bylaws";
 
   try {
     // Try to get the URL from our utility, but don't fail if it doesn't work
@@ -23,7 +23,7 @@ export function CitationFallback({
       externalUrl = getExternalPdfUrl(bylawNumber);
     }
   } catch (err) {
-    console.error('Error getting external PDF URL:', err);
+    console.error("Error getting external PDF URL:", err);
     // Fallback to a predictable URL format
     externalUrl = `https://www.oakbay.ca/municipal-services/bylaws/bylaw-${bylawNumber}`;
   }

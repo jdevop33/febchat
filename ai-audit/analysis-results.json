@@ -123,9 +123,7 @@
     "artifacts/actions.ts": {
       "purpose": "Provides the functionality to retrieve suggestions related to a document from the database",
       "keyFunctionality": "Fetches suggestions for a given document ID using the getSuggestionsByDocumentId query function",
-      "issues": [
-        "There is no error handling for the database query execution"
-      ],
+      "issues": ["There is no error handling for the database query execution"],
       "qualityScore": 4
     },
     "components/ui/weather.tsx": {
@@ -273,9 +271,7 @@
     "components/ui/separator.tsx": {
       "purpose": "Simple visual separator component",
       "keyFunctionality": "Provides horizontal or vertical separators with configurable style",
-      "issues": [
-        "Limited functionality and customization options"
-      ],
+      "issues": ["Limited functionality and customization options"],
       "qualityScore": 3
     },
     "components/ui/select.tsx": {
@@ -1474,11 +1470,7 @@
     },
     "lib/api/auth-api.ts": {
       "purpose": "Implements client-side interactions with authentication API endpoints.",
-      "keyFunctionality": [
-        "User login",
-        "User registration",
-        "User logout"
-      ],
+      "keyFunctionality": ["User login", "User registration", "User logout"],
       "issues": [
         "Error handling could be more robust (consistently using data error if present)",
         "No retries or handling of timeout/network issues",

@@ -3,20 +3,20 @@
  * This file defines indexes for frequent queries to improve performance
  */
 
-import { sql } from 'drizzle-orm';
-import db from './index';
+import { sql } from "drizzle-orm";
+import db from "./index";
 
 // This function decides whether to use the real DB or a mock
 function getDbForIndexes() {
   // In production builds, use a mock to avoid DB connections
   if (
-    process.env.NODE_ENV === 'production' &&
-    process.env.NEXT_PHASE === 'build'
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PHASE === "build"
   ) {
-    console.log('Production build detected - using mock database for indexes');
+    console.log("Production build detected - using mock database for indexes");
     return {
       execute: async (query: any) => {
-        console.log('Running database query:', query);
+        console.log("Running database query:", query);
         return { rowCount: 0 };
       },
     };
@@ -31,7 +31,7 @@ function getDbForIndexes() {
  * This function should be called during application initialization
  */
 export async function createDatabaseIndexes() {
-  console.log('⏳ Creating database indexes...');
+  console.log("⏳ Creating database indexes...");
   const start = Date.now();
 
   try {
@@ -64,7 +64,7 @@ export async function createDatabaseIndexes() {
 
     console.log(`✅ Database indexes created in ${Date.now() - start}ms`);
   } catch (error) {
-    console.error('❌ Failed to create database indexes:', error);
+    console.error("❌ Failed to create database indexes:", error);
     // Don't throw, as we want the application to continue starting up
     // even if index creation fails
   }

@@ -5,10 +5,10 @@
  * It exports a function to configure tools for specific AI models.
  */
 
-import type { Tool } from 'ai';
+import type { Tool } from "ai";
 
 // Import all available tools
-import { searchBylawsTool, bylawAnswersTool } from './tools';
+import { bylawAnswersTool, searchBylawsTool } from "./tools";
 
 // Define available tools for each model
 type ToolsConfig = {
@@ -18,14 +18,14 @@ type ToolsConfig = {
 // Register tools with models
 export const toolsConfig: ToolsConfig = {
   // Oak Bay Bylaws - our primary mode
-  'oak-bay-bylaws': [
+  "oak-bay-bylaws": [
     bylawAnswersTool, // Add this first for common bylaw questions
     searchBylawsTool, // More general search
   ],
 
   // Default tools for other models
-  'chat-model-small': [bylawAnswersTool, searchBylawsTool],
-  'chat-model-large': [bylawAnswersTool, searchBylawsTool],
+  "chat-model-small": [bylawAnswersTool, searchBylawsTool],
+  "chat-model-large": [bylawAnswersTool, searchBylawsTool],
 };
 
 /**

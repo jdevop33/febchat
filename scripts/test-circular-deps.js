@@ -47,13 +47,13 @@ const __generator =
     let y;
     let t;
     let g = Object.create(
-      (typeof Iterator === 'function' ? Iterator : Object).prototype,
+      (typeof Iterator === "function" ? Iterator : Object).prototype,
     );
     return (
       (g.next = verb(0)),
       (g.throw = verb(1)),
       (g.return = verb(2)),
-      typeof Symbol === 'function' &&
+      typeof Symbol === "function" &&
         (g[Symbol.iterator] = function () {
           return this;
         }),
@@ -63,7 +63,7 @@ const __generator =
       return (v) => step([n, v]);
     }
     function step(op) {
-      if (f) throw new TypeError('Generator is already executing.');
+      if (f) throw new TypeError("Generator is already executing.");
       while ((g && ((g = 0), op[0] && (_ = 0)), _))
         try {
           if (
@@ -133,10 +133,10 @@ const __generator =
       return { value: op[0] ? op[1] : void 0, done: true };
     }
   });
-Object.defineProperty(exports, '__esModule', { value: true });
+Object.defineProperty(exports, "__esModule", { value: true });
 // Test that we can reuse these types without circular dependencies
 const testSharedMessagesProps = {
-  chatId: 'test',
+  chatId: "test",
   isLoading: false,
   votes: [],
   messages: [],
@@ -148,4 +148,4 @@ const testSharedMessagesProps = {
   isReadonly: false,
 };
 // Output success message
-console.log('All imports successful - circular dependencies fixed!');
+console.log("All imports successful - circular dependencies fixed!");

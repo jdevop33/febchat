@@ -8,14 +8,14 @@
  * - Detailed error responses
  */
 
-import { NextResponse } from 'next/server';
-import { auth } from '@/app/(auth)/auth';
-import { searchBylaws } from '@/lib/vector/search';
-import { logger } from '@/lib/monitoring/logger';
-import { z } from 'zod';
+import { auth } from "@/app/(auth)/auth";
+import { logger } from "@/lib/monitoring/logger";
+import { searchBylaws } from "@/lib/vector/search";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // Rate limiting
-import { LRUCache } from 'lru-cache';
+import { LRUCache } from "lru-cache";
 
 // Schema for search request validation
 const searchSchema = z.object({
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // Get client IP for rate limiting
-    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
     const rateLimitKey = `search:${ip}`;
 
     // Check rate limit (10 requests per minute)
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     if ((currentCount as number) > 10) {
       logger.warn(`Rate limit exceeded for ${ip}`);
       return NextResponse.json(
-        { error: 'Rate limit exceeded, please try again later' },
+        { error: "Rate limit exceeded, please try again later" },
         { status: 429 },
       );
     }
@@ -70,9 +70,9 @@ export async function POST(request: Request) {
     // Validate request schema
     const result = searchSchema.safeParse(body);
     if (!result.success) {
-      logger.warn('Invalid search request', { errors: result.error.format() });
+      logger.warn("Invalid search request", { errors: result.error.format() });
       return NextResponse.json(
-        { error: 'Invalid search parameters', details: result.error.format() },
+        { error: "Invalid search parameters", details: result.error.format() },
         { status: 400 },
       );
     }
@@ -125,10 +125,10 @@ export async function POST(request: Request) {
     return NextResponse.json(response);
   } catch (error) {
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    logger.error(errorObj, 'Search failed');
+    logger.error(errorObj, "Search failed");
 
     return NextResponse.json(
-      { error: 'An error occurred while searching', message: errorObj.message },
+      { error: "An error occurred while searching", message: errorObj.message },
       { status: 500 },
     );
   }
@@ -138,7 +138,7 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
 
     if (!query) {
       return NextResponse.json(
@@ -151,17 +151,17 @@ export async function GET(request: Request) {
     const body = {
       query,
       filters: {
-        bylawNumber: searchParams.get('bylaw') || undefined,
-        category: searchParams.get('category') || undefined,
+        bylawNumber: searchParams.get("bylaw") || undefined,
+        category: searchParams.get("category") || undefined,
       },
-      limit: searchParams.get('limit')
-        ? Number.parseInt(searchParams.get('limit') as string, 10)
+      limit: searchParams.get("limit")
+        ? Number.parseInt(searchParams.get("limit") as string, 10)
         : undefined,
     };
 
     // Create new request with body for POST handler
     const newReq = new Request(request.url, {
-      method: 'POST',
+      method: "POST",
       headers: request.headers,
       body: JSON.stringify(body),
     });
@@ -170,10 +170,10 @@ export async function GET(request: Request) {
     return POST(newReq);
   } catch (error) {
     const errorObj = error instanceof Error ? error : new Error(String(error));
-    logger.error(errorObj, 'GET search failed');
+    logger.error(errorObj, "GET search failed");
 
     return NextResponse.json(
-      { error: 'An error occurred while searching', message: errorObj.message },
+      { error: "An error occurred while searching", message: errorObj.message },
       { status: 500 },
     );
   }

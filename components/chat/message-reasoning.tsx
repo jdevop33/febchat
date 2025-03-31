@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChevronDownIcon, LoaderIcon } from '@/components/shared/icons';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Markdown } from '@/components/shared/markdown';
+import { ChevronDownIcon, LoaderIcon } from "@/components/shared/icons";
+import { Markdown } from "@/components/shared/markdown";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 
 interface MessageReasoningProps {
   isLoading: boolean;
@@ -24,10 +24,10 @@ export function MessageReasoning({
       marginBottom: 0,
     },
     expanded: {
-      height: 'auto',
+      height: "auto",
       opacity: 1,
-      marginTop: '1rem',
-      marginBottom: '0.5rem',
+      marginTop: "1rem",
+      marginBottom: "0.5rem",
     },
   };
 
@@ -47,7 +47,7 @@ export function MessageReasoning({
             type="button"
             className="cursor-pointer"
             onClick={() => setIsExpanded(!isExpanded)}
-            aria-label={isExpanded ? 'Collapse reasoning' : 'Expand reasoning'}
+            aria-label={isExpanded ? "Collapse reasoning" : "Expand reasoning"}
           >
             <ChevronDownIcon />
           </button>
@@ -62,8 +62,8 @@ export function MessageReasoning({
             animate="expanded"
             exit="collapsed"
             variants={variants}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
             className="flex flex-col gap-4 border-l pl-4 text-zinc-600 dark:text-zinc-400"
           >
             <Markdown>{reasoning}</Markdown>

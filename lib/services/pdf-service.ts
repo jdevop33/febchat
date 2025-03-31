@@ -9,11 +9,11 @@
  */
 
 import {
+  findSectionPage,
+  getBestPdfUrl,
   getExternalPdfUrl,
   getLocalPdfPath,
-  getBestPdfUrl,
-  findSectionPage,
-} from '../utils/bylaw-shared';
+} from "../utils/bylaw-shared";
 
 /**
  * PDF Locations object with both local and external paths

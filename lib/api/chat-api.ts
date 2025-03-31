@@ -4,7 +4,7 @@
  * Provides client-side functions for interacting with the chat API endpoints
  */
 
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 /**
  * Types for chat API interactions
@@ -12,7 +12,7 @@ import { nanoid } from 'nanoid';
 export interface ChatApiMessage {
   id: string;
   content: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   createdAt: Date;
 }
 
@@ -40,10 +40,10 @@ export interface ChatApiResponse {
 export async function sendChatRequest(
   request: ChatApiRequest,
 ): Promise<ChatApiResponse> {
-  const response = await fetch('/api/chat', {
-    method: 'POST',
+  const response = await fetch("/api/chat", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(request),
   });
@@ -60,10 +60,10 @@ export async function sendChatRequest(
  * Creates a new chat
  */
 export async function createChat(title: string): Promise<{ id: string }> {
-  const response = await fetch('/api/chat', {
-    method: 'POST',
+  const response = await fetch("/api/chat", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ title }),
   });
@@ -82,7 +82,7 @@ export async function createChat(title: string): Promise<{ id: string }> {
 export async function getChatHistory(): Promise<
   { id: string; title: string; updatedAt: string }[]
 > {
-  const response = await fetch('/api/history');
+  const response = await fetch("/api/history");
 
   if (!response.ok) {
     const error = await response.text();
@@ -97,7 +97,7 @@ export async function getChatHistory(): Promise<
  */
 export function createClientMessage(
   content: string,
-  role: 'user' | 'assistant' | 'system' = 'user',
+  role: "user" | "assistant" | "system" = "user",
 ): ChatApiMessage {
   return {
     id: nanoid(),

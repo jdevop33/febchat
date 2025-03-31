@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home, Terminal } from 'lucide-react';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Home, RefreshCw, Terminal } from "lucide-react";
+import { useState } from "react";
 
 export default function GlobalError({
   error,
@@ -38,7 +38,8 @@ export default function GlobalError({
             </h1>
 
             <p className="mb-6 text-center text-gray-600 dark:text-gray-300">
-              We encountered an unexpected error. Please try again or return home.
+              We encountered an unexpected error. Please try again or return
+              home.
             </p>
 
             <div className="mb-6 flex flex-col space-y-2 sm:flex-row sm:space-x-3 sm:space-y-0">
@@ -63,7 +64,7 @@ export default function GlobalError({
               <Button
                 variant="outline"
                 className="flex-1 border-amber-200 hover:bg-amber-50 dark:border-amber-800 dark:hover:bg-amber-900"
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
               >
                 <Home className="mr-2 h-4 w-4" />
                 Return home
@@ -77,7 +78,7 @@ export default function GlobalError({
                 onClick={() => setShowDetails(!showDetails)}
               >
                 <Terminal className="mr-2 h-4 w-4" />
-                {showDetails ? 'Hide' : 'Show'} technical details
+                {showDetails ? "Hide" : "Show"} technical details
               </Button>
 
               {showDetails && (
@@ -108,4 +109,4 @@ export default function GlobalError({
       </body>
     </html>
   );
-} 
+}

@@ -1,6 +1,6 @@
-import type { Attachment } from 'ai';
+import type { Attachment } from "ai";
 
-import { LoaderIcon } from '@/components/shared/icons';
+import { LoaderIcon } from "@/components/shared/icons";
 
 export const PreviewAttachment = ({
   attachment,
@@ -15,13 +15,13 @@ export const PreviewAttachment = ({
     <div className="flex flex-col gap-2">
       <div className="relative flex aspect-video h-16 w-20 flex-col items-center justify-center rounded-md bg-muted">
         {contentType ? (
-          contentType.startsWith('image') ? (
+          contentType.startsWith("image") ? (
             // NOTE: it is recommended to use next/image for images
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={url}
               src={url}
-              alt={name ?? 'An image attachment'}
+              alt={name ?? "An image attachment"}
               className="size-full rounded-md object-cover"
             />
           ) : (

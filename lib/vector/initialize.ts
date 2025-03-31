@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* 
+/*
  * This file has TypeScript errors that need to be fixed:
  * * - Property 'query' does not exist on type
  * * - Property 'describeIndexStats' does not exist on type
@@ -15,21 +15,21 @@
  * and index them into a persistent vector database.
  */
 
-import { getVectorStore, mockBylawData } from './index';
-import type { BylawChunk } from './types';
-import { getPineconeIndex } from './pinecone-client';
-import { OpenAIEmbeddings } from '@langchain/openai';
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { getVectorStore, mockBylawData } from "./index";
+import { getPineconeIndex } from "./pinecone-client";
+import type { BylawChunk } from "./types";
 
 /**
  * Initialize the bylaw knowledge base with sample data
  */
 export async function initializeBylawKnowledgeBase() {
-  console.log('Initializing bylaw knowledge base...');
+  console.log("Initializing bylaw knowledge base...");
 
   try {
     // Try to use Pinecone if configured
     if (process.env.PINECONE_API_KEY && process.env.PINECONE_INDEX) {
-      console.log('Attempting to use Pinecone for bylaw knowledge base...');
+      console.log("Attempting to use Pinecone for bylaw knowledge base...");
 
       try {
         // Get Pinecone index
@@ -37,7 +37,7 @@ export async function initializeBylawKnowledgeBase() {
 
         // Get OpenAI embeddings model
         const embeddings = new OpenAIEmbeddings({
-          modelName: 'text-embedding-3-small',
+          modelName: "text-embedding-3-small",
           openAIApiKey: process.env.OPENAI_API_KEY,
         });
 
@@ -45,7 +45,7 @@ export async function initializeBylawKnowledgeBase() {
         const stats = await index.describeIndexStats();
 
         if (stats.totalRecordCount === 0) {
-          console.log('Pinecone index is empty, loading sample data...');
+          console.log("Pinecone index is empty, loading sample data...");
 
           // Convert mock data into proper chunks
           const chunks: BylawChunk[] = mockBylawData;
@@ -70,23 +70,23 @@ export async function initializeBylawKnowledgeBase() {
           // Cast to any to bypass type checking since we know the data is valid
           await index.upsert(vectors as any);
 
-          console.log('Sample bylaw data loaded into Pinecone');
+          console.log("Sample bylaw data loaded into Pinecone");
         } else {
           console.log(
             `Pinecone index already contains ${stats.totalRecordCount} vectors`,
           );
         }
 
-        console.log('Successfully initialized Pinecone bylaw knowledge base');
-        return { type: 'pinecone', index };
+        console.log("Successfully initialized Pinecone bylaw knowledge base");
+        return { type: "pinecone", index };
       } catch (error) {
-        console.error('Error initializing Pinecone:', error);
-        console.log('Falling back to mock vector store...');
+        console.error("Error initializing Pinecone:", error);
+        console.log("Falling back to mock vector store...");
       }
     }
 
     // Fall back to mock vector store
-    console.log('Using mock vector store for bylaw knowledge base');
+    console.log("Using mock vector store for bylaw knowledge base");
 
     // Create a new vector store
     const vectorStore = getVectorStore();
@@ -101,9 +101,9 @@ export async function initializeBylawKnowledgeBase() {
       `Mock bylaw knowledge base initialized with ${chunks.length} chunks`,
     );
 
-    return { type: 'mock', vectorStore };
+    return { type: "mock", vectorStore };
   } catch (error) {
-    console.error('Error initializing bylaw knowledge base:', error);
+    console.error("Error initializing bylaw knowledge base:", error);
     throw error;
   }
 }
@@ -125,5 +125,5 @@ export async function processBylawDirectory(directoryPath: string) {
   // 2. Process each PDF file
   // 3. Add the extracted chunks to the vector store
 
-  console.log('Directory processing complete');
+  console.log("Directory processing complete");
 }

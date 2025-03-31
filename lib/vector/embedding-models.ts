@@ -5,7 +5,7 @@
  * for generating embeddings for the vector search functionality.
  */
 
-import { OpenAIEmbeddings } from '@langchain/openai';
+import { OpenAIEmbeddings } from "@langchain/openai";
 // Define Embeddings interface to avoid direct import from langchain
 // This helps prevent build issues with langchain imports
 interface Embeddings {
@@ -22,13 +22,13 @@ interface EmbeddingModelOptions {
  * Available embedding model providers
  */
 export enum EmbeddingProvider {
-  OPENAI = 'openai',
-  LLAMAINDEX = 'llamaindex',
+  OPENAI = "openai",
+  LLAMAINDEX = "llamaindex",
 }
 
 // Default model configurations
-const DEFAULT_OPENAI_MODEL = 'text-embedding-3-small';
-const DEFAULT_LLAMA_MODEL = 'llama-text-embed-v2';
+const DEFAULT_OPENAI_MODEL = "text-embedding-3-small";
+const DEFAULT_LLAMA_MODEL = "llama-text-embed-v2";
 
 /**
  * Get an embeddings model instance
@@ -69,10 +69,10 @@ class CustomLlamaEmbeddings implements Embeddings {
 
   constructor(options: { modelName?: string; apiKey?: string }) {
     this.modelName = options.modelName || DEFAULT_LLAMA_MODEL;
-    this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || '';
+    this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || "";
 
     if (!this.apiKey) {
-      throw new Error('API key is required for Llama embeddings');
+      throw new Error("API key is required for Llama embeddings");
     }
   }
 
@@ -91,7 +91,7 @@ class CustomLlamaEmbeddings implements Embeddings {
 
       return embeddings;
     } catch (error) {
-      console.error('Error embedding documents with Llama model:', error);
+      console.error("Error embedding documents with Llama model:", error);
       throw new Error(`Failed to embed documents: ${error}`);
     }
   }
@@ -103,8 +103,8 @@ class CustomLlamaEmbeddings implements Embeddings {
     // For local development/testing, we create a deterministic embedding based on the text
     // This allows testing vector search without actual API calls
     if (
-      process.env.NODE_ENV === 'development' &&
-      process.env.MOCK_VECTOR_SEARCH === 'true'
+      process.env.NODE_ENV === "development" &&
+      process.env.MOCK_VECTOR_SEARCH === "true"
     ) {
       return this.getMockEmbedding(text);
     }
@@ -125,7 +125,7 @@ class CustomLlamaEmbeddings implements Embeddings {
       );
       return embedding.map((val) => val / norm);
     } catch (error) {
-      console.error('Error embedding query with Llama model:', error);
+      console.error("Error embedding query with Llama model:", error);
       throw new Error(`Failed to embed query: ${error}`);
     }
   }

@@ -1,6 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import * as https from 'node:https';
+import fs from "node:fs";
+import * as https from "node:https";
+import path from "node:path";
 
 // Function to fetch HTML content from URL
 const fetchHtml = async (url: string): Promise<string> => {
@@ -12,15 +12,15 @@ const fetchHtml = async (url: string): Promise<string> => {
           return;
         }
 
-        let data = '';
-        response.on('data', (chunk) => {
+        let data = "";
+        response.on("data", (chunk) => {
           data += chunk;
         });
-        response.on('end', () => {
+        response.on("end", () => {
           resolve(data);
         });
       })
-      .on('error', (err) => {
+      .on("error", (err) => {
         reject(err);
       });
   });
@@ -60,16 +60,16 @@ const scrapeAndGenerateMaps = async () => {
   try {
     // URL of the bylaws page
     const url =
-      'https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws';
+      "https://www.oakbay.ca/council-administration/bylaws-policies/oak-bay-municipal-bylaws";
 
     console.log(`Fetching bylaws from ${url}...`);
     const html = await fetchHtml(url);
 
-    console.log('Extracting bylaw data...');
+    console.log("Extracting bylaw data...");
     const bylaws = extractBylawData(html);
 
     if (bylaws.length === 0) {
-      console.error('No bylaws found! The page structure may have changed.');
+      console.error("No bylaws found! The page structure may have changed.");
       return;
     }
 
@@ -88,14 +88,14 @@ const scrapeAndGenerateMaps = async () => {
     // Add any important bylaws that might be missed by the scraper
     const manualBylaws: BylawData[] = [
       {
-        number: '4247',
-        title: 'Building and Plumbing Bylaw',
-        url: 'https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf',
+        number: "4247",
+        title: "Building and Plumbing Bylaw",
+        url: "https://www.oakbay.ca/wp-content/uploads/2024/03/4247-Building-and-Plumbing-Bylaw-2005-CONSOLIDATED.pdf",
       },
       {
-        number: '4742',
-        title: 'Tree Protection Bylaw',
-        url: 'https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf',
+        number: "4742",
+        title: "Tree Protection Bylaw",
+        url: "https://www.oakbay.ca/wp-content/uploads/2024/01/4742-Tree-Protection-Bylaw-2020-CONSOLIDATED.pdf",
       },
     ];
 
@@ -121,7 +121,7 @@ export const VALIDATED_BYLAWS: string[] = ${JSON.stringify(Object.keys(knownByla
 `;
 
     // Write to lib/utils/bylaw-maps.ts
-    const outputPath = path.resolve(__dirname, '../lib/utils/bylaw-maps.ts');
+    const outputPath = path.resolve(__dirname, "../lib/utils/bylaw-maps.ts");
     fs.writeFileSync(outputPath, fileContent);
 
     console.log(`Bylaw maps written to ${outputPath}`);
@@ -129,7 +129,7 @@ export const VALIDATED_BYLAWS: string[] = ${JSON.stringify(Object.keys(knownByla
       `Generated maps for ${Object.keys(knownBylawUrls).length} bylaws`,
     );
   } catch (error) {
-    console.error('Error scraping bylaw data:', error);
+    console.error("Error scraping bylaw data:", error);
   }
 };
 

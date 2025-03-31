@@ -1,10 +1,10 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { EnhancedMarkdown } from './enhanced-markdown';
+import { render, screen } from "@testing-library/react";
+import React from "react";
+import "@testing-library/jest-dom";
+import { EnhancedMarkdown } from "./enhanced-markdown";
 
 // Mock BylawCitation component
-jest.mock('./bylaw/bylaw-citation', () => ({
+jest.mock("./bylaw/bylaw-citation", () => ({
   BylawCitation: ({ bylawNumber, title, section }: any) => (
     <div data-testid={`bylaw-citation-${bylawNumber}`}>
       {title} (No. {bylawNumber}), Section {section}
@@ -13,17 +13,17 @@ jest.mock('./bylaw/bylaw-citation', () => ({
 }));
 
 // Mock Markdown component
-jest.mock('./markdown', () => ({
+jest.mock("./markdown", () => ({
   Markdown: ({ children }: any) => <div data-testid="markdown">{children}</div>,
 }));
 
 // Mock the internal VALIDATED_BYLAWS array defined in the EnhancedMarkdown component
-const MOCK_VALIDATED_BYLAWS = ['4247', '4742', '3210'];
+const MOCK_VALIDATED_BYLAWS = ["4247", "4742", "3210"];
 
 // We need to manually mock the internal state of the EnhancedMarkdown component
 // This is a bit hacky but necessary since we hardcoded the values inside the component
-jest.mock('./enhanced-markdown', () => {
-  const originalModule = jest.requireActual('./enhanced-markdown');
+jest.mock("./enhanced-markdown", () => {
+  const originalModule = jest.requireActual("./enhanced-markdown");
   return {
     ...originalModule,
     EnhancedMarkdown: (props: any) => {
@@ -35,20 +35,20 @@ jest.mock('./enhanced-markdown', () => {
   };
 });
 
-describe('EnhancedMarkdown', () => {
-  it('should render regular markdown when no bylaw references exist', () => {
+describe("EnhancedMarkdown", () => {
+  it("should render regular markdown when no bylaw references exist", () => {
     render(
       <EnhancedMarkdown>
         This is regular text with no bylaw references.
       </EnhancedMarkdown>,
     );
 
-    expect(screen.getByTestId('markdown')).toHaveTextContent(
-      'This is regular text with no bylaw references.',
+    expect(screen.getByTestId("markdown")).toHaveTextContent(
+      "This is regular text with no bylaw references.",
     );
   });
 
-  it('should detect bylaw references with numbers and convert them to BylawCitation components', () => {
+  it("should detect bylaw references with numbers and convert them to BylawCitation components", () => {
     // This test relies on 4742 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
@@ -58,11 +58,11 @@ describe('EnhancedMarkdown', () => {
     );
 
     // This will pass as long as 4742 is in the hardcoded array
-    expect(screen.getByTestId('bylaw-citation-4742')).toBeInTheDocument();
-    expect(screen.getByTestId('markdown')).toBeInTheDocument();
+    expect(screen.getByTestId("bylaw-citation-4742")).toBeInTheDocument();
+    expect(screen.getByTestId("markdown")).toBeInTheDocument();
   });
 
-  it('should detect bylaw references with section numbers', () => {
+  it("should detect bylaw references with section numbers", () => {
     // This test relies on 3210 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
@@ -72,10 +72,10 @@ describe('EnhancedMarkdown', () => {
     );
 
     // This will pass as long as 3210 is in the hardcoded array
-    expect(screen.getByTestId('bylaw-citation-3210')).toBeInTheDocument();
+    expect(screen.getByTestId("bylaw-citation-3210")).toBeInTheDocument();
   });
 
-  it('should handle bylaw references without explicit numbers by using name lookup', () => {
+  it("should handle bylaw references without explicit numbers by using name lookup", () => {
     // This test relies on 4247 being in the hardcoded VALIDATED_BYLAWS array in the component
     render(
       <EnhancedMarkdown>
@@ -85,6 +85,6 @@ describe('EnhancedMarkdown', () => {
     );
 
     // This will pass as long as 4247 is in the hardcoded array and the name mapping works
-    expect(screen.getByTestId('bylaw-citation-4247')).toBeInTheDocument();
+    expect(screen.getByTestId("bylaw-citation-4247")).toBeInTheDocument();
   });
 });

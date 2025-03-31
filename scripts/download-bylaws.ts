@@ -1,10 +1,10 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import https from 'node:https';
-import { knownBylawUrls } from '../lib/utils/bylaw-maps';
+import fs from "node:fs";
+import https from "node:https";
+import path from "node:path";
+import { knownBylawUrls } from "../lib/utils/bylaw-maps";
 
 // Directory to save PDFs to
-const PDF_DIR = path.resolve(__dirname, '../public/pdfs');
+const PDF_DIR = path.resolve(__dirname, "../public/pdfs");
 
 // Ensure PDF directory exists
 if (!fs.existsSync(PDF_DIR)) {
@@ -23,10 +23,10 @@ const downloadFile = (url: string, destPath: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     // Handle file:///, http://, https:// URLs
     const protocol = https;
-    if (url.startsWith('http://')) {
+    if (url.startsWith("http://")) {
       // You'd use http instead of https for http URLs
       console.warn(`Warning: Downloading from non-secure URL: ${url}`);
-    } else if (!url.startsWith('https://')) {
+    } else if (!url.startsWith("https://")) {
       reject(new Error(`Unsupported protocol in URL: ${url}`));
       return;
     }
@@ -48,8 +48,8 @@ const downloadFile = (url: string, destPath: string): Promise<void> => {
             .catch(reject);
           return;
         }
-          reject(new Error('Redirect with no location header'));
-          return;
+        reject(new Error("Redirect with no location header"));
+        return;
       }
 
       // Check if the request was successful
@@ -62,26 +62,26 @@ const downloadFile = (url: string, destPath: string): Promise<void> => {
       response.pipe(file);
 
       // Handle errors during download
-      response.on('error', (err) => {
+      response.on("error", (err) => {
         fs.unlinkSync(destPath);
         reject(err);
       });
 
       // Resolve the promise when the download is complete
-      file.on('finish', () => {
+      file.on("finish", () => {
         file.close();
         resolve();
       });
 
       // Handle errors when writing to the file
-      file.on('error', (err) => {
+      file.on("error", (err) => {
         fs.unlinkSync(destPath);
         reject(err);
       });
     });
 
     // Handle errors with the request
-    request.on('error', (err) => {
+    request.on("error", (err) => {
       fs.unlinkSync(destPath);
       reject(err);
     });
@@ -98,7 +98,7 @@ const downloadFile = (url: string, destPath: string): Promise<void> => {
  * @returns Filename
  */
 const getFilenameFromUrl = (url: string): string => {
-  const parts = url.split('/');
+  const parts = url.split("/");
   return parts[parts.length - 1];
 };
 
@@ -113,7 +113,7 @@ const downloadAllBylaws = async () => {
 
   console.log(`Downloading ${total} bylaw PDFs to ${PDF_DIR}`);
   console.log(
-    '--------------------------------------------------------------------------------',
+    "--------------------------------------------------------------------------------",
   );
 
   for (const [bylawNumber, url] of Object.entries(knownBylawUrls)) {
@@ -130,7 +130,7 @@ const downloadAllBylaws = async () => {
     try {
       process.stdout.write(`⬇ Downloading [${bylawNumber}] ${filename}...`);
       await downloadFile(url, destPath);
-      process.stdout.write(' ✓ Done\n');
+      process.stdout.write(" ✓ Done\n");
       downloaded++;
     } catch (error) {
       process.stdout.write(` ✘ Failed: ${error}\n`);
@@ -139,7 +139,7 @@ const downloadAllBylaws = async () => {
   }
 
   console.log(
-    '--------------------------------------------------------------------------------',
+    "--------------------------------------------------------------------------------",
   );
   console.log(
     `Download complete: ${downloaded} downloaded, ${skipped} skipped, ${failed} failed`,

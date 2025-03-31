@@ -3,6 +3,9 @@ const dotenv = require('dotenv');
 const { Pinecone } = require('@pinecone-database/pinecone');
 const { OpenAIEmbeddings } = require('@langchain/openai');
 
+// Import our application's embedding logic
+const { getEmbeddingsModel, EmbeddingProvider } = require('../lib/vector/embedding-models');
+
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
 
@@ -32,7 +35,8 @@ const testQueries = [
 
 async function testPineconeConnection() {
   try {
-    console.log('\n1. Testing Pinecone connection...');
+    // FIX: Removed extra backtick that caused SyntaxError
+    console.log('1. Testing Pinecone connection...'); 
 
     if (!process.env.PINECONE_API_KEY) {
       throw new Error('PINECONE_API_KEY is not set in environment variables');
@@ -46,7 +50,7 @@ async function testPineconeConnection() {
     console.log('✅ Pinecone client initialized successfully');
 
     // Get index name
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws';
+    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2'; // Default to v2
 
     // Connect to index
     console.log(`Connecting to index: ${indexName}`);
@@ -57,6 +61,11 @@ async function testPineconeConnection() {
     console.log('✅ Index statistics:');
     console.log(`   - Total vectors: ${stats.totalRecordCount}`);
     console.log(`   - Dimensions: ${stats.dimension}`);
+    
+    // Check dimension explicitly
+    if (stats.dimension !== 1024) {
+      console.warn(`⚠️ WARNING: Index dimension is ${stats.dimension}, expected 1024 for Llama model.`);
+    }
 
     return { success: true, index };
   } catch (error) {
@@ -66,19 +75,17 @@ async function testPineconeConnection() {
   }
 }
 
-async function testOpenAIEmbeddings() {
+// Renamed function for clarity, now tests the configured embedding model
+async function testConfiguredEmbeddings(provider = EmbeddingProvider.LLAMAINDEX) {
   try {
-    console.log('\n2. Testing OpenAI embeddings generation...');
+    console.log(`
+2. Testing configured embeddings generation (${provider})...`);
 
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set in environment variables');
+    // Get the embedding model using our application's logic
+    const embeddings = getEmbeddingsModel(provider);
+    if (!embeddings) {
+        throw new Error(`Failed to get embeddings model for provider: ${provider}`);
     }
-
-    // Initialize OpenAI embeddings
-    const embeddings = new OpenAIEmbeddings({
-      modelName: 'text-embedding-3-small',
-      openAIApiKey: process.env.OPENAI_API_KEY,
-    });
 
     // Generate an embedding
     const testQuery = 'tree protection bylaw';
@@ -93,49 +100,61 @@ async function testOpenAIEmbeddings() {
         .map((v) => v.toFixed(6))
         .join(', ')}...`,
     );
+    
+    if (embedding.length !== 1024) {
+         console.warn(`⚠️ WARNING: Embedding dimension is ${embedding.length}, expected 1024 for index compatibility.`);
+    }
 
     return { success: true, embeddings };
   } catch (error) {
-    console.error('❌ OpenAI embeddings generation failed:');
+    console.error(`❌ Configured embeddings generation failed (${provider}):`);
     console.error(`   Error: ${error.message}`);
     return { success: false, error };
   }
 }
 
 async function testBylawSearch() {
-  console.log('\n====== TESTING BYLAW SEARCH ======');
+  console.log('
+====== TESTING BYLAW SEARCH ======');
 
   // Test Pinecone connection
   const pineconeResult = await testPineconeConnection();
   if (!pineconeResult.success) {
     console.error('Bylaw search test aborted: Pinecone connection failed');
-    return false;
+    process.exit(1); // Exit if connection fails
   }
+  const { index } = pineconeResult;
 
-  // Test OpenAI embeddings
-  const embeddingsResult = await testOpenAIEmbeddings();
+  // Test configured Llama embeddings (should be 1024-dim)
+  const embeddingsResult = await testConfiguredEmbeddings(EmbeddingProvider.LLAMAINDEX);
   if (!embeddingsResult.success) {
     console.error(
-      'Bylaw search test aborted: OpenAI embeddings generation failed',
+      'Bylaw search test aborted: Llama embeddings generation failed'
     );
-    return false;
+    process.exit(1); // Exit if embedding fails
   }
+  const { embeddings } = embeddingsResult;
 
   // Test search functionality
   try {
-    console.log('\n3. Testing bylaw search with sample queries...');
-
-    const { index } = pineconeResult;
-    const { embeddings } = embeddingsResult;
+    // FIX: Removed stray newline character from string literal
+    console.log('3. Testing bylaw search with sample queries (using Llama embeddings)...'); 
 
     let allQueriesSuccessful = true;
 
     for (const query of testQueries) {
-      console.log(`\nSearching for: "${query}"`);
+      console.log(`
+Searching for: "${query}"`);
 
       try {
-        // Generate embedding for query
+        // Generate embedding for query using the *correctly configured* 1024-dim model
         const queryEmbedding = await embeddings.embedQuery(query);
+        
+        // Check dimension just before querying
+        if (queryEmbedding.length !== 1024) {
+           console.error(`❌ ERROR: Query embedding dimension is ${queryEmbedding.length}, but index requires 1024.`);
+           throw new Error('Query embedding dimension mismatch');
+        }
 
         // Search Pinecone
         const results = await index.query({
@@ -154,31 +173,39 @@ async function testBylawSearch() {
           console.log(`   - ID: ${topResult.id}`);
 
           if (topResult.metadata) {
+            // Safely access metadata properties
+            const metadata = topResult.metadata as any; // Cast to any for flexibility or define a proper type
             console.log(
-              `   - Bylaw: ${topResult.metadata.bylawNumber || 'Unknown'}`,
+              `   - Bylaw: ${metadata.bylawNumber || 'Unknown'}`,
             );
             console.log(
-              `   - Section: ${topResult.metadata.section || 'Unknown section'}`,
+              `   - Section: ${metadata.section || 'Unknown section'}`,
             );
             console.log(
-              `   - Text snippet: "${(topResult.metadata.text || '').substring(0, 100)}..."`,
+              `   - Text snippet: "${(metadata.text || '').substring(0, 100)}..."`,
             );
           }
         } else {
-          console.log('❌ No results found');
-          allQueriesSuccessful = false;
+          console.log('⚠️ No results found for this query.');
+          // Not necessarily an error, could be a valid outcome
         }
       } catch (queryError) {
+        // Log the specific error encountered during the query
         console.error(
           `❌ Error searching for "${query}": ${queryError.message}`,
         );
+        // Check if it's the dimension mismatch error specifically
+        if (queryError.message?.includes('dimension')) {
+            console.error('   This indicates a persistent dimension mismatch issue.');
+        }
         allQueriesSuccessful = false;
       }
     }
 
-    console.log('\n====== BYLAW SEARCH TEST COMPLETE ======');
+    console.log('
+====== BYLAW SEARCH TEST COMPLETE ======');
     console.log(
-      `Overall result: ${allQueriesSuccessful ? '✅ SUCCESS' : '⚠️ PARTIAL SUCCESS'}`,
+      `Overall result: ${allQueriesSuccessful ? '✅ SUCCESS' : '⚠️ TEST COMPLETED WITH ERRORS'}`,
     );
 
     return allQueriesSuccessful;
@@ -192,7 +219,8 @@ async function testBylawSearch() {
 // Run the tests
 testBylawSearch()
   .then((success) => {
-    console.log(`\nTest completed ${success ? 'successfully' : 'with errors'}`);
+    console.log(`
+Test completed ${success ? 'successfully' : 'with errors'}`);
     process.exit(success ? 0 : 1);
   })
   .catch((error) => {

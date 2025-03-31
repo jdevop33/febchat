@@ -1,12 +1,12 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
-const COMPONENTS_DIR = path.join(process.cwd(), 'components');
+const COMPONENTS_DIR = path.join(process.cwd(), "components");
 const DEPENDENCY_GRAPH = {};
 
 // Function to analyze component imports
 function analyzeComponent(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
   const componentName = path.basename(filePath, path.extname(filePath));
 
   // Extract imports
@@ -18,12 +18,12 @@ function analyzeComponent(filePath) {
     let importPath = match[1];
 
     // Handle aliased paths
-    if (importPath.startsWith('@/')) {
+    if (importPath.startsWith("@/")) {
       importPath = importPath.substring(2);
     }
 
     // Only track component dependencies
-    if (importPath.includes('components/')) {
+    if (importPath.includes("components/")) {
       imports.push(importPath);
     }
   }
@@ -42,7 +42,7 @@ function findComponents(dir, components = []) {
 
     if (stat.isDirectory()) {
       findComponents(filePath, components);
-    } else if (file.endsWith('.tsx') || file.endsWith('.ts')) {
+    } else if (file.endsWith(".tsx") || file.endsWith(".ts")) {
       components.push(filePath);
     }
   }
@@ -100,7 +100,7 @@ console.log(`Analyzed ${Object.keys(DEPENDENCY_GRAPH).length} components.`);
 const circularDeps = findCircularDependencies();
 console.log(`Found ${circularDeps.length} circular dependencies:`);
 circularDeps.forEach((cycle) => {
-  console.log(`Circular dependency: ${cycle.join(' → ')}`);
+  console.log(`Circular dependency: ${cycle.join(" → ")}`);
 });
 
 // Generate visualization
@@ -121,7 +121,7 @@ Object.entries(DEPENDENCY_GRAPH).forEach(([component, deps]) => {
 });
 
 fs.writeFileSync(
-  path.join(process.cwd(), 'component-dependency-graph.json'),
+  path.join(process.cwd(), "component-dependency-graph.json"),
   JSON.stringify(visualizationData, null, 2),
 );
 
@@ -261,10 +261,10 @@ const htmlTemplate = `
 `;
 
 fs.writeFileSync(
-  path.join(process.cwd(), 'component-visualization.html'),
+  path.join(process.cwd(), "component-visualization.html"),
   htmlTemplate,
 );
 
-console.log('Generated visualization files:');
-console.log('- component-dependency-graph.json');
-console.log('- component-visualization.html');
+console.log("Generated visualization files:");
+console.log("- component-dependency-graph.json");
+console.log("- component-visualization.html");

@@ -1,18 +1,18 @@
 /**
  * Simple profiling utility for measuring performance
  */
-import * as React from 'react';
+import * as React from "react";
 
 type ProfilerOptions = {
   enabled?: boolean;
   logToConsole?: boolean;
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  logLevel?: "debug" | "info" | "warn" | "error";
 };
 
 const defaultOptions: ProfilerOptions = {
-  enabled: process.env.NODE_ENV !== 'production',
-  logToConsole: process.env.NODE_ENV !== 'production',
-  logLevel: 'debug',
+  enabled: process.env.NODE_ENV !== "production",
+  logToConsole: process.env.NODE_ENV !== "production",
+  logLevel: "debug",
 };
 
 export class Profiler {
@@ -159,7 +159,7 @@ export function withProfiling<T extends object>(
     return Component;
   }
 
-  const displayName = Component.displayName || Component.name || 'Component';
+  const displayName = Component.displayName || Component.name || "Component";
   const profilingLabel = label || `Render(${displayName})`;
 
   const ProfiledComponent = (props: T) => {

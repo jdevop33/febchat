@@ -1,8 +1,8 @@
-import type { Message, ChatRequestOptions } from 'ai';
-import type { Vote } from '@/lib/db/schema';
+import type { Vote } from "@/lib/db/schema";
+import type { ChatRequestOptions, Message } from "ai";
 
 // Shared artifact kinds
-export const artifactKinds = ['text', 'code', 'image', 'sheet'] as const;
+export const artifactKinds = ["text", "code", "image", "sheet"] as const;
 export type ArtifactKind = (typeof artifactKinds)[number];
 
 // Common UI Artifact interface used across components
@@ -12,7 +12,7 @@ export interface UIArtifact {
   kind: ArtifactKind;
   content: string;
   isVisible: boolean;
-  status: 'streaming' | 'idle';
+  status: "streaming" | "idle";
   boundingBox: {
     top: number;
     left: number;
@@ -42,7 +42,7 @@ export interface SharedDocumentProps {
   artifactKind?: ArtifactKind;
   title?: string;
   content?: string;
-  status?: UIArtifact['status'];
+  status?: UIArtifact["status"];
 }
 
 // Shared editor props
@@ -50,7 +50,7 @@ export interface SharedEditorProps {
   content: string;
   isCurrentVersion: boolean;
   currentVersionIndex: number;
-  status: UIArtifact['status'];
+  status: UIArtifact["status"];
   saveContent?: (updatedContent: string, debounce: boolean) => void;
   onSaveContent?: (updatedContent: string, debounce: boolean) => void;
   suggestions?: any[];
@@ -59,5 +59,5 @@ export interface SharedEditorProps {
   isLoading?: boolean;
   metadata?: any;
   setMetadata?: (metadata: any) => void;
-  mode?: 'edit' | 'diff';
+  mode?: "edit" | "diff";
 }

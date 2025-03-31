@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* 
+/*
  * This file has TypeScript errors that need to be fixed:
  * * - Property 'query' does not exist on type
  * TODO: Fix these TypeScript errors and remove this directive
@@ -8,14 +8,14 @@
 /**
  * Batch processing for vector search queries
  */
-import { profiler } from '../../utils/profiler';
-import { getPineconeIndex } from '../pinecone-client';
-import { getEmbeddingsModel } from './embeddings';
-import { formatSearchResults, buildPineconeFilter } from './utils';
+import { profiler } from "../../utils/profiler";
 import type {
   SearchQuery as ApiBatchingSearchQuery,
   SearchResult as ApiBatchingSearchResult,
-} from '../api-batching';
+} from "../api-batching";
+import { getPineconeIndex } from "../pinecone-client";
+import { getEmbeddingsModel } from "./embeddings";
+import { buildPineconeFilter, formatSearchResults } from "./utils";
 
 /**
  * Process a batch of search queries
@@ -24,7 +24,7 @@ import type {
 export const processBatchedQueries = async (
   queries: ApiBatchingSearchQuery[],
 ): Promise<ApiBatchingSearchResult[][]> => {
-  return profiler.measure('batched-embedding-query', async () => {
+  return profiler.measure("batched-embedding-query", async () => {
     // Get embeddings model
     const embeddings = getEmbeddingsModel();
 

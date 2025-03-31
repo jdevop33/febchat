@@ -1,29 +1,29 @@
 #!/usr/bin/env node
 
 // This script uses ESM imports
-import fs from 'node:fs';
-import path from 'node:path';
-import { glob } from 'glob';
-import { OpenAI } from 'openai';
-import dotenv from 'dotenv';
-import chalk from 'chalk';
-import minimist from 'minimist';
+import fs from "node:fs";
+import path from "node:path";
+import chalk from "chalk";
+import dotenv from "dotenv";
+import { glob } from "glob";
+import minimist from "minimist";
+import { OpenAI } from "openai";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Parse command line arguments
 const argv = minimist(process.argv.slice(2), {
-  string: ['output-dir', 'focus'],
-  boolean: ['verbose', 'help'],
+  string: ["output-dir", "focus"],
+  boolean: ["verbose", "help"],
   alias: {
-    o: 'output-dir',
-    f: 'focus',
-    v: 'verbose',
-    h: 'help',
+    o: "output-dir",
+    f: "focus",
+    v: "verbose",
+    h: "help",
   },
   default: {
-    'output-dir': 'docs/context',
+    "output-dir": "docs/context",
     verbose: false,
     help: false,
   },
@@ -32,20 +32,20 @@ const argv = minimist(process.argv.slice(2), {
 // Show help message
 if (argv.help) {
   console.log(`
-${chalk.bold('Generate Context Files')}
+${chalk.bold("Generate Context Files")}
 
 This tool generates documentation about different aspects of the codebase.
 
-${chalk.bold('Usage:')}
+${chalk.bold("Usage:")}
   npx tsx scripts/generate-context-files.mjs [options]
 
-${chalk.bold('Options:')}
+${chalk.bold("Options:")}
   -o, --output-dir <dir>  Directory to save generated files (default: docs/context)
   -f, --focus <pattern>   Focus on specific files (glob pattern)
   -v, --verbose           Show detailed logs during generation
   -h, --help              Show this help message
 
-${chalk.bold('Examples:')}
+${chalk.bold("Examples:")}
   npx tsx scripts/generate-context-files.mjs --output-dir documentation/analysis
   npx tsx scripts/generate-context-files.mjs --focus "lib/**/*.ts"
   `);
@@ -60,49 +60,49 @@ const openai = new OpenAI({
 // Configuration
 const CONFIG = {
   // Directories to include in the analysis
-  includeDirs: ['app', 'components', 'lib', 'hooks', 'types', 'artifacts'],
+  includeDirs: ["app", "components", "lib", "hooks", "types", "artifacts"],
   // Files or directories to exclude
   excludePatterns: [
-    'node_modules',
-    '.next',
-    '**/*.test.ts',
-    '**/*.test.tsx',
-    'public',
-    '**/node_modules/**',
+    "node_modules",
+    ".next",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "public",
+    "**/node_modules/**",
   ],
   // File extensions to analyze
-  extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  extensions: [".ts", ".tsx", ".js", ".jsx"],
   // Max tokens for OpenAI
   maxTokens: 2000,
   // Model to use for analysis
-  model: 'gpt-4-turbo',
+  model: "gpt-4-turbo",
   // Document types to generate
   documents: [
     {
-      id: 'architecture-overview',
-      title: 'Architecture Overview',
+      id: "architecture-overview",
+      title: "Architecture Overview",
       description:
-        'High-level overview of the project architecture and structure',
+        "High-level overview of the project architecture and structure",
     },
     {
-      id: 'component-system',
-      title: 'Component System',
-      description: 'Explanation of the component architecture and UI system',
+      id: "component-system",
+      title: "Component System",
+      description: "Explanation of the component architecture and UI system",
     },
     {
-      id: 'data-flow',
-      title: 'Data Flow and State Management',
-      description: 'How data and state are managed across the application',
+      id: "data-flow",
+      title: "Data Flow and State Management",
+      description: "How data and state are managed across the application",
     },
     {
-      id: 'api-integration',
-      title: 'API Integration',
-      description: 'How external APIs are integrated and used',
+      id: "api-integration",
+      title: "API Integration",
+      description: "How external APIs are integrated and used",
     },
     {
-      id: 'authentication',
-      title: 'Authentication and Authorization',
-      description: 'Implementation of auth and user permissions',
+      id: "authentication",
+      title: "Authentication and Authorization",
+      description: "Implementation of auth and user permissions",
     },
   ],
 };
@@ -110,13 +110,13 @@ const CONFIG = {
 // Main function
 async function generateContextDocumentation() {
   try {
-    console.log(chalk.blue('🔍 Starting context documentation generation...'));
+    console.log(chalk.blue("🔍 Starting context documentation generation..."));
 
     // Create output directory if it doesn't exist
-    if (!fs.existsSync(argv['output-dir'])) {
-      fs.mkdirSync(argv['output-dir'], { recursive: true });
+    if (!fs.existsSync(argv["output-dir"])) {
+      fs.mkdirSync(argv["output-dir"], { recursive: true });
       console.log(
-        chalk.green(`Created output directory: ${argv['output-dir']}`),
+        chalk.green(`Created output directory: ${argv["output-dir"]}`),
       );
     }
 
@@ -133,17 +133,17 @@ async function generateContextDocumentation() {
     await generateReadme();
 
     console.log(
-      chalk.green('✅ Context documentation generated successfully!'),
+      chalk.green("✅ Context documentation generated successfully!"),
     );
   } catch (error) {
-    console.error(chalk.red('Error generating context documentation:'), error);
+    console.error(chalk.red("Error generating context documentation:"), error);
     process.exit(1);
   }
 }
 
 // Gather data about the project
 async function gatherProjectData() {
-  console.log(chalk.blue('Gathering project data...'));
+  console.log(chalk.blue("Gathering project data..."));
 
   // Find all source files
   let sourceFiles;
@@ -156,7 +156,7 @@ async function gatherProjectData() {
     });
   } else {
     const patterns = CONFIG.includeDirs.map(
-      (dir) => `${dir}/**/*{${CONFIG.extensions.join(',')}}`,
+      (dir) => `${dir}/**/*{${CONFIG.extensions.join(",")}}`,
     );
     sourceFiles = await glob(patterns, {
       ignore: CONFIG.excludePatterns,
@@ -168,15 +168,15 @@ async function gatherProjectData() {
   console.log(chalk.green(`Found ${sourceFiles.length} source files`));
 
   // Get package.json info
-  const packageJsonPath = path.join(process.cwd(), 'package.json');
+  const packageJsonPath = path.join(process.cwd(), "package.json");
   let packageInfo = {};
 
   if (fs.existsSync(packageJsonPath)) {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
     packageInfo = {
       name: packageJson.name,
       version: packageJson.version,
-      description: packageJson.description || '',
+      description: packageJson.description || "",
       dependencies: packageJson.dependencies || {},
       devDependencies: packageJson.devDependencies || {},
       scripts: packageJson.scripts || {},
@@ -261,7 +261,7 @@ function sampleRepresentativeFiles(files, count) {
   // Limit to the requested count
   return sampledFiles.slice(0, count).map((file) => {
     // Read file content
-    const content = fs.readFileSync(file, 'utf-8');
+    const content = fs.readFileSync(file, "utf-8");
 
     return {
       path: path.relative(process.cwd(), file),
@@ -282,14 +282,14 @@ async function generateDocument(document, projectData) {
 
     const response = await openai.chat.completions.create({
       model: CONFIG.model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [{ role: "user", content: prompt }],
       max_tokens: CONFIG.maxTokens,
     });
 
     const content = response.choices[0].message.content.trim();
 
     // Save the document
-    const outputPath = path.join(argv['output-dir'], `${document.id}.md`);
+    const outputPath = path.join(argv["output-dir"], `${document.id}.md`);
     fs.writeFileSync(outputPath, content);
 
     console.log(chalk.green(`Generated ${outputPath}`));
@@ -307,22 +307,22 @@ function createPromptForDocument(document, projectData) {
 
   // Base prompt with project info
   const basePrompt = `
-You are a technical documentation expert creating documentation for a Next.js project called "${packageInfo.name || 'FebChat'}".
+You are a technical documentation expert creating documentation for a Next.js project called "${packageInfo.name || "FebChat"}".
 
 Project information:
-${packageInfo.description ? `Description: ${packageInfo.description}` : ''}
-Version: ${packageInfo.version || 'Unknown'}
+${packageInfo.description ? `Description: ${packageInfo.description}` : ""}
+Version: ${packageInfo.version || "Unknown"}
 
 Key dependencies:
 ${Object.keys(packageInfo.dependencies || {})
   .slice(0, 15)
-  .join(', ')}
+  .join(", ")}
 
 Directory structure:
 ${JSON.stringify(dirStructure, null, 2)}
 
 Sample files:
-${sampleFiles.map((f) => `--- ${f.path} ---\n${f.content.length > 1000 ? `${f.content.substring(0, 1000)}...(truncated)` : f.content}`).join('\n\n')}
+${sampleFiles.map((f) => `--- ${f.path} ---\n${f.content.length > 1000 ? `${f.content.substring(0, 1000)}...(truncated)` : f.content}`).join("\n\n")}
 
 I need you to create the following document:
 # ${document.title}
@@ -339,7 +339,7 @@ Include:
 
   // Add specific questions based on document type
   switch (document.id) {
-    case 'architecture-overview':
+    case "architecture-overview":
       return `${basePrompt}
 Focus on:
 - Overall project architecture pattern
@@ -349,7 +349,7 @@ Focus on:
 - How the application initializes and runs
 `;
 
-    case 'component-system':
+    case "component-system":
       return `${basePrompt}
 Focus on:
 - Component hierarchy
@@ -360,7 +360,7 @@ Focus on:
 - Styling approach
 `;
 
-    case 'data-flow':
+    case "data-flow":
       return `${basePrompt}
 Focus on:
 - State management approaches used
@@ -370,7 +370,7 @@ Focus on:
 - Server state vs. client state
 `;
 
-    case 'api-integration':
+    case "api-integration":
       return `${basePrompt}
 Focus on:
 - API client setup
@@ -380,7 +380,7 @@ Focus on:
 - API abstraction layers
 `;
 
-    case 'authentication':
+    case "authentication":
       return `${basePrompt}
 Focus on:
 - Authentication strategy
@@ -406,13 +406,13 @@ async function generateReadme() {
     }));
 
     // Create README content
-    const readmeContent = `# ${argv['output-dir'].split('/').pop() || 'Context'} Documentation
+    const readmeContent = `# ${argv["output-dir"].split("/").pop() || "Context"} Documentation
 
 This directory contains documentation about various aspects of the codebase.
 
 ## Available Documents
 
-${docs.map((doc) => `- [${doc.title}](./${doc.id}.md) - ${doc.description}`).join('\n')}
+${docs.map((doc) => `- [${doc.title}](./${doc.id}.md) - ${doc.description}`).join("\n")}
 
 ## How This Documentation Was Generated
 
@@ -430,14 +430,14 @@ If you find any inaccuracies, please update the documentation accordingly.
 `;
 
     // Save README
-    const readmePath = path.join(argv['output-dir'], 'README.md');
+    const readmePath = path.join(argv["output-dir"], "README.md");
     fs.writeFileSync(readmePath, readmeContent);
 
     console.log(chalk.green(`Generated ${readmePath}`));
 
     return true;
   } catch (error) {
-    console.error(chalk.red('Error generating README:'), error);
+    console.error(chalk.red("Error generating README:"), error);
     return false;
   }
 }

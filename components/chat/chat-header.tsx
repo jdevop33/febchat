@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useWindowSize } from 'usehooks-ts';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useWindowSize } from "usehooks-ts";
 
-import { SidebarToggle } from '@/components/app/sidebar-toggle';
-import { Button } from '@/components/ui/button';
-import { FileTextIcon, PlusIcon } from '@/components/shared/icons';
-import { useSidebar } from '@/components/ui/sidebar';
-import { memo } from 'react';
+import { SidebarToggle } from "@/components/app/sidebar-toggle";
+import { FileTextIcon, PlusIcon } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
+import { memo } from "react";
 
 function PureChatHeader({ chatId }: { chatId: string }) {
   const router = useRouter();
@@ -38,7 +38,7 @@ function PureChatHeader({ chatId }: { chatId: string }) {
               variant="outline"
               className="order-2 ml-auto px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
               onClick={() => {
-                router.push('/');
+                router.push("/");
                 router.refresh();
               }}
             >

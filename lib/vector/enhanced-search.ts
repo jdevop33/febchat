@@ -1,5 +1,5 @@
 // @ts-nocheck
-/* 
+/*
  * This file has TypeScript errors that need to be fixed:
  * * - Property 'query' does not exist on type
  * TODO: Fix these TypeScript errors and remove this directive
@@ -12,11 +12,11 @@
  * vector search with verification from the bylaw database.
  */
 
-import { getPineconeIndex } from './pinecone-client';
-import { getEmbeddingsModel, EmbeddingProvider } from './embedding-models';
-import * as VerificationDB from './verification-database';
-import db from '@/lib/db';
-import { searchQueryLog } from '@/lib/db/schema';
+import db from "@/lib/db";
+import { searchQueryLog } from "@/lib/db/schema";
+import { EmbeddingProvider, getEmbeddingsModel } from "./embedding-models";
+import { getPineconeIndex } from "./pinecone-client";
+import * as VerificationDB from "./verification-database";
 
 // Interface for search options
 export interface SearchOptions {
@@ -100,9 +100,9 @@ export async function searchBylawsWithVerification(
             verifiedResults.push({
               bylawNumber: verifiedBylaw.bylawNumber,
               title: verifiedBylaw.title,
-              section: 'all',
+              section: "all",
               content:
-                'Full bylaw content unavailable. Please refer to the PDF.',
+                "Full bylaw content unavailable. Please refer to the PDF.",
               score: 1.0,
               isVerified: true,
               pdfPath: verifiedBylaw.pdfPath,
@@ -138,7 +138,7 @@ export async function searchBylawsWithVerification(
     // Get vector search results
     const index = getPineconeIndex();
     const embeddings = getEmbeddingsModel(
-      process.env.EMBEDDING_PROVIDER === 'openai'
+      process.env.EMBEDDING_PROVIDER === "openai"
         ? EmbeddingProvider.OPENAI
         : EmbeddingProvider.LLAMAINDEX,
     );
@@ -161,9 +161,9 @@ export async function searchBylawsWithVerification(
         if (!match.metadata?.bylawNumber) continue;
 
         const bylawNumber = match.metadata.bylawNumber as string;
-        const section = (match.metadata.section as string) || 'unknown';
+        const section = (match.metadata.section as string) || "unknown";
         const sectionTitle = match.metadata.sectionTitle as string | undefined;
-        const content = (match.metadata.text as string) || '';
+        const content = (match.metadata.text as string) || "";
 
         // Try to verify against the database
         const verifiedBylaw = await VerificationDB.verifyBylaw(bylawNumber);
@@ -226,7 +226,7 @@ export async function searchBylawsWithVerification(
             await VerificationDB.findSimilarBylaws(bylawNumber);
           if (similarBylaws.length > 0) {
             console.info(
-              `Similar bylaws found: ${similarBylaws.map((b) => b.bylawNumber).join(', ')}`,
+              `Similar bylaws found: ${similarBylaws.map((b) => b.bylawNumber).join(", ")}`,
             );
           }
         }
@@ -243,7 +243,7 @@ export async function searchBylawsWithVerification(
       return b.score - a.score;
     });
   } catch (error) {
-    console.error('Error in enhanced bylaw search:', error);
+    console.error("Error in enhanced bylaw search:", error);
     return [];
   }
 }
@@ -267,10 +267,10 @@ export async function recordSearchQuery(
       })
       .catch((err) => {
         // Just log error and continue - this is non-critical functionality
-        console.warn('Search query logging failed (non-critical):', err);
+        console.warn("Search query logging failed (non-critical):", err);
       });
   } catch (error) {
-    console.error('Error recording search query:', error);
+    console.error("Error recording search query:", error);
     // Non-critical functionality, can fail silently
   }
 }

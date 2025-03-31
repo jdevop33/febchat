@@ -7,19 +7,19 @@
  * pnpm tsx scripts/search-bylaws.ts <query>
  */
 
-import { Pinecone } from '@pinecone-database/pinecone';
-import dotenv from 'dotenv';
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
 import {
-  getEmbeddingsModel,
   EmbeddingProvider,
-} from '../lib/vector-search/embedding-models';
+  getEmbeddingsModel,
+} from "../lib/vector-search/embedding-models";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Get query from command line or use default
 const query =
-  process.argv.slice(2).join(' ') || 'noise restrictions in residential areas';
+  process.argv.slice(2).join(" ") || "noise restrictions in residential areas";
 
 async function searchBylaws() {
   try {
@@ -27,10 +27,10 @@ async function searchBylaws() {
 
     // Initialize Pinecone client
     const apiKey = process.env.PINECONE_API_KEY;
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
 
     if (!apiKey) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     console.log(`Connecting to Pinecone index: ${indexName}`);
@@ -39,17 +39,17 @@ async function searchBylaws() {
 
     // Get embeddings model
     const embeddings = getEmbeddingsModel(
-      process.env.EMBEDDING_PROVIDER === 'openai'
+      process.env.EMBEDDING_PROVIDER === "openai"
         ? EmbeddingProvider.OPENAI
         : EmbeddingProvider.LLAMAINDEX,
     );
 
     // Generate query embedding
-    console.log('Generating embedding for query...');
+    console.log("Generating embedding for query...");
     const queryEmbedding = await embeddings.embedQuery(query);
 
     // Perform search
-    console.log('Searching Pinecone...');
+    console.log("Searching Pinecone...");
     const searchResults = await index.query({
       vector: queryEmbedding,
       topK: 10,
@@ -81,7 +81,7 @@ async function searchBylaws() {
         const bylawNumber = match.metadata.bylawNumber as string;
         const entry = bylawResults.get(bylawNumber) || {
           bylawNumber,
-          title: (match.metadata.title as string) || 'Unknown',
+          title: (match.metadata.title as string) || "Unknown",
           isConsolidated: (match.metadata.isConsolidated as boolean) || false,
           consolidatedDate: match.metadata.consolidatedDate as
             | string
@@ -98,8 +98,8 @@ async function searchBylaws() {
         const text = match.metadata.text as string;
         if (text) {
           // Find the most relevant part of the text
-          const lines = text.split('\n');
-          const shortSnippet = `${lines.slice(0, 3).join(' ').substring(0, 150)}...`;
+          const lines = text.split("\n");
+          const shortSnippet = `${lines.slice(0, 3).join(" ").substring(0, 150)}...`;
           entry.snippets.push(shortSnippet);
         }
 
@@ -111,7 +111,7 @@ async function searchBylaws() {
         (a, b) => b.score - a.score,
       );
 
-      console.log('\nTop matching bylaws:');
+      console.log("\nTop matching bylaws:");
 
       sortedResults.forEach((result, index) => {
         console.log(
@@ -123,23 +123,23 @@ async function searchBylaws() {
 
         if (result.isConsolidated) {
           console.log(
-            `   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ''}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ''}`,
+            `   Status: Consolidated${result.consolidatedDate ? ` to ${result.consolidatedDate}` : ""}${result.amendedBylaw ? ` (Amended by Bylaw ${result.amendedBylaw})` : ""}`,
           );
         }
 
         // Show up to 2 snippets
-        console.log('\n   Relevant sections:');
+        console.log("\n   Relevant sections:");
         result.snippets.slice(0, 2).forEach((snippet, i) => {
           console.log(`   ${i + 1}. ${snippet}`);
         });
       });
 
-      console.log('\n✅ Search completed successfully');
+      console.log("\n✅ Search completed successfully");
     } else {
-      console.log('\n❌ No results found');
+      console.log("\n❌ No results found");
     }
   } catch (error) {
-    console.error('\n❌ Search failed:', error);
+    console.error("\n❌ Search failed:", error);
     process.exit(1);
   }
 }

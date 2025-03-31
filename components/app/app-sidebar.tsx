@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import type { User } from 'next-auth';
-import { useRouter } from 'next/navigation';
+import type { User } from "next-auth";
+import { useRouter } from "next/navigation";
 
-import { PlusIcon } from '@/components/shared/icons';
-import { SidebarHistory } from '@/components/app/sidebar-history';
-import { SidebarUserNav } from '@/components/app/sidebar-user-nav';
-import { Button } from '@/components/ui/button';
+import { SidebarHistory } from "@/components/app/sidebar-history";
+import { SidebarUserNav } from "@/components/app/sidebar-user-nav";
+import { PlusIcon } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -14,9 +14,13 @@ import {
   SidebarHeader,
   SidebarMenu,
   useSidebar,
-} from '@/components/ui/sidebar';
-import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import Link from "next/link";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -46,7 +50,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   className="h-fit p-2"
                   onClick={() => {
                     setOpenMobile(false);
-                    router.push('/');
+                    router.push("/");
                     router.refresh();
                   }}
                 >

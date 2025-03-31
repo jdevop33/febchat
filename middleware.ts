@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import NextAuth from 'next-auth';
-import { authConfig } from '@/app/(auth)/auth.config';
+import { authConfig } from "@/app/(auth)/auth.config";
+import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Auth middleware
 const auth = NextAuth(authConfig).auth;
@@ -34,8 +34,8 @@ async function rateLimit(
   maxRequests: number,
 ): Promise<boolean> {
   // Safely get IP address using headers (Next.js 14+ changed the IP access method)
-  const forwarded = request.headers.get('x-forwarded-for');
-  const ip = forwarded ? forwarded.split(',')[0].trim() : 'anonymous';
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "anonymous";
   const key = `${ip}:${request.nextUrl.pathname}`;
   const now = Date.now();
 
@@ -58,33 +58,33 @@ async function rateLimit(
 
 export default async function middleware(request: NextRequest) {
   const { pathname, host, protocol } = request.nextUrl;
-  
+
   // Domain validation and redirection
-  const productionHost = 'app.fitforgov.com';
+  const productionHost = "app.fitforgov.com";
   const currentUrl = `${protocol}//${host}`;
-  const isProduction = process.env.NODE_ENV === 'production';
-  
+  const isProduction = process.env.NODE_ENV === "production";
+
   // In production, enforce domain
-  if (isProduction && host !== productionHost && !host.includes('vercel.app')) {
+  if (isProduction && host !== productionHost && !host.includes("vercel.app")) {
     // Redirect to the proper domain while preserving the path
     const url = new URL(pathname, `https://${productionHost}`);
     return NextResponse.redirect(url);
   }
-  
+
   // Fix wrong redirects to external domains
-  if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+  if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
     const url = new URL(request.url);
-    const callbackUrl = url.searchParams.get('callbackUrl');
-    
+    const callbackUrl = url.searchParams.get("callbackUrl");
+
     // If callback URL is pointing to the wrong domain, fix it
     if (callbackUrl && !callbackUrl.includes(host)) {
-      url.searchParams.set('callbackUrl', `${currentUrl}/`);
+      url.searchParams.set("callbackUrl", `${currentUrl}/`);
       return NextResponse.redirect(url);
     }
   }
 
   // Allow access to health check page without authentication
-  if (pathname === '/health') {
+  if (pathname === "/health") {
     return NextResponse.next();
   }
 
@@ -93,9 +93,9 @@ export default async function middleware(request: NextRequest) {
 
   // Stricter rate limiting for auth-related endpoints
   if (
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/register') ||
-    pathname.startsWith('/api/auth')
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/api/auth")
   ) {
     maxRequests = AUTH_PATHS_MAX_REQUESTS;
   }
@@ -107,14 +107,14 @@ export default async function middleware(request: NextRequest) {
     // Return 429 Too Many Requests
     return new NextResponse(
       JSON.stringify({
-        error: 'Too many requests',
-        message: 'Rate limit exceeded. Please try again later.',
+        error: "Too many requests",
+        message: "Rate limit exceeded. Please try again later.",
       }),
       {
         status: 429,
         headers: {
-          'Content-Type': 'application/json',
-          'Retry-After': '60',
+          "Content-Type": "application/json",
+          "Retry-After": "60",
         },
       },
     );
@@ -127,5 +127,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/:path*', '/api/:path*', '/login', '/register'],
+  matcher: ["/", "/:path*", "/api/:path*", "/login", "/register"],
 };

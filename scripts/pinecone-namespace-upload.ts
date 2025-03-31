@@ -8,35 +8,35 @@
  * pnpm tsx scripts/pinecone-namespace-upload.ts <namespace> [pdf-file]
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { Pinecone } from '@pinecone-database/pinecone';
-import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import dotenv from 'dotenv';
+import fs from "node:fs";
+import path from "node:path";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { Pinecone } from "@pinecone-database/pinecone";
+import dotenv from "dotenv";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 // Constants
-const PDF_DIRECTORY = path.resolve(process.cwd(), 'public', 'pdfs');
+const PDF_DIRECTORY = path.resolve(process.cwd(), "public", "pdfs");
 const CHUNK_SIZE = 1000;
 const CHUNK_OVERLAP = 200;
 
 // Parse command line arguments
-const namespace = process.argv[2] || 'bylaws';
+const namespace = process.argv[2] || "bylaws";
 const specificPdf = process.argv[3];
 
 async function main() {
   try {
     // Validate environment
     if (!process.env.PINECONE_API_KEY) {
-      throw new Error('PINECONE_API_KEY is required');
+      throw new Error("PINECONE_API_KEY is required");
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is required');
+      throw new Error("OPENAI_API_KEY is required");
     }
 
     // Get Pinecone client
@@ -45,7 +45,7 @@ async function main() {
     });
 
     // Get index
-    const indexName = process.env.PINECONE_INDEX || 'oak-bay-bylaws-v2';
+    const indexName = process.env.PINECONE_INDEX || "oak-bay-bylaws-v2";
     console.log(
       `Connecting to Pinecone index '${indexName}', namespace '${namespace}'...`,
     );
@@ -61,7 +61,7 @@ async function main() {
     if (specificPdf) {
       // Process a specific PDF file
       const pdfPath = path.resolve(specificPdf);
-      if (fs.existsSync(pdfPath) && pdfPath.toLowerCase().endsWith('.pdf')) {
+      if (fs.existsSync(pdfPath) && pdfPath.toLowerCase().endsWith(".pdf")) {
         files = [pdfPath];
       } else {
         throw new Error(`PDF file not found: ${specificPdf}`);
@@ -70,7 +70,7 @@ async function main() {
       // Process all PDFs in the directory
       files = fs
         .readdirSync(PDF_DIRECTORY)
-        .filter((file) => file.toLowerCase().endsWith('.pdf'))
+        .filter((file) => file.toLowerCase().endsWith(".pdf"))
         .map((file) => path.join(PDF_DIRECTORY, file));
     }
 
@@ -80,7 +80,7 @@ async function main() {
 
     // Initialize embeddings model
     const embeddings = new OpenAIEmbeddings({
-      modelName: 'text-embedding-3-small',
+      modelName: "text-embedding-3-small",
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
@@ -96,7 +96,7 @@ async function main() {
         // Load PDF
         const loader = new PDFLoader(file, { splitPages: false });
         const docs = await loader.load();
-        const pdfText = docs.map((doc) => doc.pageContent).join('\n');
+        const pdfText = docs.map((doc) => doc.pageContent).join("\n");
 
         // Split into chunks
         const textSplitter = new RecursiveCharacterTextSplitter({
@@ -109,13 +109,13 @@ async function main() {
 
         // Generate embeddings
         const texts = chunks.map((chunk) => chunk.pageContent);
-        console.log('  Generating embeddings...');
+        console.log("  Generating embeddings...");
         const embeddingsResult = await embeddings.embedDocuments(texts);
 
         // Create vectors
         const vectors = chunks.map((chunk, i) => {
           const chunkMetadata = {
-            bylawNumber: bylawNumber || 'unknown',
+            bylawNumber: bylawNumber || "unknown",
             filename,
             text: chunk.pageContent,
             source: namespace,
@@ -154,7 +154,7 @@ async function main() {
     // Test a query
     console.log(`\nTesting a query in namespace '${namespace}'...`);
 
-    const queryEmbedding = await embeddings.embedQuery('parking regulations');
+    const queryEmbedding = await embeddings.embedQuery("parking regulations");
 
     const queryResult = await namespaceClient.query({
       vector: queryEmbedding,
@@ -165,11 +165,11 @@ async function main() {
     console.log(`Found ${queryResult.matches?.length || 0} results`);
 
     if (queryResult.matches && queryResult.matches.length > 0) {
-      console.log('\nTop result:');
+      console.log("\nTop result:");
       const topResult = queryResult.matches[0];
       console.log(`  ID: ${topResult.id}`);
       console.log(`  Score: ${topResult.score}`);
-      console.log(`  Bylaw: ${topResult.metadata?.bylawNumber || 'Unknown'}`);
+      console.log(`  Bylaw: ${topResult.metadata?.bylawNumber || "Unknown"}`);
 
       // Show a snippet of the content
       const content = topResult.metadata?.text as string;
@@ -178,7 +178,7 @@ async function main() {
       }
     }
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error("❌ Error:", error);
     process.exit(1);
   }
 }

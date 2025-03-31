@@ -1,52 +1,52 @@
-import type { Metadata } from 'next';
-import { Toaster } from 'sonner';
+import type { Metadata } from "next";
+import { Toaster } from "sonner";
 
-import { ThemeProvider } from '@/components/shared/theme-provider';
-import { ErrorBoundary } from '@/components/ui/error-boundary';
-import { AppErrorHandler } from '@/components/app/app-error-handler';
+import { AppErrorHandler } from "@/components/app/app-error-handler";
+import { ThemeProvider } from "@/components/shared/theme-provider";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
-import './globals.css';
+import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://app.fitforgov.com'),
-  title: 'FitForGov Assistant',
+  metadataBase: new URL("https://app.fitforgov.com"),
+  title: "FitForGov Assistant",
   description:
-    'AI-powered assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.',
-  authors: [{ name: 'Oak Bay Municipality' }],
+    "AI-powered assistant for Oak Bay municipal bylaws, providing accurate search, citation, and interpretation for citizens and staff.",
+  authors: [{ name: "Oak Bay Municipality" }],
   keywords: [
-    'Bylaw Search',
-    'Municipal Bylaws',
-    'Oak Bay',
-    'Bylaw Assistant',
-    'Municipal Regulations',
-    'Document Search',
+    "Bylaw Search",
+    "Municipal Bylaws",
+    "Oak Bay",
+    "Bylaw Assistant",
+    "Municipal Regulations",
+    "Document Search",
   ],
   icons: {
-    icon: '/favicon.ico',
+    icon: "/favicon.ico",
   },
 };
 
 export const viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1, // Disable auto-zoom on mobile Safari
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'hsl(0 0% 100%)' },
-    { media: '(prefers-color-scheme: dark)', color: 'hsl(222 47% 11%)' },
+    { media: "(prefers-color-scheme: light)", color: "hsl(0 0% 100%)" },
+    { media: "(prefers-color-scheme: dark)", color: "hsl(222 47% 11%)" },
   ],
 };
 
 // Updated theme colors based on our new palette
-const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
-const DARK_THEME_COLOR = 'hsl(222 47% 11%)';
+const LIGHT_THEME_COLOR = "hsl(0 0% 100%)";
+const DARK_THEME_COLOR = "hsl(222 47% 11%)";
 
 // Initialize optimizations at application startup
-import { initializeOptimizations } from '@/lib/optimization';
+import { initializeOptimizations } from "@/lib/optimization";
 
 // This initializes optimizations only in production or when explicitly enabled
 if (
-  process.env.NODE_ENV === 'production' ||
-  process.env.ENABLE_OPTIMIZATIONS === 'true'
+  process.env.NODE_ENV === "production" ||
+  process.env.ENABLE_OPTIMIZATIONS === "true"
 ) {
   initializeOptimizations().catch(console.error);
 }
@@ -66,7 +66,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head />
-      
+
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
@@ -78,12 +78,12 @@ export default async function RootLayout({
             position="top-center"
             toastOptions={{
               style: {
-                background: 'hsl(var(--card))',
-                color: 'hsl(var(--card-foreground))',
-                border: '1px solid hsl(var(--border))',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                background: "hsl(var(--card))",
+                color: "hsl(var(--card-foreground))",
+                border: "1px solid hsl(var(--border))",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
               },
-              className: 'text-sm font-medium',
+              className: "text-sm font-medium",
             }}
           />
           <ErrorBoundary>

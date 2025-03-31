@@ -1,37 +1,37 @@
-'use client';
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
-import cx from 'classnames';
-import equal from 'fast-deep-equal';
+import cx from "classnames";
+import equal from "fast-deep-equal";
+import { AnimatePresence, motion } from "framer-motion";
+import { memo, useState } from "react";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 // Types
-import type { MessageProps } from '@/types/messages/message-types';
+import type { MessageProps } from "@/types/messages/message-types";
 
+import { BylawCitation } from "@/components/bylaw/bylaw-citation";
+import { CitationFallback } from "@/components/bylaw/citation-fallback";
+import { MessageActions } from "@/components/chat/message-actions";
+import { MessageEditor } from "@/components/chat/message-editor";
+import { MessageReasoning } from "@/components/chat/message-reasoning";
 // Components
 import {
   DocumentToolCall,
   DocumentToolResult,
-} from '@/components/documents/document';
-import { PencilEditIcon, SparklesIcon } from '@/components/shared/icons';
-import { Markdown } from '@/components/shared/markdown';
-import { EnhancedMarkdown } from '@/components/shared/enhanced-markdown';
-import { MessageActions } from '@/components/chat/message-actions';
-import { PreviewAttachment } from '@/components/ui/preview-attachment';
-import { Weather } from '@/components/ui/weather';
-import { Button } from '@/components/ui/button';
+} from "@/components/documents/document";
+import { DocumentPreview } from "@/components/documents/document-preview";
+import { EnhancedMarkdown } from "@/components/shared/enhanced-markdown";
+import { PencilEditIcon, SparklesIcon } from "@/components/shared/icons";
+import { Markdown } from "@/components/shared/markdown";
+import { Button } from "@/components/ui/button";
+import { PreviewAttachment } from "@/components/ui/preview-attachment";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { MessageEditor } from '@/components/chat/message-editor';
-import { DocumentPreview } from '@/components/documents/document-preview';
-import { MessageReasoning } from '@/components/chat/message-reasoning';
-import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { CitationFallback } from '@/components/bylaw/citation-fallback';
+} from "@/components/ui/tooltip";
+import { Weather } from "@/components/ui/weather";
 
 // Safe error boundary for bylaw citations
 interface ErrorBoundaryFallbackProps {
@@ -61,7 +61,7 @@ const ErrorBoundaryFallback = ({
     );
   } catch (error) {
     console.error(
-      'Error rendering BylawCitation in ErrorBoundaryFallback:',
+      "Error rendering BylawCitation in ErrorBoundaryFallback:",
       error,
     );
     // Use the CitationFallback component for a consistent UI
@@ -75,7 +75,7 @@ const ErrorBoundaryFallback = ({
           error={
             error instanceof Error
               ? error
-              : new Error('Failed to render bylaw citation')
+              : new Error("Failed to render bylaw citation")
           }
         />
       );
@@ -93,7 +93,7 @@ const PurePreviewMessage = ({
   reload,
   isReadonly,
 }: MessageProps) => {
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const [mode, setMode] = useState<"view" | "edit">("view");
 
   return (
     <AnimatePresence>
@@ -107,14 +107,14 @@ const PurePreviewMessage = ({
       >
         <div
           className={cn(
-            'flex w-full gap-4 group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl',
+            "flex w-full gap-4 group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
             {
-              'w-full': mode === 'edit',
-              'group-data-[role=user]/message:w-fit': mode !== 'edit',
+              "w-full": mode === "edit",
+              "group-data-[role=user]/message:w-fit": mode !== "edit",
             },
           )}
         >
-          {message.role === 'assistant' && (
+          {message.role === "assistant" && (
             <div
               className="flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border"
               aria-hidden="true"
@@ -147,16 +147,16 @@ const PurePreviewMessage = ({
               />
             )}
 
-            {(message.content || message.reasoning) && mode === 'view' && (
+            {(message.content || message.reasoning) && mode === "view" && (
               <div className="flex flex-row items-start gap-2">
-                {message.role === 'user' && !isReadonly && (
+                {message.role === "user" && !isReadonly && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         className="h-fit rounded-full px-2 text-muted-foreground opacity-0 group-hover/message:opacity-100"
                         onClick={() => {
-                          setMode('edit');
+                          setMode("edit");
                         }}
                       >
                         <PencilEditIcon />
@@ -167,16 +167,16 @@ const PurePreviewMessage = ({
                 )}
 
                 <div
-                  className={cn('flex flex-col gap-4', {
-                    'rounded-xl bg-primary px-3 py-2 text-primary-foreground':
-                      message.role === 'user',
+                  className={cn("flex flex-col gap-4", {
+                    "rounded-xl bg-primary px-3 py-2 text-primary-foreground":
+                      message.role === "user",
                   })}
                 >
-                  {message.role === 'assistant' ? (
-                    message.content && typeof message.content === 'string' ? (
+                  {message.role === "assistant" ? (
+                    message.content && typeof message.content === "string" ? (
                       <EnhancedMarkdown>{message.content}</EnhancedMarkdown>
                     ) : (
-                      <Markdown>{message.content || ''}</Markdown>
+                      <Markdown>{message.content || ""}</Markdown>
                     )
                   ) : (
                     <Markdown>{message.content as string}</Markdown>
@@ -185,7 +185,7 @@ const PurePreviewMessage = ({
               </div>
             )}
 
-            {message.content && mode === 'edit' && (
+            {message.content && mode === "edit" && (
               <div className="flex flex-row items-start gap-2">
                 <div className="size-8" />
 
@@ -204,31 +204,31 @@ const PurePreviewMessage = ({
                 {message.toolInvocations.map((toolInvocation) => {
                   const { toolName, toolCallId, state, args } = toolInvocation;
 
-                  if (state === 'result') {
+                  if (state === "result") {
                     const { result } = toolInvocation;
 
                     return (
                       <div key={toolCallId}>
-                        {toolName === 'getWeather' ? (
+                        {toolName === "getWeather" ? (
                           <Weather weatherAtLocation={result} />
-                        ) : toolName === 'createDocument' ? (
+                        ) : toolName === "createDocument" ? (
                           <DocumentPreview
                             isReadonly={isReadonly}
                             result={result}
                           />
-                        ) : toolName === 'updateDocument' ? (
+                        ) : toolName === "updateDocument" ? (
                           <DocumentToolResult
                             type="update"
                             result={result}
                             isReadonly={isReadonly}
                           />
-                        ) : toolName === 'requestSuggestions' ? (
+                        ) : toolName === "requestSuggestions" ? (
                           <DocumentToolResult
                             type="request-suggestions"
                             result={result}
                             isReadonly={isReadonly}
                           />
-                        ) : toolName === 'searchBylaws' ? (
+                        ) : toolName === "searchBylaws" ? (
                           <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
                             <div className="text-sm font-medium text-blue-600 dark:text-blue-400">
                               Bylaw Functionality Temporarily Disabled
@@ -248,20 +248,20 @@ const PurePreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
+                        skeleton: ["getWeather"].includes(toolName),
                       })}
                     >
-                      {toolName === 'getWeather' ? (
+                      {toolName === "getWeather" ? (
                         <Weather />
-                      ) : toolName === 'createDocument' ? (
+                      ) : toolName === "createDocument" ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
-                      ) : toolName === 'updateDocument' ? (
+                      ) : toolName === "updateDocument" ? (
                         <DocumentToolCall
                           type="update"
                           args={args}
                           isReadonly={isReadonly}
                         />
-                      ) : toolName === 'requestSuggestions' ? (
+                      ) : toolName === "requestSuggestions" ? (
                         <DocumentToolCall
                           type="request-suggestions"
                           args={args}
@@ -311,7 +311,7 @@ export const PreviewMessage = memo(
 );
 
 export const ThinkingMessage = () => {
-  const role = 'assistant';
+  const role = "assistant";
 
   return (
     <motion.div
@@ -322,9 +322,9 @@ export const ThinkingMessage = () => {
     >
       <div
         className={cx(
-          'flex w-full gap-4 rounded-xl group-data-[role=user]/message:ml-auto group-data-[role=user]/message:w-fit group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:px-3 group-data-[role=user]/message:py-2',
+          "flex w-full gap-4 rounded-xl group-data-[role=user]/message:ml-auto group-data-[role=user]/message:w-fit group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:px-3 group-data-[role=user]/message:py-2",
           {
-            'group-data-[role=user]/message:bg-muted': true,
+            "group-data-[role=user]/message:bg-muted": true,
           },
         )}
       >

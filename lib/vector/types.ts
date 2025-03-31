@@ -23,7 +23,7 @@ export interface BylawSearchOptions {
       };
 
   /** Reranking strategy */
-  reranking?: 'default' | 'semantic' | 'hybrid';
+  reranking?: "default" | "semantic" | "hybrid";
 
   /** Whether to exclude bylaw content that couldn't be verified */
   verifiedOnly?: boolean;

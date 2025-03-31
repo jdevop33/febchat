@@ -45,21 +45,21 @@ export async function searchBylaws(
   request: BylawSearchRequest,
 ): Promise<BylawSearchResponse> {
   const params = new URLSearchParams();
-  params.append('query', request.query);
+  params.append("query", request.query);
 
   if (request.limit) {
-    params.append('limit', request.limit.toString());
+    params.append("limit", request.limit.toString());
   }
 
   if (request.filters?.bylawNumbers?.length) {
     request.filters.bylawNumbers.forEach((num) =>
-      params.append('bylawNumbers', num),
+      params.append("bylawNumbers", num),
     );
   }
 
   if (request.filters?.sections?.length) {
     request.filters.sections.forEach((section) =>
-      params.append('sections', section),
+      params.append("sections", section),
     );
   }
 
@@ -97,10 +97,10 @@ export async function getBylawPdf(
 export async function submitBylawFeedback(
   feedback: BylawFeedbackRequest,
 ): Promise<{ success: boolean }> {
-  const response = await fetch('/api/bylaws/feedback', {
-    method: 'POST',
+  const response = await fetch("/api/bylaws/feedback", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(feedback),
   });

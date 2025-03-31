@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { FileSearch } from 'lucide-react';
-import { toast } from 'sonner';
-import { PdfViewerModal } from '@/components/pdf/pdf-viewer-modal';
-import { CitationFeedback } from '@/components/bylaw/citation-feedback';
-import { VALIDATED_BYLAWS } from '@/lib/utils/bylaw-maps-client';
+import { CitationFeedback } from "@/components/bylaw/citation-feedback";
+import { PdfViewerModal } from "@/components/pdf/pdf-viewer-modal";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { VALIDATED_BYLAWS } from "@/lib/utils/bylaw-maps-client";
+import { FileSearch } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 
+import { CitationActions } from "./citation-actions";
+import { CitationExcerpt } from "./citation-excerpt";
+import { CitationFallback } from "./citation-fallback";
+import { CitationFormatter } from "./citation-formatter";
 // Import the smaller components
-import { CitationHeader } from './citation-header';
-import { CitationMetadata } from './citation-metadata';
-import { CitationExcerpt } from './citation-excerpt';
-import { CitationFormatter } from './citation-formatter';
-import { CitationActions } from './citation-actions';
-import { CitationFallback } from './citation-fallback';
+import { CitationHeader } from "./citation-header";
+import { CitationMetadata } from "./citation-metadata";
 
 // Import formatter utility
-import { formatSection } from '@/lib/utils/citation-formatter';
+import { formatSection } from "@/lib/utils/citation-formatter";
 
 interface BylawCitationProps {
   bylawNumber: string;
@@ -58,10 +58,12 @@ export function BylawCitation({
   const [expanded, setExpanded] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
   const [validBylaw, setValidBylaw] = useState(true);
-  const [validationStatus, setValidationStatus] = useState<'loading' | 'valid' | 'warning' | 'invalid'>('loading');
+  const [validationStatus, setValidationStatus] = useState<
+    "loading" | "valid" | "warning" | "invalid"
+  >("loading");
   const [citationFormat, setCitationFormat] = useState<
-    'standard' | 'legal' | 'apa'
-  >('standard');
+    "standard" | "legal" | "apa"
+  >("standard");
   const [isVerifyingPdf, setIsVerifyingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
@@ -71,60 +73,74 @@ export function BylawCitation({
   // Validate bylaw number on component mount
   useEffect(() => {
     // Start with loading state
-    setValidationStatus('loading');
-    
+    setValidationStatus("loading");
+
     // If explicitly marked as verified, trust that
     if (isVerified) {
       setValidBylaw(true);
-      setValidationStatus('valid');
+      setValidationStatus("valid");
       return;
     }
 
     // Fallback validation list if imports fail
     const fallbackValidBylaws = [
-      '3210', '3531', '4100', '4247', '4742', '4849', '4861', '4891', 
-      '4892', '3578', '4672', '3545', '4371', '4183', '3946', '4013',
+      "3210",
+      "3531",
+      "4100",
+      "4247",
+      "4742",
+      "4849",
+      "4861",
+      "4891",
+      "4892",
+      "3578",
+      "4672",
+      "3545",
+      "4371",
+      "4183",
+      "3946",
+      "4013",
       // Add any other known valid bylaws here
     ];
 
     try {
       // First check if the import worked correctly
       if (
-        typeof VALIDATED_BYLAWS !== 'undefined' &&
+        typeof VALIDATED_BYLAWS !== "undefined" &&
         Array.isArray(VALIDATED_BYLAWS) &&
         VALIDATED_BYLAWS.length > 0
       ) {
         // Check against our known list
         const isValid = VALIDATED_BYLAWS.includes(bylawNumber);
         setValidBylaw(isValid);
-        setValidationStatus(isValid ? 'valid' : 'invalid');
+        setValidationStatus(isValid ? "valid" : "invalid");
       } else if (fallbackValidBylaws.includes(bylawNumber)) {
         // Use our hardcoded fallback list
-        console.warn('Using fallback bylaw validation list');
+        console.warn("Using fallback bylaw validation list");
         setValidBylaw(true);
-        setValidationStatus('valid');
+        setValidationStatus("valid");
       } else {
         // Fallback to basic validation - assume bylaw is valid if number format is correct
         console.warn(
-          'No validation lists available, using format-based validation',
+          "No validation lists available, using format-based validation",
         );
-        
+
         // Check if it looks like a bylaw number (3-5 digits, potentially followed by a letter)
         const isLikelyValid = /^\d{3,5}[A-Za-z]?$/.test(bylawNumber);
         setValidBylaw(isLikelyValid);
-        setValidationStatus(isLikelyValid ? 'warning' : 'invalid');
+        setValidationStatus(isLikelyValid ? "warning" : "invalid");
       }
     } catch (error) {
-      console.error('Error checking bylaw validation:', error);
+      console.error("Error checking bylaw validation:", error);
       // Try fallback list even if there was an error
       if (fallbackValidBylaws.includes(bylawNumber)) {
         setValidBylaw(true);
-        setValidationStatus('valid');
+        setValidationStatus("valid");
       } else {
         // For numeric bylaw numbers, set warning; otherwise invalid
         const isNumeric = /^\d+$/.test(bylawNumber);
-        setValidBylaw(isNumeric); 
-        setValidationStatus(isNumeric ? 'warning' : 'invalid');
+        setValidBylaw(isNumeric);
+        setValidationStatus(isNumeric ? "warning" : "invalid");
       }
     }
   }, [bylawNumber, isVerified]);
@@ -143,14 +159,30 @@ export function BylawCitation({
   // Verification status UI helpers
   const getValidationStatusIcon = () => {
     switch (validationStatus) {
-      case 'valid':
-        return <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">Verified</span>;
-      case 'warning':
-        return <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Likely Valid</span>;
-      case 'invalid':
-        return <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/40 dark:text-red-300">Unverified</span>;
+      case "valid":
+        return (
+          <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/40 dark:text-green-300">
+            Verified
+          </span>
+        );
+      case "warning":
+        return (
+          <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+            Likely Valid
+          </span>
+        );
+      case "invalid":
+        return (
+          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/40 dark:text-red-300">
+            Unverified
+          </span>
+        );
       default:
-        return <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">Checking...</span>;
+        return (
+          <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+            Checking...
+          </span>
+        );
     }
   };
 
@@ -164,16 +196,16 @@ export function BylawCitation({
       // Try to use bylaw number to find matching PDF - be conservative to avoid 404s
       return `/pdfs/${bylawNumber}.pdf`;
     } catch (e) {
-      console.error('Error generating PDF path:', e);
+      console.error("Error generating PDF path:", e);
       return null;
     }
   };
 
   // Get external URL for the bylaw (with error handling)
-  let externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+  let externalUrl = "https://www.oakbay.ca/municipal-services/bylaws";
   try {
     // Try to use the correct URL if the import worked
-    if (bylawNumber && typeof window !== 'undefined') {
+    if (bylawNumber && typeof window !== "undefined") {
       // Check if we have the official URL from props
       if (officialUrl) {
         externalUrl = officialUrl;
@@ -183,21 +215,23 @@ export function BylawCitation({
       }
     }
   } catch (error) {
-    console.error('Error generating external URL:', error);
+    console.error("Error generating external URL:", error);
     // Fallback to general bylaws page
-    externalUrl = 'https://www.oakbay.ca/municipal-services/bylaws';
+    externalUrl = "https://www.oakbay.ca/municipal-services/bylaws";
   }
 
   // Various action handlers
   const handleViewPdf = async () => {
     setIsVerifyingPdf(true);
     setPdfError(null);
-    
+
     try {
       // Verify PDF exists by checking with the API
-      const response = await fetch(`/api/bylaws/find-pdf?bylawNumber=${bylawNumber}`);
+      const response = await fetch(
+        `/api/bylaws/find-pdf?bylawNumber=${bylawNumber}`,
+      );
       const data = await response.json();
-      
+
       if (data.found && data.url) {
         // PDF found, open it
         setIsPdfOpen(true);
@@ -206,33 +240,35 @@ export function BylawCitation({
         // PDF not found, show error and fallback
         setPdfError(`PDF for Bylaw ${bylawNumber} not found`);
         setIsVerifyingPdf(false);
-        toast.error('PDF not found', {
+        toast.error("PDF not found", {
           description: `Could not find PDF for Bylaw ${bylawNumber}. Directing to official website.`,
         });
-        
+
         // Automatically fall back to external site
         setTimeout(() => {
           handleViewExternalPdf();
         }, 1500);
       }
     } catch (error) {
-      console.error('Error verifying PDF:', error);
-      setPdfError(`Error checking PDF: ${error instanceof Error ? error.message : String(error)}`);
+      console.error("Error verifying PDF:", error);
+      setPdfError(
+        `Error checking PDF: ${error instanceof Error ? error.message : String(error)}`,
+      );
       setIsVerifyingPdf(false);
-      
+
       // Fall back to default behavior - try to open PDF anyway
       setIsPdfOpen(true);
     }
   };
 
   const handlePdfNotFound = () => {
-    toast.error('PDF not found', {
+    toast.error("PDF not found", {
       description: `Could not find PDF for Bylaw ${bylawNumber}. Directing to official website.`,
     });
-    
+
     setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        window.open(externalUrl, '_blank', 'noopener,noreferrer');
+      if (typeof window !== "undefined") {
+        window.open(externalUrl, "_blank", "noopener,noreferrer");
       }
     }, 1500);
   };
@@ -242,23 +278,23 @@ export function BylawCitation({
     console.log(`Opening external PDF for Bylaw ${bylawNumber}`);
 
     // Open in new tab
-    if (typeof window !== 'undefined') {
-      window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
+    if (typeof window !== "undefined") {
+      window.open(externalUrl, "_blank", "noopener,noreferrer,popup=yes");
     }
   };
 
   const handleViewOfficialSite = () => {
     // Log the action for debugging
-    console.log('Opening official site (simplified for testing)');
+    console.log("Opening official site (simplified for testing)");
 
-    if (typeof window !== 'undefined') {
-      window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
+    if (typeof window !== "undefined") {
+      window.open(externalUrl, "_blank", "noopener,noreferrer,popup=yes");
     }
   };
 
   const handleExportReport = () => {
     // Generate a citation verification report
-    toast.success('Citation verification report downloading...', {
+    toast.success("Citation verification report downloading...", {
       description: `Generating verification report for Bylaw ${bylawNumber}, Section ${section}`,
     });
 
@@ -270,32 +306,32 @@ export function BylawCitation({
       isConsolidated,
       consolidatedDate,
       citationText: excerpt,
-      sourceUrl: 'https://www.oakbay.ca/municipal-services/bylaws', // Simplified for testing
-      verifiedDate: new Date().toISOString().split('T')[0],
+      sourceUrl: "https://www.oakbay.ca/municipal-services/bylaws", // Simplified for testing
+      verifiedDate: new Date().toISOString().split("T")[0],
       pdfPath: getPdfPath(),
     };
 
     // Log verification to console (in production, this would be saved)
-    console.log('Citation verification details:', verificationData);
+    console.log("Citation verification details:", verificationData);
 
     // Show success after a delay to simulate report generation
     setTimeout(() => {
-      toast.success('Citation verified', {
-        description: 'The citation verification report has been downloaded',
+      toast.success("Citation verified", {
+        description: "The citation verification report has been downloaded",
       });
     }, 1500);
   };
 
   // Fallback rendering in case of errors
   if (!bylawNumber) {
-    console.warn('BylawCitation: Missing bylaw number', {
+    console.warn("BylawCitation: Missing bylaw number", {
       props: { bylawNumber, section, title },
     });
     return (
       <CitationFallback
         bylawNumber="unknown"
         formattedTitle="Unknown Bylaw"
-        error={new Error('Missing bylaw number')}
+        error={new Error("Missing bylaw number")}
       />
     );
   }
@@ -307,8 +343,8 @@ export function BylawCitation({
         <>
           <Card
             className={cn(
-              'mb-4 overflow-hidden border-amber-100 bg-amber-50/30 shadow-sm hover:border-amber-200 dark:border-amber-900/30 dark:bg-amber-900/10 dark:hover:border-amber-800/80',
-              expanded && 'bg-amber-50/50 dark:bg-amber-900/20',
+              "mb-4 overflow-hidden border-amber-100 bg-amber-50/30 shadow-sm hover:border-amber-200 dark:border-amber-900/30 dark:bg-amber-900/10 dark:hover:border-amber-800/80",
+              expanded && "bg-amber-50/50 dark:bg-amber-900/20",
               className,
             )}
           >
@@ -373,7 +409,7 @@ export function BylawCitation({
           {isPdfOpen && (
             <PdfViewerModal
               url={getPdfPath()}
-              title={`Bylaw ${bylawNumber} - ${title || 'View Document'}`}
+              title={`Bylaw ${bylawNumber} - ${title || "View Document"}`}
               initialPage={1}
               onClose={() => setIsPdfOpen(false)}
               onError={handlePdfNotFound}
@@ -382,12 +418,16 @@ export function BylawCitation({
         </>
       );
     } catch (error) {
-      console.error('Error rendering bylaw citation:', error);
+      console.error("Error rendering bylaw citation:", error);
       return (
         <CitationFallback
           bylawNumber={bylawNumber}
           formattedTitle={formattedTitle}
-          error={error instanceof Error ? error : new Error('Unknown rendering error')}
+          error={
+            error instanceof Error
+              ? error
+              : new Error("Unknown rendering error")
+          }
         />
       );
     }

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { isToday, isYesterday, subMonths, subWeeks } from 'date-fns';
-import Link from 'next/link';
-import { useParams, usePathname, useRouter } from 'next/navigation';
-import type { User } from 'next-auth';
-import { memo, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import useSWR from 'swr';
+import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
+import type { User } from "next-auth";
+import Link from "next/link";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { memo, useEffect, useState } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
 
 import {
   CheckCircleFillIcon,
@@ -15,7 +15,7 @@ import {
   MoreHorizontalIcon,
   ShareIcon,
   TrashIcon,
-} from '@/components/shared/icons';
+} from "@/components/shared/icons";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +35,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -44,10 +44,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar';
-import type { Chat } from '@/lib/db/schema';
-import { fetcher } from '@/lib/utils';
-import { useChatVisibility } from '@/hooks/use-chat-visibility';
+} from "@/components/ui/sidebar";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
+import type { Chat } from "@/lib/db/schema";
+import { fetcher } from "@/lib/utils";
 
 type GroupedChats = {
   today: Chat[];
@@ -103,28 +103,28 @@ const PureChatItem = ({
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType('private');
+                    setVisibilityType("private");
                   }}
                 >
                   <div className="flex flex-row items-center gap-2">
                     <LockIcon size={12} />
                     <span>Private</span>
                   </div>
-                  {visibilityType === 'private' ? (
+                  {visibilityType === "private" ? (
                     <CheckCircleFillIcon />
                   ) : null}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer flex-row justify-between"
                   onClick={() => {
-                    setVisibilityType('public');
+                    setVisibilityType("public");
                   }}
                 >
                   <div className="flex flex-row items-center gap-2">
                     <GlobeIcon />
                     <span>Public</span>
                   </div>
-                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
+                  {visibilityType === "public" ? <CheckCircleFillIcon /> : null}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
@@ -156,7 +156,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     data: history = [],
     isLoading,
     mutate,
-  } = useSWR<Array<Chat>>(user ? '/api/history' : null, fetcher, {
+  } = useSWR<Array<Chat>>(user ? "/api/history" : null, fetcher, {
     fallbackData: [],
   });
 
@@ -169,26 +169,26 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
   const router = useRouter();
   const handleDelete = async () => {
     const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
 
     toast.promise(deletePromise, {
-      loading: 'Deleting chat...',
+      loading: "Deleting chat...",
       success: () => {
         mutate((history) => {
           if (history) {
             return history.filter((h) => h.id !== id);
           }
         });
-        return 'Chat deleted successfully';
+        return "Chat deleted successfully";
       },
-      error: 'Failed to delete chat',
+      error: "Failed to delete chat",
     });
 
     setShowDeleteDialog(false);
 
     if (deleteId === id) {
-      router.push('/');
+      router.push("/");
     }
   };
 
@@ -221,7 +221,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                   className="h-4 max-w-[--skeleton-width] flex-1 rounded-md bg-sidebar-accent-foreground/10"
                   style={
                     {
-                      '--skeleton-width': `${item}%`,
+                      "--skeleton-width": `${item}%`,
                     } as React.CSSProperties
                   }
                 />

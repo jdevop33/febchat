@@ -3,15 +3,15 @@
  * This file integrates all the optimization strategies implemented in the project
  */
 
-import { profiler } from './utils/profiler';
-import { createDatabaseIndexes } from './db/indexes';
+import { createDatabaseIndexes } from "./db/indexes";
+import { profiler } from "./utils/profiler";
 
 /**
  * Initialize optimizations for the application
  * This should be called during application startup
  */
 export async function initializeOptimizations() {
-  console.log('⏳ Initializing application optimizations...');
+  console.log("⏳ Initializing application optimizations...");
   const start = Date.now();
 
   try {
@@ -23,8 +23,8 @@ export async function initializeOptimizations() {
     console.log(`✅ Optimizations initialized in ${Date.now() - start}ms`);
 
     // Log system info in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('📊 System information:');
+    if (process.env.NODE_ENV !== "production") {
+      console.log("📊 System information:");
       console.log(`  Node.js: ${process.version}`);
       console.log(
         `  Memory: ${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB RSS`,
@@ -32,7 +32,7 @@ export async function initializeOptimizations() {
       console.log(`  Environment: ${process.env.NODE_ENV}`);
     }
   } catch (error) {
-    console.error('❌ Failed to initialize optimizations:', error);
+    console.error("❌ Failed to initialize optimizations:", error);
   }
 }
 

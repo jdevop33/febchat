@@ -1,7 +1,7 @@
-import type { Transaction } from 'prosemirror-state';
-import type { EditorView } from 'prosemirror-view';
-import type { Node } from 'prosemirror-model';
-import type { MutableRefObject } from 'react';
+import type { Node } from "prosemirror-model";
+import type { Transaction } from "prosemirror-state";
+import type { EditorView } from "prosemirror-view";
+import type { MutableRefObject } from "react";
 
 export interface HandleTransactionParams {
   transaction: Transaction;

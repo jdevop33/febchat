@@ -1,24 +1,24 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 // List of components with circular dependencies
 const CIRCULAR_COMPONENTS = [
-  'components/artifact.tsx',
-  'components/artifact-messages.tsx',
-  'components/message.tsx',
-  'components/document-preview.tsx',
-  'components/document.tsx',
+  "components/artifact.tsx",
+  "components/artifact-messages.tsx",
+  "components/message.tsx",
+  "components/document-preview.tsx",
+  "components/document.tsx",
 ];
 
 // Path to shared types
 const SHARED_TYPES_PATH = path.join(
   process.cwd(),
-  'types/shared/shared-types.ts',
+  "types/shared/shared-types.ts",
 );
 
 // Function to analyze imports in a file
 function analyzeImports(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
   const importRegex =
     /import\s+(?:{([^}]+)}\s+from\s+['"]([^'"]+)['"]|([^\s]+)\s+from\s+['"]([^'"]+)['"])/g;
   const imports = [];
@@ -27,16 +27,16 @@ function analyzeImports(filePath) {
   while ((match = importRegex.exec(content)) !== null) {
     if (match[1]) {
       // Named imports like: import { X, Y } from 'path'
-      const namedImports = match[1].split(',').map((name) => name.trim());
+      const namedImports = match[1].split(",").map((name) => name.trim());
       imports.push({
-        type: 'named',
+        type: "named",
         names: namedImports,
         path: match[2],
       });
     } else {
       // Default import like: import X from 'path'
       imports.push({
-        type: 'default',
+        type: "default",
         name: match[3],
         path: match[4],
       });
@@ -48,7 +48,7 @@ function analyzeImports(filePath) {
 
 // Function to extract types from a file
 function extractTypes(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
   const typeRegex =
     /export\s+(type|interface)\s+([A-Za-z0-9_]+)(?:\s*=\s*[^{;]+|\s*{([^}]*)}\s*)/g;
   const types = [];
@@ -58,7 +58,7 @@ function extractTypes(filePath) {
     types.push({
       kind: match[1], // 'type' or 'interface'
       name: match[2],
-      body: match[3] || '',
+      body: match[3] || "",
     });
   }
 
@@ -67,19 +67,19 @@ function extractTypes(filePath) {
 
 // Function to fix imports in a file
 function fixImports(filePath, circularImports) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = fs.readFileSync(filePath, "utf8");
   let modifiedContent = content;
 
   // Replace imports from circular dependencies with shared types
   circularImports.forEach((importInfo) => {
-    if (importInfo.type === 'named') {
+    if (importInfo.type === "named") {
       const importPattern = new RegExp(
-        `import\\s+{[^}]*${importInfo.names.join('[^}]*,\\s*[^}]*')}[^}]*}\\s+from\\s+['"]${importInfo.path.replace(/\//g, '\\/')}['"]`,
-        'g',
+        `import\\s+{[^}]*${importInfo.names.join("[^}]*,\\s*[^}]*")}[^}]*}\\s+from\\s+['"]${importInfo.path.replace(/\//g, "\\/")}['"]`,
+        "g",
       );
       modifiedContent = modifiedContent.replace(
         importPattern,
-        `import { ${importInfo.names.join(', ')} } from '@/types/shared/shared-types'`,
+        `import { ${importInfo.names.join(", ")} } from '@/types/shared/shared-types'`,
       );
     }
   });
@@ -90,7 +90,7 @@ function fixImports(filePath, circularImports) {
 
 // Function to update shared types file
 function updateSharedTypes(extractedTypes) {
-  const sharedTypesContent = fs.readFileSync(SHARED_TYPES_PATH, 'utf8');
+  const sharedTypesContent = fs.readFileSync(SHARED_TYPES_PATH, "utf8");
 
   // Check if types already exist in shared types
   const existingTypesRegex = /export\s+(type|interface)\s+([A-Za-z0-9_]+)/g;
@@ -108,7 +108,7 @@ function updateSharedTypes(extractedTypes) {
   extractedTypes.forEach((typeInfo) => {
     if (!existingTypes.has(typeInfo.name)) {
       const typeDefinition =
-        typeInfo.kind === 'type'
+        typeInfo.kind === "type"
           ? `export type ${typeInfo.name} = any; // TODO: Replace with proper type definition\n`
           : `export interface ${typeInfo.name} {\n  // TODO: Add properties\n}\n`;
 
@@ -123,12 +123,12 @@ function updateSharedTypes(extractedTypes) {
       `Added ${typesAdded} new types to shared-types.ts (saved as shared-types.ts.updated)`,
     );
   } else {
-    console.log('No new types needed to be added to shared-types.ts');
+    console.log("No new types needed to be added to shared-types.ts");
   }
 }
 
 // Main execution
-console.log('Analyzing circular dependencies...');
+console.log("Analyzing circular dependencies...");
 
 // Step 1: Extract types from circular dependency components
 const allExtractedTypes = [];
@@ -154,11 +154,11 @@ CIRCULAR_COMPONENTS.forEach((componentPath) => {
 
     // Find imports from other circular components
     const circularImports = imports.filter((imp) => {
-      const importPath = imp.path.startsWith('@/')
+      const importPath = imp.path.startsWith("@/")
         ? imp.path.substring(2)
         : imp.path;
       return CIRCULAR_COMPONENTS.some((cp) => {
-        const componentPath = cp.startsWith('./') ? cp.substring(2) : cp;
+        const componentPath = cp.startsWith("./") ? cp.substring(2) : cp;
         return (
           importPath.includes(componentPath) || importPath === componentPath
         );
@@ -176,7 +176,7 @@ CIRCULAR_COMPONENTS.forEach((componentPath) => {
   }
 });
 
-console.log('Circular dependency fixing complete!');
+console.log("Circular dependency fixing complete!");
 console.log(
-  'Review the .fixed and .updated files, and if they look good, replace the originals.',
+  "Review the .fixed and .updated files, and if they look good, replace the originals.",
 );

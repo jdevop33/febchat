@@ -1,7 +1,7 @@
 /**
  * Search service type definitions
  */
-import type { BylawSearchOptions, BylawSearchResult } from '../types';
+import type { BylawSearchOptions, BylawSearchResult } from "../types";
 
 // Embedding model types
 export interface EmbeddingModel {

@@ -6,10 +6,10 @@
  */
 
 // Import and re-export all shared functionality
-export * from './bylaw-shared';
+export * from "./bylaw-shared";
 
 // Server-specific utility for extracting filename from URL
-import { knownBylawUrls } from './bylaw-maps';
+import { knownBylawUrls } from "./bylaw-maps";
 
 /**
  * Map bylaw number to local PDF filename
@@ -23,7 +23,7 @@ export function getFilenameForBylaw(bylawNumber: string): string {
   if (knownBylawUrls[bylawNumber]) {
     const url = knownBylawUrls[bylawNumber];
     // Extract filename from URL
-    const parts = url.split('/');
+    const parts = url.split("/");
     const filename = parts[parts.length - 1];
     if (filename) return filename;
   }

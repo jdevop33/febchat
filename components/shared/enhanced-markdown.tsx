@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import type React from 'react';
-import { Markdown } from '@/components/shared/markdown';
-import { BylawCitation } from '@/components/bylaw/bylaw-citation';
-import { CitationFallback } from '@/components/bylaw/citation-fallback';
+import { BylawCitation } from "@/components/bylaw/bylaw-citation";
+import { CitationFallback } from "@/components/bylaw/citation-fallback";
+import { Markdown } from "@/components/shared/markdown";
 import {
   VALIDATED_BYLAWS,
   BYLAW_TITLE_MAP as bylawTitleMap,
-} from '@/lib/utils/bylaw-maps-client';
+} from "@/lib/utils/bylaw-maps-client";
+import type React from "react";
 
 interface EnhancedMarkdownProps {
   children: string;
@@ -24,12 +24,12 @@ export function EnhancedMarkdown({
       /(?:Oak Bay(?:'s)?|Municipal)?\s*(?:((?:Building and Plumbing|Tree Protection|Anti-Noise|Streets[- ]Traffic|Zoning|Parks and Beaches|Subdivision|Uplands|Refuse Collection|Board of Variance|Property Tax(?:\s+Exemption)?|Tax Rates|Development Cost Charge|Amenity Cost Charge|Sign|Animal Control)\s+Bylaw(?:\s*\(?(?:No\.?|Number)?\s*(\d{4})\)?)?)|(?:Bylaw(?:\s+(?:No\.?|Number)?)?\s*(\d{4})))(?:,?\s*(?:Section|Sec\.|§)\s*([\w\d\.\(\)]+))?/gi;
 
     // Safety check for content
-    if (!children || typeof children !== 'string') {
+    if (!children || typeof children !== "string") {
       console.log(
-        'EnhancedMarkdown received invalid children:',
+        "EnhancedMarkdown received invalid children:",
         typeof children,
       );
-      return <Markdown className={className}>{children || ''}</Markdown>;
+      return <Markdown className={className}>{children || ""}</Markdown>;
     }
 
     // If no bylaw references, just render as regular markdown
@@ -64,7 +64,7 @@ export function EnhancedMarkdown({
         match[2] ||
         match[3] ||
         (bylawName ? getBylawNumberFromName(bylawName) : null);
-      const section = match[4] || '1'; // Get section if available, default to 1
+      const section = match[4] || "1"; // Get section if available, default to 1
 
       // Safe check for bylaw number
       if (!bylawNumber) {
@@ -86,29 +86,29 @@ export function EnhancedMarkdown({
           // Get title from centralized bylaw map
           title = titleMap[bylawNumber] || `Bylaw No. ${bylawNumber}`;
         } catch (error) {
-          console.error('Error accessing bylaw title map:', error);
+          console.error("Error accessing bylaw title map:", error);
           title = `Bylaw No. ${bylawNumber}`;
         }
       }
 
       // Fallback validation list if imports fail
       const fallbackValidBylaws = [
-        '3210',
-        '3531',
-        '4100',
-        '4247',
-        '4742',
-        '4849',
-        '4861',
-        '4891',
-        '4892',
-        '3578',
-        '4672',
-        '3545',
-        '4371',
-        '4183',
-        '3946',
-        '4013',
+        "3210",
+        "3531",
+        "4100",
+        "4247",
+        "4742",
+        "4849",
+        "4861",
+        "4891",
+        "4892",
+        "3578",
+        "4672",
+        "3545",
+        "4371",
+        "4183",
+        "3946",
+        "4013",
       ];
 
       // Safe validation check to ensure VALIDATED_BYLAWS exists and is an array
@@ -145,7 +145,7 @@ export function EnhancedMarkdown({
                       );
                     } catch (citationError) {
                       console.error(
-                        'Error creating BylawCitation component:',
+                        "Error creating BylawCitation component:",
                         citationError,
                       );
                       return null;
@@ -158,14 +158,14 @@ export function EnhancedMarkdown({
                       <CitationFallback
                         bylawNumber={bylawNumber}
                         formattedTitle={title || `Bylaw No. ${bylawNumber}`}
-                        error={new Error('Failed to render citation component')}
+                        error={new Error("Failed to render citation component")}
                       />
                     )
                   );
                 } catch (renderError) {
                   // Ultimate fallback if everything else fails
                   console.error(
-                    'Critical error in bylaw citation rendering:',
+                    "Critical error in bylaw citation rendering:",
                     renderError,
                   );
                   return (
@@ -175,7 +175,7 @@ export function EnhancedMarkdown({
                       error={
                         renderError instanceof Error
                           ? renderError
-                          : new Error('Critical rendering error')
+                          : new Error("Critical rendering error")
                       }
                     />
                   );
@@ -184,7 +184,7 @@ export function EnhancedMarkdown({
             </div>,
           );
         } catch (error) {
-          console.error('Error rendering BylawCitation:', error);
+          console.error("Error rendering BylawCitation:", error);
           segments.push(
             <Markdown key={`text-${key++}`} className={className}>
               {fullMatch}
@@ -214,8 +214,8 @@ export function EnhancedMarkdown({
 
     return <>{segments}</>;
   } catch (error) {
-    console.error('Error in EnhancedMarkdown:', error);
-    return <Markdown className={className}>{children || ''}</Markdown>;
+    console.error("Error in EnhancedMarkdown:", error);
+    return <Markdown className={className}>{children || ""}</Markdown>;
   }
 }
 
@@ -225,23 +225,23 @@ function getBylawNumberFromName(bylawName: string): string | null {
 
   // Map common bylaw name patterns to their numbers
   const namePatterns: Record<string, string> = {
-    'building and plumbing': '4247',
-    'tree protection': '4742',
-    'anti-noise': '3210',
-    'streets and traffic': '4100',
-    'streets traffic': '4100',
-    zoning: '3531',
-    'parks and beaches': '4672',
-    subdivision: '3578',
-    uplands: '3545',
-    'refuse collection': '4371',
-    'board of variance': '4183',
-    'property tax exemption': '4849',
-    'tax rates': '4861',
-    'development cost charge': '4891',
-    'amenity cost charge': '4892',
-    sign: '3946',
-    'animal control': '4013',
+    "building and plumbing": "4247",
+    "tree protection": "4742",
+    "anti-noise": "3210",
+    "streets and traffic": "4100",
+    "streets traffic": "4100",
+    zoning: "3531",
+    "parks and beaches": "4672",
+    subdivision: "3578",
+    uplands: "3545",
+    "refuse collection": "4371",
+    "board of variance": "4183",
+    "property tax exemption": "4849",
+    "tax rates": "4861",
+    "development cost charge": "4891",
+    "amenity cost charge": "4892",
+    sign: "3946",
+    "animal control": "4013",
   };
 
   // Find a matching pattern
@@ -257,7 +257,7 @@ function getBylawNumberFromName(bylawName: string): string | null {
     if (bylawTitleMap) {
       for (const [number, title] of Object.entries(bylawTitleMap)) {
         if (
-          typeof title === 'string' &&
+          typeof title === "string" &&
           bylawNameLower.includes(title.toLowerCase())
         ) {
           return number;
@@ -265,7 +265,7 @@ function getBylawNumberFromName(bylawName: string): string | null {
       }
     }
   } catch (error) {
-    console.error('Error in bylawTitleMap lookup:', error);
+    console.error("Error in bylawTitleMap lookup:", error);
     // Continue without failing
   }
 

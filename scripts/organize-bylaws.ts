@@ -6,11 +6,11 @@
  * pnpm tsx scripts/organize-bylaws.ts <directory>
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 // Get directory from command line args
-const inputDir = process.argv[2] || './public/pdfs';
+const inputDir = process.argv[2] || "./public/pdfs";
 
 if (!fs.existsSync(inputDir)) {
   console.error(`Error: Directory '${inputDir}' does not exist.`);
@@ -22,7 +22,7 @@ console.log(`Organizing bylaw PDFs in directory: ${inputDir}`);
 // Read all PDF files in the directory
 const files = fs
   .readdirSync(inputDir)
-  .filter((file) => file.toLowerCase().endsWith('.pdf'));
+  .filter((file) => file.toLowerCase().endsWith(".pdf"));
 
 console.log(`Found ${files.length} PDF files.`);
 
@@ -35,7 +35,7 @@ function extractBylawInfo(filename: string): {
   const result: { number?: string; title?: string } = {};
 
   // Remove file extension
-  const basename = path.basename(filename, '.pdf');
+  const basename = path.basename(filename, ".pdf");
 
   // Pattern 1: "4747, Reserve Funds Bylaw, 2020 CONSOLIDATED" format
   const patternWithComma = /^(\d+)(?:,\s+)(.+)/;
@@ -77,21 +77,21 @@ function createFormattedFilename(
   }
 
   // Clean up title if available
-  let cleanTitle = '';
+  let cleanTitle = "";
   if (info.title) {
     // Remove CONSOLIDATED text for cleaner titles
     cleanTitle = info.title
-      .replace(/\s*CONSOLIDATED\s*(?:to.*)?$/i, '')
+      .replace(/\s*CONSOLIDATED\s*(?:to.*)?$/i, "")
       // Remove dates at the end
-      .replace(/\s*\d{4}(?:\s*$|\s*\(.*\)$)/, '')
+      .replace(/\s*\d{4}(?:\s*$|\s*\(.*\)$)/, "")
       // Clean up commas and multiple spaces
-      .replace(/\s+/g, ' ')
+      .replace(/\s+/g, " ")
       .trim();
   }
 
   // Create new filename in format "bylaw-XXXX-clean-title.pdf"
   const newName = cleanTitle
-    ? `bylaw-${info.number}-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`
+    ? `bylaw-${info.number}-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`
     : `bylaw-${info.number}.pdf`;
 
   return newName;
@@ -145,12 +145,12 @@ for (const file of files) {
   }
 }
 
-console.log('\nSummary:');
+console.log("\nSummary:");
 console.log(`✅ ${renamed} files renamed`);
 console.log(`ℹ️ ${unchanged} files unchanged`);
 console.log(`❌ ${errors} errors encountered`);
-console.log('\nNext steps:');
-console.log('1. Review the renamed files to ensure accuracy');
+console.log("\nNext steps:");
+console.log("1. Review the renamed files to ensure accuracy");
 console.log(
-  '2. Run the bylaw indexing script: pnpm tsx scripts/index-bylaws.ts ./public/pdfs',
+  "2. Run the bylaw indexing script: pnpm tsx scripts/index-bylaws.ts ./public/pdfs",
 );

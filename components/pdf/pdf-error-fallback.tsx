@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
-import { getExternalPdfUrl } from '@/lib/utils/bylaw-shared';
+import { Button } from "@/components/ui/button";
+import { getExternalPdfUrl } from "@/lib/utils/bylaw-shared";
+import { AlertTriangle, ExternalLink } from "lucide-react";
+import React from "react";
+import { toast } from "sonner";
 
 interface PdfErrorFallbackProps {
   bylawNumber: string;
@@ -20,7 +20,7 @@ interface PdfErrorFallbackProps {
 export function PdfErrorFallback({
   bylawNumber,
   title,
-  className = '',
+  className = "",
   onRetry,
   error,
 }: PdfErrorFallbackProps) {
@@ -32,15 +32,15 @@ export function PdfErrorFallback({
   // Handle opening external URL
   const handleExternalLink = () => {
     // Log the external URL for debugging
-    console.log('Opening official URL:', externalUrl);
+    console.log("Opening official URL:", externalUrl);
 
     // Open in new tab
-    if (typeof window !== 'undefined') {
-      window.open(externalUrl, '_blank', 'noopener,noreferrer,popup=yes');
+    if (typeof window !== "undefined") {
+      window.open(externalUrl, "_blank", "noopener,noreferrer,popup=yes");
     }
 
     // Show toast message
-    toast.info('Opening official document', {
+    toast.info("Opening official document", {
       description: `Redirecting to the official Oak Bay website for Bylaw ${bylawNumber}`,
     });
   };
