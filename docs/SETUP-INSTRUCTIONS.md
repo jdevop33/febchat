@@ -53,7 +53,7 @@ https://oak-bay-bylaws-560wgi3.svc.gcp-us-central1-4a9f.pinecone.io
 
 ```bash
 # On Windows (PowerShell or Command Prompt)
-cd C:\path\to\febchat
+cd C:\path	oebchat
 pnpm tsx scripts/index-bylaws.ts "C:\Users\jesse\OneDrive\Documents\ob_bylaws"
 
 # On Linux/Mac
